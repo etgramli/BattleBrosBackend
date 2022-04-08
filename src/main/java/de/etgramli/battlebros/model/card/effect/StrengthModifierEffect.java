@@ -23,7 +23,7 @@ public final class StrengthModifierEffect extends CardEffect {
         return switch (type) {
             case ADD -> value + this.value;
             case SUBTRACT -> value - this.value;
-            case SET -> this.value;
+            case SET -> value;
         };
     }
 
