@@ -42,6 +42,11 @@ public class Board {
         playedCards.add(p2cards.stream().map(CardTuple::new).collect(Collectors.toCollection(ArrayList::new)));
     }
 
+    /**
+     * Determine the played cards of a specific player.
+     * @param playerIndex Player's index ([0,1]).
+     * @return List of CardTuples, not null, may be empty, no null elements.
+     */
     public List<CardTuple> getPlayedCards(final int playerIndex) {
         return playedCards.get(playerIndex).stream().filter(Objects::nonNull).toList();
     }
@@ -119,6 +124,11 @@ public class Board {
         return retVal;
     }
 
+    /**
+     * Determine the spots where the specified player may place cards.
+     * @param playerIndex Player's index ([0,1]).
+     * @return Set of BoardPositions, not null, may be empty.
+     */
     public Set<BoardPosition> getValidPositionsToPlayCard(final int playerIndex) {
         final Set<BoardPosition> validPositions = new HashSet<>();
 
@@ -153,6 +163,10 @@ public class Board {
         return validPositions;
     }
 
+    /**
+     * Return the positions where no cards can be played due to an effect.
+     * @return Set of BoardPosition, not null, maybe empty.
+     */
     private Set<BoardPosition> getPositionsBlockedByEffect() {
         final Set<BoardPosition> blockedPositions = new HashSet<>();
 
@@ -177,6 +191,11 @@ public class Board {
         return blockedPositions;
     }
 
+    /**
+     * Return the effective amount (after effect application) of all cards of the selected player.
+     * @param playerIndex The index of the player ([0, 1]).
+     * @return Non-negative integer.
+     */
     public int getPointsForPlayer(final int playerIndex) {
         int points = 0;
         for (int i = 0; i < playedCards.get(playerIndex).size(); ++i) {
@@ -185,17 +204,23 @@ public class Board {
         return points;
     }
 
+    /**
+     * Determine the effective value of a card on the board (after effect application, non-flipped cards).
+     * @param playerIndex The row index of the player ([0,1]).
+     * @param cardIndex Index of the card.
+     * @return Non-negative integer.
+     */
     public int getEffectiveValue(final int playerIndex, final int cardIndex) {
         final List<CardTuple> sameRow = playedCards.get(playerIndex);
         final CardTuple cardTuple = sameRow.get(cardIndex);
-        if (cardTuple.isFlipped()) {
+        if (cardTuple == null || cardTuple.isFlipped()) {
             return 0;
         }
         final Card card = cardTuple.card;
 
         final Set<CardEffect> elementEffects = new HashSet<>();
         // Effects affecting the same elements
-        for (CardEffect effect : getEffects()) {
+        for (CardEffect effect : getActiveEffects()) {
             EffectApplication direction = effect.getDirection();
             if (direction instanceof ElementApplication) {
                 if (card.element().equals(((ElementApplication) direction).getElement())) {
@@ -226,6 +251,10 @@ public class Board {
         return value;
     }
 
+    /**
+     * Determine the CardTuple, of which the effects are invalidated by other card's effects.
+     * @return Set of CardTuples, not null, maybe empty.
+     */
     private Set<CardTuple> getInvalidatedEffectCards() {
         final Set<CardTuple> invalidatingEffectCards = playedCardStream()
                 .filter(cardTuple -> cardTuple.card.hasInvalidatingEffect())
@@ -269,6 +298,11 @@ public class Board {
         return invalidatedEffectCards;
     }
 
+    /**
+     * Determine the position of a CardTuple on the board.
+     * @param cardTuple Non-null CardTuple to search on the board.
+     * @return Position on the board or empty, if not on the board.
+     */
     private Optional<BoardPosition> getPosition(final CardTuple cardTuple) {
         for (int currentPlayerNum = 0; currentPlayerNum < Game.NUMBER_OF_PLAYERS; ++currentPlayerNum) {
             final List<CardTuple> currentPlayerRow = playedCards.get(currentPlayerNum);
@@ -282,7 +316,11 @@ public class Board {
         return Optional.empty();
     }
 
-    private Set<CardEffect> getEffects() {
+    /**
+     * Return the effects that are not invalidated by other effects.
+     * @return Set of CardEffects, not null, maybe empty.
+     */
+    private Set<CardEffect> getActiveEffects() {
         final Set<CardTuple> invalidateEffectEffects = getInvalidatedEffectCards();
 
         return playedCardStream()
@@ -291,9 +329,16 @@ public class Board {
                 .collect(Collectors.toSet());
     }
 
-    public record BoardPosition(int playerRow, int position) {
-    }
+    /**
+     * Record to represent the position on the board.
+     * @param playerRow Index of the player's row ([0,1]).
+     * @param position Index of the card in the row.
+     */
+    public record BoardPosition(int playerRow, int position) {}
 
+    /**
+     * State of the card on the board. Card itself and whether if it is flipped or not.
+     */
     public static class CardTuple {
         public final Card card;
         private boolean isFlipped;  // True = face down, False = face up
