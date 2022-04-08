@@ -7,7 +7,7 @@ import de.etgramli.battlebros.model.card.effect.FlipEffect;
 import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
 import de.etgramli.battlebros.model.card.effect.ProhibitCardPlacementEffect;
 import de.etgramli.battlebros.model.card.effect.ReviveEffect;
-import de.etgramli.battlebros.model.card.effect.StrengthModifierEffect;
+import de.etgramli.battlebros.model.card.effect.ValueModifierEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -248,8 +248,8 @@ public class Board {
 
         int value = card.value();
         for (CardEffect effect : elementEffects) {
-            if (effect instanceof StrengthModifierEffect strengthModifierEffect) {
-                value = strengthModifierEffect.apply(value);
+            if (effect instanceof ValueModifierEffect valueModifierEffect) {
+                value = valueModifierEffect.apply(value);
             }
         }
 

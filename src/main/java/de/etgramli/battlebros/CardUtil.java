@@ -7,7 +7,7 @@ import de.etgramli.battlebros.model.card.effect.EffectApplication;
 import de.etgramli.battlebros.model.card.effect.FlipEffect;
 import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
 import de.etgramli.battlebros.model.card.effect.ProhibitCardPlacementEffect;
-import de.etgramli.battlebros.model.card.effect.StrengthModifierEffect;
+import de.etgramli.battlebros.model.card.effect.ValueModifierEffect;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ public final class CardUtil {
     private CardUtil(){}
 
     public static final Card ANFEURER = new CardBuilder("Anfeurer", 3, CardElement.FEUER)
-            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben +1.", EffectApplication.ELEMENT_FEUER, 1, StrengthModifierEffect.ModifierType.ADD))
+            .withEffect(new ValueModifierEffect("Benachbarte Bros haben +1.", EffectApplication.ELEMENT_FEUER, 1, ValueModifierEffect.ModifierType.ADD))
             .build();
     public static final Card DAEMOND = new CardBuilder("Dämond", 8, CardElement.LUFT)
             .withEffect(new FlipEffect("Wenn Dämond ins Spiel kommt, verdeckt er sich selbst.", EffectApplication.SELF, true))
@@ -32,10 +32,10 @@ public final class CardUtil {
             .withEffect(new InvalidateEffectEffect("Der Effekt der digonal gegenüber liegenden Bros werden annuliert.", EffectApplication.DIAGONAL))
             .build();
     public static final Card GIGAGOLEM = new CardBuilder("Gigagolem", 8, CardElement.ERDE)
-            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben -1", EffectApplication.NEIGHBOR, 2, StrengthModifierEffect.ModifierType.SUBTRACT))
+            .withEffect(new ValueModifierEffect("Benachbarte Bros haben -1", EffectApplication.NEIGHBOR, 2, ValueModifierEffect.ModifierType.SUBTRACT))
             .build();
     public static final Card HITZKOPF = new CardBuilder("Hitzkopf", 3, CardElement.FEUER)
-            .withEffect(new StrengthModifierEffect("Alle Feuer-Bros außer Hitzkopf haben +1.", EffectApplication.ELEMENT_FEUER, 1, StrengthModifierEffect.ModifierType.ADD))
+            .withEffect(new ValueModifierEffect("Alle Feuer-Bros außer Hitzkopf haben +1.", EffectApplication.ELEMENT_FEUER, 1, ValueModifierEffect.ModifierType.ADD))
             .build();
     public static final Card HOLZKOPF = new CardBuilder("Holzkopf", 5, CardElement.ERDE)
             .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeien von benachbarten Bros.", EffectApplication.NEIGHBOR))
@@ -44,7 +44,7 @@ public final class CardUtil {
             .withEffect(new FlipEffect("Wenn Senk-Schlange ins Spiel kommt, verdecke den gegenüberligenden Bro.", EffectApplication.FACING, true))
             .build();
     public static final Card SPIEGELWICHT = new CardBuilder("Spiegelwicht", 0, CardElement.WASSER)
-            .withEffect(new StrengthModifierEffect("Spiegelwicht hat den aufgedruckten Wert des gegeüberliegenden Bros.", EffectApplication.FACING, 0, StrengthModifierEffect.ModifierType.SET))
+            .withEffect(new ValueModifierEffect("Spiegelwicht hat den aufgedruckten Wert des gegeüberliegenden Bros.", EffectApplication.FACING, 0, ValueModifierEffect.ModifierType.SET))
             .build();
     public static final Card VERSTUMMER = new CardBuilder("Verstummer", 2, CardElement.LUFT)
             .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeit des gegenüberliegenden Bros.", EffectApplication.FACING))

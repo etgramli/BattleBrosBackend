@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
  * whether the effect is activated on the card entering the game.
  */
 public sealed abstract class CardEffect permits FlipEffect, InvalidateEffectEffect, PreventFlipEffect,
-        ProhibitCardPlacementEffect, ReviveEffect, StrengthModifierEffect {
+        ProhibitCardPlacementEffect, ReviveEffect, ValueModifierEffect {
     private final String effectText;
     private final EffectApplication target;
     private final EffectApplication source;

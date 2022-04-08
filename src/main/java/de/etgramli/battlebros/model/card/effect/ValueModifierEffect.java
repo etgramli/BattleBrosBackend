@@ -3,11 +3,11 @@ package de.etgramli.battlebros.model.card.effect;
 /**
  * An effect that modifies or sets the value of a card.
  */
-public final class StrengthModifierEffect extends CardEffect {
+public final class ValueModifierEffect extends CardEffect {
     private final int value;
     private final ModifierType type;
 
-    public StrengthModifierEffect(final String effectText, final EffectApplication direction, final int value, final ModifierType type) {
+    public ValueModifierEffect(final String effectText, final EffectApplication direction, final int value, final ModifierType type) {
         super(effectText, direction);
         if (value < 0) {
             throw new IllegalArgumentException("Value must be 0 or larger!");
