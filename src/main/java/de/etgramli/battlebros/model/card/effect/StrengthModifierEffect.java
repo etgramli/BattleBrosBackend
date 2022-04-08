@@ -2,7 +2,7 @@ package de.etgramli.battlebros.model.card.effect;
 
 import de.etgramli.battlebros.model.card.effect.application.EffectApplication;
 
-public class StrengthModifierEffect extends CardEffect {
+public final class StrengthModifierEffect extends CardEffect {
     private final int value;
     private final ModifierType type;
 

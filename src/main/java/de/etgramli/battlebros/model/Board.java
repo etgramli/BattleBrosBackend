@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -178,7 +179,7 @@ public class Board {
                         .map(cardEffect -> (ProhibitCardPlacementEffect) cardEffect)
                         .toList();
                 for (ProhibitCardPlacementEffect effect : blockingEffects) {
-                    EffectApplication application = effect.getDirection();
+                    EffectApplication application = effect.getTarget();
                     if (application instanceof FacingApplication) {
                         blockedPositions.add(new BoardPosition(Game.getOtherPlayerNum(playerNum), rowNum));
                     } else if (application instanceof NeighborApplication) {
@@ -221,7 +222,7 @@ public class Board {
         final Set<CardEffect> elementEffects = new HashSet<>();
         // Effects affecting the same elements
         for (CardEffect effect : getActiveEffects()) {
-            EffectApplication direction = effect.getDirection();
+            EffectApplication direction = effect.getTarget();
             if (direction instanceof ElementApplication) {
                 if (card.element().equals(((ElementApplication) direction).getElement())) {
                     elementEffects.add(effect);
@@ -274,7 +275,7 @@ public class Board {
             final int otherPlayerNum = Game.getOtherPlayerNum(cardPosition.playerRow);
             for (CardEffect effect : cardTuple.card.effects()) {
                 if (effect instanceof InvalidateEffectEffect) {
-                    final EffectApplication application = effect.getDirection();
+                    final EffectApplication application = effect.getTarget();
                     if (application instanceof NeighborApplication) {
                         targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position - 1));
                         targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position + 1));
@@ -327,6 +328,12 @@ public class Board {
                 .filter(cardTuple -> !invalidateEffectEffects.contains(cardTuple))
                 .flatMap(cardTuple -> cardTuple.card.effects().stream())
                 .collect(Collectors.toSet());
+    }
+
+    public List<List<CardTuple>> getImmutableState() {
+        return playedCards.stream()
+                .map(Collections::unmodifiableList)
+                .toList();
     }
 
     /**
