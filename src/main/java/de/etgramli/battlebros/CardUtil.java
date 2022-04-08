@@ -3,12 +3,9 @@ package de.etgramli.battlebros;
 import de.etgramli.battlebros.model.card.Card;
 import de.etgramli.battlebros.model.card.CardElement;
 import de.etgramli.battlebros.model.card.effect.CardEffect;
+import de.etgramli.battlebros.model.card.effect.EffectApplication;
 import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
 import de.etgramli.battlebros.model.card.effect.StrengthModifierEffect;
-import de.etgramli.battlebros.model.card.effect.application.DiagonalApplication;
-import de.etgramli.battlebros.model.card.effect.application.ElementApplication;
-import de.etgramli.battlebros.model.card.effect.application.FacingApplication;
-import de.etgramli.battlebros.model.card.effect.application.NeighborApplication;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,22 +15,22 @@ public final class CardUtil {
     private CardUtil(){}
 
     public static final Card ANFEURER = new CardBuilder("Anfeurer", 3, CardElement.FEUER)
-            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben +1.", new ElementApplication(CardElement.FEUER), 1, StrengthModifierEffect.ModifierType.ADD))
+            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben +1.", EffectApplication.ELEMENT_FEUER, 1, StrengthModifierEffect.ModifierType.ADD))
             .withImagePath("/img/Anfeurer.jpg").build();
     public static final Card FEDERBALL = new CardBuilder("Federball", 4, CardElement.LUFT)
             .withImagePath("/img/Federball.jpg").build();
     public static final Card FOENX = new CardBuilder("Fön-X", 1, CardElement.FEUER)
-            .withEffect(new InvalidateEffectEffect("Der Effekt des gegenüber liegenden Bros werden annuliert.", new FacingApplication()))
-            .withEffect(new InvalidateEffectEffect("Der Effekt der digonal gegenüber liegenden Bros werden annuliert.", new DiagonalApplication()))
+            .withEffect(new InvalidateEffectEffect("Der Effekt des gegenüber liegenden Bros werden annuliert.", EffectApplication.FACING))
+            .withEffect(new InvalidateEffectEffect("Der Effekt der digonal gegenüber liegenden Bros werden annuliert.", EffectApplication.DIAGONAL))
             .build();
     public static final Card GIGAGOLEM = new CardBuilder("Gigagolem", 8, CardElement.ERDE)
-            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben -1", new NeighborApplication(), 2, StrengthModifierEffect.ModifierType.SUBTRACT))
+            .withEffect(new StrengthModifierEffect("Benachbarte Bros haben -1", EffectApplication.NEIGHBOR, 2, StrengthModifierEffect.ModifierType.SUBTRACT))
             .build();
     public static final Card HOLZKOPF = new CardBuilder("Holzkopf", 5, CardElement.ERDE)
-            .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeien von benachbarten Bros.", new NeighborApplication()))
+            .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeien von benachbarten Bros.", EffectApplication.NEIGHBOR))
             .build();
     public static final Card VERSTUMMER = new CardBuilder("Verstummer", 2, CardElement.LUFT)
-            .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeit des gegenüberliegenden Bros.", new FacingApplication()))
+            .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeit des gegenüberliegenden Bros.", EffectApplication.FACING))
             .build();
     public static final Card WASSERLAEUFER = new CardBuilder("Wasserläufer", 4, CardElement.WASSER)
             .withImagePath("/img/Wasserlaeufer.jpg").build();

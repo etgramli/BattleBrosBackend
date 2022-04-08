@@ -1,17 +1,13 @@
 package de.etgramli.battlebros.model;
 
 import de.etgramli.battlebros.model.card.Card;
+import de.etgramli.battlebros.model.card.CardElement;
 import de.etgramli.battlebros.model.card.effect.CardEffect;
 import de.etgramli.battlebros.model.card.effect.FlipEffect;
 import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
 import de.etgramli.battlebros.model.card.effect.ProhibitCardPlacementEffect;
 import de.etgramli.battlebros.model.card.effect.ReviveEffect;
 import de.etgramli.battlebros.model.card.effect.StrengthModifierEffect;
-import de.etgramli.battlebros.model.card.effect.application.DiagonalApplication;
-import de.etgramli.battlebros.model.card.effect.application.EffectApplication;
-import de.etgramli.battlebros.model.card.effect.application.ElementApplication;
-import de.etgramli.battlebros.model.card.effect.application.FacingApplication;
-import de.etgramli.battlebros.model.card.effect.application.NeighborApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,12 +175,12 @@ public class Board {
                         .map(cardEffect -> (ProhibitCardPlacementEffect) cardEffect)
                         .toList();
                 for (ProhibitCardPlacementEffect effect : blockingEffects) {
-                    EffectApplication application = effect.getTarget();
-                    if (application instanceof FacingApplication) {
-                        blockedPositions.add(new BoardPosition(Game.getOtherPlayerNum(playerNum), rowNum));
-                    } else if (application instanceof NeighborApplication) {
-                        blockedPositions.add(new BoardPosition(playerNum, rowNum - 1));
-                        blockedPositions.add(new BoardPosition(playerNum, rowNum + 1));
+                    switch (effect.getTarget()) {
+                        case FACING -> blockedPositions.add(new BoardPosition(Game.getOtherPlayerNum(playerNum), rowNum));
+                        case NEIGHBOR -> {
+                            blockedPositions.add(new BoardPosition(playerNum, rowNum - 1));
+                            blockedPositions.add(new BoardPosition(playerNum, rowNum + 1));
+                        }
                     }
                 }
             }
@@ -220,12 +216,20 @@ public class Board {
         final Card card = cardTuple.card;
 
         final Set<CardEffect> elementEffects = new HashSet<>();
-        // Effects affecting the same elements
         for (CardEffect effect : getActiveEffects()) {
-            EffectApplication direction = effect.getTarget();
-            if (direction instanceof ElementApplication) {
-                if (card.element().equals(((ElementApplication) direction).getElement())) {
-                    elementEffects.add(effect);
+            CardElement element = card.element();
+            switch (effect.getTarget()) {
+                case ELEMENT_ERDE -> {
+                    if (CardElement.ERDE.equals(element)) elementEffects.add(effect);
+                }
+                case ELEMENT_FEUER -> {
+                    if (CardElement.FEUER.equals(element)) elementEffects.add(effect);
+                }
+                case ELEMENT_LUFT -> {
+                    if (CardElement.LUFT.equals(element)) elementEffects.add(effect);
+                }
+                case ELEMENT_WASSER -> {
+                    if (CardElement.WASSER.equals(element)) elementEffects.add(effect);
                 }
             }
         }
@@ -275,15 +279,16 @@ public class Board {
             final int otherPlayerNum = Game.getOtherPlayerNum(cardPosition.playerRow);
             for (CardEffect effect : cardTuple.card.effects()) {
                 if (effect instanceof InvalidateEffectEffect) {
-                    final EffectApplication application = effect.getTarget();
-                    if (application instanceof NeighborApplication) {
-                        targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position - 1));
-                        targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position + 1));
-                    } else if (application instanceof FacingApplication) {
-                        targets.add(new BoardPosition(otherPlayerNum, cardPosition.position));
-                    } else if (application instanceof DiagonalApplication) {
-                        targets.add(new BoardPosition(otherPlayerNum, cardPosition.position - 1));
-                        targets.add(new BoardPosition(otherPlayerNum, cardPosition.position + 1));
+                    switch (effect.getTarget()) {
+                        case NEIGHBOR -> {
+                            targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position - 1));
+                            targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position + 1));
+                        }
+                        case FACING -> targets.add(new BoardPosition(otherPlayerNum, cardPosition.position));
+                        case DIAGONAL -> {
+                            targets.add(new BoardPosition(otherPlayerNum, cardPosition.position - 1));
+                            targets.add(new BoardPosition(otherPlayerNum, cardPosition.position + 1));
+                        }
                     }
                 }
             }

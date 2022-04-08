@@ -1,7 +1,5 @@
 package de.etgramli.battlebros.model.card.effect;
 
-import de.etgramli.battlebros.model.card.effect.application.EffectApplication;
-
 /**
  * An effect that modifies or sets the value of a card.
  */

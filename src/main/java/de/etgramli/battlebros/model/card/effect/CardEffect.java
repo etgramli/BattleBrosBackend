@@ -1,6 +1,5 @@
 package de.etgramli.battlebros.model.card.effect;
 
-import de.etgramli.battlebros.model.card.effect.application.EffectApplication;
 import org.apache.commons.lang3.StringUtils;
 
 /**
