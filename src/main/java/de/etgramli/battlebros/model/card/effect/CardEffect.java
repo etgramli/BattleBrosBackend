@@ -6,8 +6,7 @@ import org.apache.commons.lang3.StringUtils;
  * Abstract Effect type to set basic attributes common to all effects like source, target, text and
  * whether the effect is activated on the card entering the game.
  */
-public sealed abstract class CardEffect permits FlipEffect, InvalidateEffectEffect, PreventFlipEffect,
-        ProhibitCardPlacementEffect, ReviveEffect, ValueModifierEffect {
+public sealed abstract class CardEffect permits DrawCardEffect, FlipEffect, InvalidateEffectEffect, PreventFlipEffect, ProhibitCardPlacementEffect, ReturnCardEffect, ReviveEffect, ValueFixedEffect, ValueModifierEffect {
     private final String effectText;
     private final EffectApplication target;
     private final EffectApplication source;

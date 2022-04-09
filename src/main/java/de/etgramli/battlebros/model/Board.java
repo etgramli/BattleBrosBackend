@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class Board {
+public final class Board {
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
     private final ArrayList<ArrayList<CardTuple>> playedCards;

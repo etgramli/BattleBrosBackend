@@ -9,5 +9,9 @@ public enum EffectApplication {
     ELEMENT_WASSER,
     ELEMENT_LUFT,
     ELEMENT_ERDE,
-    NONE;
+    ANY,
+    NONE,
+    PLAYER_I,
+    PLAYER_OTHER,
+    PLAYER_BOTH;
 }
