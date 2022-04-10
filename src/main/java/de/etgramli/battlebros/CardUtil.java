@@ -8,12 +8,13 @@ import de.etgramli.battlebros.model.card.effect.EffectApplication;
 import de.etgramli.battlebros.model.card.effect.FlipEffect;
 import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
 import de.etgramli.battlebros.model.card.effect.ProhibitCardPlacementEffect;
+import de.etgramli.battlebros.model.card.effect.ReviveEffect;
 import de.etgramli.battlebros.model.card.effect.ValueFixedEffect;
 import de.etgramli.battlebros.model.card.effect.ValueModifierEffect;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public final class CardUtil {
     private CardUtil(){}
@@ -24,9 +25,12 @@ public final class CardUtil {
     public static final Card AQUAK = new CardBuilder("Aquak", 2, CardElement.WASSER)
             .withEffect(new DrawCardEffect("Wenn Aquak ins Spiel kommt, ziehe ich eine Karte von meinem Deck.", EffectApplication.PLAYER_I))
             .build();
+    public static final Card AUSBRECHER = new CardBuilder("Ausbrecher", 0, CardElement.FEUER)
+            .withEffect(new FlipEffect("Wenn Ausbrecher ins Spiel kommt, verdecke ich einen beliebigen Bro im Spiel", EffectApplication.ANY, true, false))
+            .build();
     public static final Card BAUMKRONE = new CardBuilder("Baumkrone", 4, CardElement.ERDE).build();
     public static final Card DAEMOND = new CardBuilder("Dämond", 8, CardElement.LUFT)
-            .withEffect(new FlipEffect("Wenn Dämond ins Spiel kommt, verdeckt er sich selbst.", EffectApplication.SELF, true))
+            .withEffect(new FlipEffect("Wenn Dämond ins Spiel kommt, verdeckt er sich selbst.", EffectApplication.SELF, true, false))
             .build();
     public static final Card FEDERBALL = new CardBuilder("Federball", 4, CardElement.LUFT).build();
     public static final Card FELSENFEST = new CardBuilder("Felsenfest", 4, CardElement.ERDE)
@@ -56,7 +60,7 @@ public final class CardUtil {
             .withEffect(new DrawCardEffect("Wenn Orakel von Delfisch ins Spiel kommt, ziehen beide Spieler eine Karte.", EffectApplication.PLAYER_BOTH))
             .build();
     public static final Card SENKSCHLANGE = new CardBuilder("Senk-Schlange", 1, CardElement.WASSER)
-            .withEffect(new FlipEffect("Wenn Senk-Schlange ins Spiel kommt, verdecke den gegenüberligenden Bro.", EffectApplication.FACING, true))
+            .withEffect(new FlipEffect("Wenn Senk-Schlange ins Spiel kommt, verdecke den gegenüberligenden Bro.", EffectApplication.FACING, true, false))
             .build();
     public static final Card SPIEGELWICHT = new CardBuilder("Spiegelwicht", 0, CardElement.WASSER)
             .withEffect(new ValueModifierEffect("Spiegelwicht hat den aufgedruckten Wert des gegeüberliegenden Bros.", EffectApplication.FACING, 0, ValueModifierEffect.ModifierType.SET))
@@ -65,12 +69,19 @@ public final class CardUtil {
             .withEffect(new InvalidateEffectEffect("Annuliere die Fähigkeit des gegenüberliegenden Bros.", EffectApplication.FACING))
             .build();
     public static final Card WASSERLAEUFER = new CardBuilder("Wasserläufer", 4, CardElement.WASSER).build();
+    public static final Card ZOMBIENE = new CardBuilder("Zombiene", 1, CardElement.ERDE)
+            .withEffect(new ReviveEffect("Wenn Zombiene ins Spiel kommt, lege ich einen beliebigen Bro vom Abwurfstapel neben sie."))
+            .withEffect(new ValueModifierEffect("Benachbarte Bros haben -1.", EffectApplication.NEIGHBOR, 1, ValueModifierEffect.ModifierType.SUBTRACT))
+            .build();
     public static final Card ZWITTERAAL = new CardBuilder("Zwitteraal", 6, CardElement.WASSER)
             .withEffect(new ProhibitCardPlacementEffect("Es können keine Bros benachbart neben Zwitteraal gespielt werden.", EffectApplication.NEIGHBOR))
             .build();
 
-    public static final List<Card> FEUER_DECK = List.of(ANFEURER, FEUERSALAMANDER, FOENX, HITZKOPF, LAVABOY);
-    public static final List<Card> DAEMOND_RISING = List.of(DAEMOND);
+
+    public static final Map<String, List<Card>> PRE_BUILT_DECKS = Map.of(
+            "Feurio!", List.of(ANFEURER, AUSBRECHER, FEUERSALAMANDER, FOENX, HITZKOPF, LAVABOY),
+            "Dämond rising", List.of(DAEMOND)
+    );
 
     public static class CardBuilder {
         private final String name;
@@ -87,11 +98,6 @@ public final class CardUtil {
 
         public CardBuilder withEffect(final CardEffect cardEffect) {
             effects.add(cardEffect);
-            return this;
-        }
-
-        public CardBuilder withEffects(final Collection<CardEffect> effects) {
-            this.effects.addAll(effects);
             return this;
         }
 

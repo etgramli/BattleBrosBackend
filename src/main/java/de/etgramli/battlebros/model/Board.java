@@ -25,6 +25,10 @@ import java.util.stream.Stream;
 public final class Board {
     private static final Logger logger = LoggerFactory.getLogger(Board.class);
 
+    // Need list implementation with fast index access, allows null values and can add elements at the start
+    // Fast index access -> Place, flip, ... a card at a certain position -> array-based impl
+    // Null values -> keep implementation simpler, so that an index from one row works on the other player's row as well
+    // Add elements at both sides, because that is what both players can do
     private final ArrayList<ArrayList<CardTuple>> playedCards;
 
     public Board() {
