@@ -31,16 +31,16 @@ public final class Board {
     // Add elements at both sides, because that is what both players can do
     private final ArrayList<ArrayList<CardTuple>> playedCards;
 
+    private final List<List<Card>> graveyards;
+
     public Board() {
         playedCards = new ArrayList<>(Game.NUMBER_OF_PLAYERS);
         playedCards.add(new ArrayList<>());
         playedCards.add(new ArrayList<>());
-    }
 
-    public Board(final Collection<Card> p1cards, final Collection<Card> p2cards) {
-        this();
-        playedCards.add(p1cards.stream().map(CardTuple::new).collect(Collectors.toCollection(ArrayList::new)));
-        playedCards.add(p2cards.stream().map(CardTuple::new).collect(Collectors.toCollection(ArrayList::new)));
+        graveyards = new ArrayList<>(Game.NUMBER_OF_PLAYERS);
+        graveyards.add(new ArrayList<>());
+        graveyards.add(new ArrayList<>());
     }
 
     /**
@@ -50,6 +50,21 @@ public final class Board {
      */
     public List<CardTuple> getPlayedCards(final int playerIndex) {
         return playedCards.get(playerIndex).stream().filter(Objects::nonNull).toList();
+    }
+
+    public void movePlayedCardsToGraveyard() {
+        for (int playerNum = 0; playerNum < playedCards.size(); ++playerNum) {
+            final List<CardTuple> playerRow = playedCards.get(playerNum);
+            final List<Card> graveYard = graveyards.get(playerNum);
+            playerRow.stream()
+                    .filter(Objects::nonNull)
+                    .map(cardTuple -> cardTuple.card)
+                    .forEach(graveYard::add);
+        }
+    }
+
+    public List<Card> getGraveyard(final int playerNum) {
+        return Collections.unmodifiableList(graveyards.get(playerNum));
     }
 
     /**
