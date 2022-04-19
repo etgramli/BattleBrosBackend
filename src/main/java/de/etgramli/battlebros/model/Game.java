@@ -4,6 +4,8 @@ import de.etgramli.battlebros.CardUtil;
 import de.etgramli.battlebros.model.card.Card;
 import de.etgramli.battlebros.util.IObservable;
 import de.etgramli.battlebros.util.IObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,10 +13,13 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 public final class Game implements IObservable {
 
+    private static final Logger logger = LoggerFactory.getLogger(Game.class);
     public static final int NUMBER_OF_PLAYERS = 2;
+
     private final Board board;
     private final List<Player> players;
     private final LinkedList<Integer> folded = new LinkedList<>();
@@ -22,7 +27,8 @@ public final class Game implements IObservable {
     private int round = 1;
     private int currentPlayer = 0;
 
-    private final List<LinkedList<Card>> playerHands;
+    private final List<List<Card>> playerHands;
+    // Needs to be a LinkedList so that it also can be used as a queue
     private final List<LinkedList<Card>> playerDecks = new ArrayList<>(NUMBER_OF_PLAYERS);
 
     public Game(final Collection<Player> players) {
@@ -33,11 +39,11 @@ public final class Game implements IObservable {
         board = new Board();
 
         // Both players start with empty hands
-        playerHands = List.of(new LinkedList<>(), new LinkedList<>());
+        playerHands = List.of(new ArrayList<>(), new ArrayList<>());
 
-        final List<Card> testDeck = List.of(CardUtil.FEDERBALL, CardUtil.WASSERLAEUFER, CardUtil.ANFEURER);
-        playerDecks.add(new LinkedList<>(testDeck));
-        playerDecks.add(new LinkedList<>(testDeck));
+        // For the start use pre-built decks
+        playerDecks.add(new LinkedList<>(CardUtil.FEURIO));
+        playerDecks.add(new LinkedList<>(CardUtil.DAEMOND_RISING));
         shuffleDecks();
         drawCardsBeforeRound();
     }
@@ -59,20 +65,42 @@ public final class Game implements IObservable {
         return players.get(playerIndex).name();
     }
 
+    public List<List<Board.CardTuple>> getPlayedCards() {
+        return board.getImmutableState();
+    }
+
     // Gameplay methods
-    public void playCard() {
-        // ToDo: determine available spots, set card to position
+    public boolean playCard(final int cardHandIndex, final Board.BoardPosition position) {
+        final Set<Board.BoardPosition> validPositions = board.getValidPositionsToPlayCard(currentPlayer);
+        if (!validPositions.contains(position)) {
+            return false;
+        }
+
+        final List<Card> currentPlayerHand = playerHands.get(currentPlayer);
+        if (!board.playCard(currentPlayerHand.get(cardHandIndex), position)) {
+            return false;
+        }
+
+        currentPlayerHand.remove(cardHandIndex);
         switchPlayer();
+        return true;
+    }
+
+    public Set<Board.BoardPosition> getValidPositions() {
+        return board.getValidPositionsToPlayCard(currentPlayer);
     }
 
     public void fold() {
         folded.addLast(currentPlayer);
-        switchPlayer();
+        if (doesRoundEnd()) {
+            advanceToNextRound();
+        } else {
+            switchPlayer();
+        }
     }
 
     private boolean doesRoundEnd() {
-        final boolean allPlayersFolded = folded.stream().distinct().count() == 2;
-        return allPlayersFolded;
+        return folded.stream().distinct().count() == 2; // Both players folded
     }
 
     private void switchPlayer() {
@@ -108,8 +136,8 @@ public final class Game implements IObservable {
     }
 
     private void drawCards(final int playerIndex, final int numberOfCards) {
-        Queue<Card> playerDeck = playerDecks.get(playerIndex);
-        Collection<Card> playerHand = playerHands.get(playerIndex);
+        final Queue<Card> playerDeck = playerDecks.get(playerIndex);
+        final List<Card> playerHand = playerHands.get(playerIndex);
 
         for (int i = 0; i < numberOfCards; i++) {
             Card card = playerDeck.poll();
@@ -126,6 +154,7 @@ public final class Game implements IObservable {
 
 
     private final List<IObserver> observers = new ArrayList<>();
+
     @Override
     public void addObserver(final IObserver observer) {
         observers.add(observer);

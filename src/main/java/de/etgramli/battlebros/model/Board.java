@@ -80,6 +80,10 @@ public final class Board {
         return playedCardStream().collect(Collectors.toSet());
     }
 
+    public boolean playCard(final Card card, final BoardPosition position) {
+        return playCard(position.playerRow, card, position.position);
+    }
+
     /**
      * Place a card on the board.
      *

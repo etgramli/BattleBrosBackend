@@ -14,4 +14,23 @@ An effect can affect the card itself, neighbor cards (left, right), the facing c
 
 Cards can only be placed at empty posisions, that directly connects to an already played card (but not digonally).
 
+### Game modes
+- Pre-built decks
+- Drafting (6 rounds à 4 cards -> 2 deck of size 12)
+
 ### Specific rulings
+Here are specific rules that occur rarely, but then are very important.
+
+#### May I play a card with an effect, that would create a contradicting loop of effects?
+- ?
+
+## WebSocket communication
+The table shows the server's URLs for incoming messages and which URLs get updated due to the changed state (by that incoming messages).
+
+| Action          | Incoming URL | Triggers update to subscribing URL | Description                             |
+|-----------------|--------------|------------------------------------|-----------------------------------------|
+| New Game        | /newgame     |                                    | Create new game                         |
+| Join Game       | /joingame    |                                    | Join an existing game                   |
+| Play card       | /placecard   | /topic/board                       | Place card and triggers board update    |
+| Set player name | /setname     | /topic/game                        | Set player's name and update game state |
+| Fold            | /fold        |                                    | Fold round - next player's turn         |

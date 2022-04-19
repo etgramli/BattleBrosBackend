@@ -79,9 +79,13 @@ public final class CardUtil {
 
 
     public static final Map<String, List<Card>> PRE_BUILT_DECKS = Map.of(
-            "Feurio!", List.of(ANFEURER, AUSBRECHER, FEUERSALAMANDER, FOENX, HITZKOPF, LAVABOY),
-            "Dämond rising", List.of(DAEMOND)
+            "Feurio!", List.of(ANFEURER, AUSBRECHER, FEUERSALAMANDER, FOENX, HITZKOPF, LAVABOY, VERSTUMMER),
+            "Dämond rising", List.of(BAUMKRONE, DAEMOND, FELSENFEST, FLIEGENPILZ, GIGAGOLEM, HOLZKOPF, ZOMBIENE),
+            "Platscher!", List.of(AQUAK, ORAKELVONDELFISCH, SENKSCHLANGE, SPIEGELWICHT, WASSERLAEUFER, ZWITTERAAL)
     );
+
+    public static final List<Card> FEURIO = PRE_BUILT_DECKS.get("Feurio!");
+    public static final List<Card> DAEMOND_RISING = PRE_BUILT_DECKS.get("Dämond rising");
 
     public static class CardBuilder {
         private final String name;
