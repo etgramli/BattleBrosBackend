@@ -65,6 +65,13 @@ public final class Game implements IObservable {
         return players.get(playerIndex).name();
     }
 
+    public List<Card> getPlayerHand(final int playerIndex) {
+        if (playerIndex < 0 || playerIndex > 1) {
+            throw new IllegalArgumentException("playerIndex must be 0 or 1, but was " + playerIndex);
+        }
+        return List.copyOf(playerHands.get(playerIndex));
+    }
+
     public List<List<Board.CardTuple>> getPlayedCards() {
         return board.getImmutableState();
     }

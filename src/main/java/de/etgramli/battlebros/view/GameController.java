@@ -5,8 +5,10 @@ import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 import java.util.ArrayList;
@@ -18,21 +20,34 @@ import java.util.Set;
 public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
 
+    @Autowired
+    private SimpMessagingTemplate template;
+
     //@Inject
     private Game game;
     private final List<String> names = new ArrayList<>(2);
 
-    @MessageMapping("/joingame")
-    public void joinGame(final String name) {
+    @MessageMapping("/joingame/{playername}")
+    @SendTo("/topic/{playername}")
+    public int joinGame(final String name) {
+        logger.info("Player with name \"%s\" joined the game. Got index: %s".formatted(name, names.size()));
         names.add(name);
-        logger.info("Player with name \"%s\" joined the game".formatted(name));
 
         if (names.size() == 2) {
-            final List<Player> currentPlayers = List.of(new Player(names.get(0)), new Player(names.get(1)));
-            names.clear();
-            game = new Game(currentPlayers);
+            game = new Game(List.of(new Player(names.get(0)), new Player(names.get(1))));
             logger.info("Game instance created");
+            names.clear();
+            template.convertAndSend("/topic/names", List.of(game.getPlayerName(0), game.getPlayerName(1)));
+            return 1;
         }
+        return 0;
+    }
+
+    @MessageMapping("/hand/{playerIndex}")
+    @SendTo("/topic/hand/{playerIndex}")
+    public List<CardDTO> getPlayerHand(final int playerIndex) {
+        logger.info("Send pre-built hand to player with index: " + playerIndex);
+        return game.getPlayerHand(playerIndex).stream().map(CardDTO::of).toList();
     }
 
     /**
