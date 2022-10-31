@@ -1,26 +1,34 @@
 package de.etgramli.battlebros.model.card.effect;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.NonNull;
 
 /**
  * Abstract Effect type to set basic attributes common to all effects like source, target, text and
  * whether the effect is activated on the card entering the game.
  */
-public sealed abstract class CardEffect permits CardPlacementRestrictionEffect, DrawCardEffect, EffectProtectionEffect, FlipEffect, InvalidateEffectEffect, PreventFlipEffect, ProhibitCardPlacementEffect, ReturnCardEffect, ReviveEffect, ValueFixedEffect, ValueModifierEffect {
+public sealed class CardEffect permits ValueModifyEffect {
     private final String effectText;
+    private final EffectType type;
     private final EffectApplication target;
     private final EffectApplication source;
     private final boolean onEntering;
 
-    protected CardEffect(final String effectText, final EffectApplication target) {
-        this(effectText, target, null, false);
+    public static final CardEffect EMPTY = new CardEffect("(Keine Fähigkeit)", null, EffectApplication.NONE, EffectApplication.NONE, false);
+
+    public static CardEffect createFlipDownEffect(@NonNull final String text, @NonNull final EffectApplication target) {
+        return new CardEffect(text, EffectType.FLIP_FACE_DOWN, target);
     }
 
-    protected CardEffect(final String effectText, final EffectApplication target, final boolean onEntering) {
-        this(effectText, target, null, onEntering);
+    public CardEffect(final String effectText, final EffectType type, final EffectApplication target) {
+        this(effectText, type, target, null, false);
     }
 
-    protected CardEffect(final String effectText, final EffectApplication target, final EffectApplication source, final boolean onEntering) {
+    public CardEffect(final String effectText, final EffectType type, final EffectApplication target, final boolean onEntering) {
+        this(effectText, type, target, null, onEntering);
+    }
+
+    public CardEffect(final String effectText, final EffectType type, final EffectApplication target, final EffectApplication source, final boolean onEntering) {
         if (StringUtils.isBlank(effectText)) {
             throw new IllegalArgumentException("Effect text must not be blank!");
         }
@@ -28,6 +36,7 @@ public sealed abstract class CardEffect permits CardPlacementRestrictionEffect, 
             throw new IllegalArgumentException("Effect target must not be null!");
         }
         this.effectText = effectText;
+        this.type = type;
         this.target = target;
         this.onEntering = onEntering;
         this.source = source;
@@ -39,6 +48,10 @@ public sealed abstract class CardEffect permits CardPlacementRestrictionEffect, 
      */
     public String getText() {
         return effectText;
+    }
+
+    public EffectType getType() {
+        return type;
     }
 
     public EffectApplication getTarget() {

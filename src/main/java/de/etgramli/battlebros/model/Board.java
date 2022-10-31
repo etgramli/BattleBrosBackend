@@ -3,11 +3,8 @@ package de.etgramli.battlebros.model;
 import de.etgramli.battlebros.model.card.Card;
 import de.etgramli.battlebros.model.card.CardElement;
 import de.etgramli.battlebros.model.card.effect.CardEffect;
-import de.etgramli.battlebros.model.card.effect.FlipEffect;
-import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
-import de.etgramli.battlebros.model.card.effect.ProhibitCardPlacementEffect;
-import de.etgramli.battlebros.model.card.effect.ReviveEffect;
-import de.etgramli.battlebros.model.card.effect.ValueModifierEffect;
+import de.etgramli.battlebros.model.card.effect.EffectType;
+import de.etgramli.battlebros.model.card.effect.ValueModifyEffect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,9 +129,9 @@ public final class Board {
                     .collect(Collectors.toSet());
             // ToDo: validate onPlaceEffects, if not disabled
             for (CardEffect effect : onPlaceEffects) {
-                if (effect instanceof FlipEffect) {
+                if (effect.getType().equals(EffectType.FLIP_FACE_DOWN)) {
                     // ToDo
-                } else if (effect instanceof ReviveEffect) {
+                } else if (effect.getType().equals(EffectType.REVIVE)) {
                     // ToDo
                 }
             }
@@ -193,11 +190,10 @@ public final class Board {
         for (int playerNum = 0; playerNum < playedCards.size(); ++playerNum) {
             final ArrayList<CardTuple> currentRow = playedCards.get(playerNum);
             for (int rowNum = 0; rowNum < currentRow.size(); ++rowNum) {
-                final List<ProhibitCardPlacementEffect> blockingEffects = currentRow.get(rowNum).card.effects().stream()
-                        .filter(cardEffect -> cardEffect instanceof ProhibitCardPlacementEffect)
-                        .map(cardEffect -> (ProhibitCardPlacementEffect) cardEffect)
+                final List<CardEffect> blockingEffects = currentRow.get(rowNum).card.effects().stream()
+                        .filter(cardEffect -> cardEffect.getType().equals(EffectType.RESTRICT_CARD_PLACEMENT))
                         .toList();
-                for (ProhibitCardPlacementEffect effect : blockingEffects) {
+                for (CardEffect effect : blockingEffects) {
                     switch (effect.getTarget()) {
                         case FACING -> blockedPositions.add(new BoardPosition(Game.getOtherPlayerNum(playerNum), rowNum));
                         case NEIGHBOR -> {
@@ -271,7 +267,7 @@ public final class Board {
 
         int value = card.value();
         for (CardEffect effect : elementEffects) {
-            if (effect instanceof ValueModifierEffect valueModifierEffect) {
+            if (effect instanceof ValueModifyEffect valueModifierEffect) {
                 value = valueModifierEffect.apply(value);
             }
         }
@@ -301,7 +297,7 @@ public final class Board {
             BoardPosition cardPosition = optionalCardPosition.get();
             final int otherPlayerNum = Game.getOtherPlayerNum(cardPosition.playerRow);
             for (CardEffect effect : cardTuple.card.effects()) {
-                if (effect instanceof InvalidateEffectEffect) {
+                if (effect.getType().equals(EffectType.DISABLE_EFFECT)) {
                     switch (effect.getTarget()) {
                         case NEIGHBOR -> {
                             targets.add(new BoardPosition(cardPosition.playerRow, cardPosition.position - 1));

@@ -1,7 +1,7 @@
 package de.etgramli.battlebros.model.card;
 
 import de.etgramli.battlebros.model.card.effect.CardEffect;
-import de.etgramli.battlebros.model.card.effect.InvalidateEffectEffect;
+import de.etgramli.battlebros.model.card.effect.EffectType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -19,6 +19,6 @@ public record Card(String name,
     }
 
     public boolean hasInvalidatingEffect() {
-        return effects.stream().anyMatch(effect -> effect instanceof InvalidateEffectEffect);
+        return effects.stream().map(CardEffect::getType).anyMatch(EffectType.DISABLE_EFFECT::equals);
     }
 }

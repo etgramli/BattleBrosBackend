@@ -46,7 +46,9 @@ public class GameController {
     @MessageMapping("/hand/{playerIndex}")
     @SendTo("/topic/hand/{playerIndex}")
     public List<CardDTO> getPlayerHand(final int playerIndex) {
-        logger.info("Send pre-built hand to player with index: " + playerIndex);
+        if (game == null) {
+            return Collections.emptyList(); // Avoid NPE when first player logged in
+        }
         return game.getPlayerHand(playerIndex).stream().map(CardDTO::of).toList();
     }
 

@@ -42,10 +42,13 @@ public final class Game implements IObservable {
         playerHands = List.of(new ArrayList<>(), new ArrayList<>());
 
         // For the start use pre-built decks
-        playerDecks.add(new LinkedList<>(CardUtil.FEURIO));
-        playerDecks.add(new LinkedList<>(CardUtil.DAEMOND_RISING));
+        final List<List<Card>> randomDecks = new ArrayList<>(List.of(CardUtil.FEURIO, CardUtil.DAEMOND_RISING));
+        Collections.shuffle(randomDecks);
+        randomDecks.stream().map(LinkedList::new).forEach(playerDecks::add);
+
         shuffleDecks();
         drawCardsBeforeRound();
+        logger.info("Initialized game");
     }
 
     public static int getOtherPlayerNum(final int currentPlayerNum) {
@@ -98,6 +101,7 @@ public final class Game implements IObservable {
     }
 
     public void fold() {
+        logger.info("Player %d folded".formatted(currentPlayer));
         folded.addLast(currentPlayer);
         if (doesRoundEnd()) {
             advanceToNextRound();
@@ -146,13 +150,15 @@ public final class Game implements IObservable {
         final Queue<Card> playerDeck = playerDecks.get(playerIndex);
         final List<Card> playerHand = playerHands.get(playerIndex);
 
-        for (int i = 0; i < numberOfCards; i++) {
+        int i;
+        for (i = 0; i < numberOfCards; i++) {
             Card card = playerDeck.poll();
             if (card == null) {
                 break;  // Deck is empty
             }
             playerHand.add(card);
         }
+        logger.info("Player %d had to draw %d cards, actually took %d".formatted(playerIndex, numberOfCards, i));
     }
 
     private void shuffleDecks() {
