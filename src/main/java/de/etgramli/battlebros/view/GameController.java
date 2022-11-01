@@ -30,17 +30,24 @@ public class GameController {
     @MessageMapping("/joingame/{playername}")
     @SendTo("/topic/{playername}")
     public int joinGame(final String name) {
-        logger.info("Player with name \"%s\" joined the game. Got index: %s".formatted(name, names.size()));
-        names.add(name);
+        if (names.size() < 2) {
+            names.add(name);
+            logger.info("Player with name \"%s\" joined the game. Got index: %s".formatted(name, names.size()));
+        }
 
-        if (names.size() == 2) {
+        if (names.size() == 1) {
+            return 0;
+        } else if (names.size() == 2) {
             game = new Game(List.of(new Player(names.get(0)), new Player(names.get(1))));
             logger.info("Game instance created");
             names.clear();
             template.convertAndSend("/topic/names", List.of(game.getPlayerName(0), game.getPlayerName(1)));
+            // ToDo: Send Player hands
             return 1;
+        } else {
+            // ToDo: Return 404 or Forbidden
+            return -1;
         }
-        return 0;
     }
 
     @MessageMapping("/hand/{playerIndex}")
