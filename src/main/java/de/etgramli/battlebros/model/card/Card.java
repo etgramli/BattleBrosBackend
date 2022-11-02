@@ -9,8 +9,7 @@ import java.util.List;
 public record Card(String name,
                    int value,
                    List<CardEffect> effects,
-                   CardElement element,
-                   String imagePath) {
+                   CardElement element) {
     public Card {
         if (StringUtils.isBlank(name)) {
             throw new IllegalArgumentException("Name must not be blank!");

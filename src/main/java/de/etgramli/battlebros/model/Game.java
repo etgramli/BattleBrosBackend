@@ -14,6 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class Game implements IObservable {
 
@@ -158,7 +159,11 @@ public final class Game implements IObservable {
             }
             playerHand.add(card);
         }
-        logger.info("Player %d had to draw %d cards, actually took %d".formatted(playerIndex, numberOfCards, i));
+        logger.info("Player %d had to draw %d cards, actually took %d: [%s]".formatted(
+                playerIndex,
+                numberOfCards,
+                i,
+                playerHand.stream().map(Card::name).collect(Collectors.joining(", "))));
     }
 
     private void shuffleDecks() {

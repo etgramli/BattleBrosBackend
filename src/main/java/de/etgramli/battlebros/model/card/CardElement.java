@@ -4,5 +4,7 @@ public enum CardElement {
     LUFT,
     ERDE,
     WASSER,
-    FEUER;
+    FEUER,
+    NEUTRAL,
+    ALL;
 }

@@ -11,5 +11,6 @@ public enum EffectType {
     DRAW_CARD,                  // Draw card
     RESTRICT_CARD_PLACEMENT,    // Restrict card placement
     RETURN_CARD,                // Return card to player's hand
-    DISABLE_EFFECT;             // Disable other effect
+    DISABLE_EFFECT,             // Disable other effect
+    MOVE_TO_GRAVEYARD;
 }
