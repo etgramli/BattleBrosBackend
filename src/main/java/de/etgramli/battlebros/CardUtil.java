@@ -103,7 +103,7 @@ public final class CardUtil {
     public static final Card DAEMOND = new CardBuilder("Daemond", 4, CardElement.LUFT).build();
     public static final Card DRAHTESEL = new CardBuilder("Drahtesel", 3, CardElement.ERDE).build();
     public static final Card ERDWURM = new CardBuilder("Erdwurm", 3, CardElement.ERDE).build();
-    public static final Card ERZENGEL = new CardBuilder("Erzengel", 2, CardElement.LUFT).build();
+    public static final Card ERZBENGEL = new CardBuilder("Erzengel", 2, CardElement.LUFT).build();
     public static final Card EXTRABLATT = new CardBuilder("Extrablatt", 2, CardElement.ERDE).build();
     public static final Card FACKELDACKEL = new CardBuilder("Fackeldackel", 4, CardElement.FEUER).build();
     public static final Card FEIGES_HUHN = new CardBuilder("Feiges Huhn", 2, CardElement.LUFT).build();
@@ -163,18 +163,21 @@ public final class CardUtil {
     public static final Card ZOMBIENE = new CardBuilder("Zombiene", 2, CardElement.ERDE).build();
 
 
-    public static final Set<Card> SPECIAL_CARDS = Set.of(
-            new CardBuilder("Verschwindie-Bus", 6, CardElement.LUFT)
-                    .withEffect(new EffectBuilder("Wirf diesen Bro im nächsten Zug ab.", EffectType.MOVE_TO_GRAVEYARD, EffectApplication.SELF).build())
-                    .build()
-    );
+    public static final Card GOETTERFUNKE = new CardBuilder("Götterfunke", 1, CardElement.LUFT)
+            .withEffect(new EffectBuilder("Alle Luft-Bros auf meine Spielfeldseite haben +1", EffectType.MODIFY_VALUE, EffectApplication.ELEMENT_LUFT).build())
+            .build();
+    public static final Card VERSCHWINDIEBUS = new CardBuilder("Verschwindie-Bus", 6, CardElement.LUFT)
+            .withEffect(new EffectBuilder("Wirf diesen Bro im nächsten Zug ab.", EffectType.MOVE_TO_GRAVEYARD, EffectApplication.SELF).build())
+            .build();
+
+    public static final Set<Card> SPECIAL_CARDS = Set.of(GOETTERFUNKE, VERSCHWINDIEBUS);
 
     /**
      * Alphabetical and immutable list of all available cards.
      */
     public static final Set<Card> ALL_CARDS = Set.of(
             ABBRENNGOLEM, ANFEURER, ANTIWICHT, AQUAK, AUSBRECHER, BAUMKRONE, BLAETTERDACH, BLUMENSTRAUSS, BUDDELWURF,
-            DAEMOND, DRAHTESEL, ERDWURM, ERZENGEL, EXTRABLATT, FACKELDACKEL, FEIGES_HUHN, FELSENFEST, FESSLERKRAKEN,
+            DAEMOND, DRAHTESEL, ERDWURM, ERZBENGEL, EXTRABLATT, FACKELDACKEL, FEIGES_HUHN, FELSENFEST, FESSLERKRAKEN,
             FEUERSALAMANDER, FLAMMENWERFER, FLEBBE_UND_UT, FLEISCHWOLF, FLIEGENDE_KLATSCHE, FLIEGENPILZ, FOENIX,
             GAERTNERZWERG, GEROELLAKAEMPFER, GITTERMASTKRANICH, GOLDGOLEM, HAIHAMMER, HEILQUALLE, HEISSER_FEGER,
             HITZKOPF, HOLZKOPF, KANONENFUTTERER, KATERPULT, KOHLKOPF, LAVABOY, LUFTIKUS, LUFTSCHLANGE, MAGMANN,
@@ -185,14 +188,16 @@ public final class CardUtil {
     );
 
     public static final Map<String, List<Card>> PRE_BUILT_DECKS = Map.of(
-            "Feurio!", List.of(ANFEURER, AUSBRECHER, BAUMKRONE, BUDDELWURF, FESSLERKRAKEN, FEUERSALAMANDER, HITZKOPF, KOHLKOPF, LAVABOY, VERBIETER, VERSTUMMER, WIRBELKIND),
-            "Dämond rising", List.of(AQUAK, DAEMOND, FLIEGENPILZ, HOLZKOPF, SCHAURIGE_WOLKE, SCHILDFISCH, WASSERLAEUFER, ZOMBIENE)
+            "Feurio!", List.of(FEUERSALAMANDER, AUSBRECHER, FLAMMENWERFER, KANONENFUTTERER, VERASCHER, FOENIX, POTZBLITZ, MAGMANN, LAVABOY, FACKELDACKEL, ABBRENNGOLEM, HEISSER_FEGER, VULKLON, STREICHELHOLZ, ANFEURER, HITZKOPF, KOHLKOPF),
+            "Platzscher!", List.of(WASSERLAEUFER, HAIHAMMER, SENKSCHLANGE, AQUAK, SEEMANNSGARNELE, NAGELLACHS, ORAKELVONDELFIN, UNTERWELTFAEHRMANN,  UBO,  WELSBROCKEN,  FESSLERKRAKEN,  FLEBBE_UND_UT, MEERESFRUECHTE,  HEILQUALLE,  TOLLER_HECHT, WALNUSS,  SCHILDFISCH),
+            "Erd-Bären", List.of(ERDWURM, KATERPULT, RAMMBOCK, ZOMBIENE, FLEISCHWOLF, WUCHERER, GEROELLAKAEMPFER, GOLDGOLEM, BLUMENSTRAUSS, BUDDELWURF, EXTRABLATT, FELSENFEST, HOLZKOPF, GAERTNERZWERG, DRAHTESEL, BLAETTERDACH, BAUMKRONE),
+            "Dämond rising", List.of(LUFTSCHLANGE, GITTERMASTKRANICH, FLIEGENDE_KLATSCHE, VERBIETER, VERSTUMMER, VERDUENNER, FLIEGENPILZ, ERZBENGEL, SCHAURIGE_WOLKE, DAEMOND, WOLKENKRATZER, SCHLUCKSPECHT, LUFTIKUS, WIRBELKIND, FEIGES_HUHN, NEBELBANK, WOLKENDECKE)
     );
 
     static {
         assert ALL_CARDS.size() == 70 : "All available cards do not match expected quantity 36 (was: %d)".formatted(ALL_CARDS.size());
         for (Map.Entry<String, List<Card>> deck : PRE_BUILT_DECKS.entrySet()) {
-            assert deck.getValue().size() == 12 : "Pre-built deck %s does not have 12 cards (was: %d)"
+            assert deck.getValue().size() == 17 : "Pre-built deck %s does not have 12 cards (was: %d)"
                     .formatted(deck.getKey(), deck.getValue().size());
         }
     }
