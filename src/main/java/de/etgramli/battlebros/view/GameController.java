@@ -31,8 +31,6 @@ public class GameController implements IObserver {
     private static final String URL_PLAYER_HANDS = "/topic/hand";
     private static final String URL_GAME_BOARD = "/topic/board";
 
-    // ToDo: User Observer pattern to update players' hands and board
-
     @Autowired
     private SimpMessagingTemplate template;
 
