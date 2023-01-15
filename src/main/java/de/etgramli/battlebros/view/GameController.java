@@ -11,6 +11,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
@@ -25,6 +26,8 @@ import java.util.Set;
 public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
 
+    private static final String URL_JOIN_GAME = "/topic/joingame";
+    private static final String URL_PLAYER_NAMES = "/topic/names";
     private static final String URL_PLAYER_HANDS = "/topic/hands";
     private static final String URL_GAME_BOARD = "/topic/board";
 
@@ -35,16 +38,17 @@ public class GameController {
     private final List<String> names = new ArrayList<>(2);
     private final Map<String, Principal> nameToPrincipal = new HashMap<>(2);
 
-    @MessageMapping("/joingame/{playername}")
-    @SendTo("/topic/{playername}")
-    public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, final String name) {
+    @MessageMapping("/joingame")
+    @SendToUser(URL_JOIN_GAME)
+    public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, final String playerName) {
         if (sha.getUser() == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
         if (names.size() < 2) {
-            names.add(name);
-            nameToPrincipal.put(name, sha.getUser());
-            logger.info("Player with name \"%s\" joined the game. Got index: %s".formatted(name, names.size()));
+            names.add(playerName);
+            nameToPrincipal.put(playerName, sha.getUser());
+            logger.info("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s"
+                    .formatted(playerName, sha.getUser().getName(), names.size()));
         }
 
         if (names.size() == 1) {
@@ -53,12 +57,11 @@ public class GameController {
             game = new Game(List.of(new Player(names.get(0)), new Player(names.get(1))));
             logger.info("Game instance created");
             names.clear();
-            template.convertAndSend("/topic/names", List.of(game.getPlayerName(0), game.getPlayerName(1)));
+            template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
-            // ToDo: Send player names
-            for (String playername : names) {
-                final Principal principal = nameToPrincipal.get(playername);
-                final int index = names.indexOf(playername);
+            for (String name : names) {
+                final Principal principal = nameToPrincipal.get(name);
+                final int index = names.indexOf(name);
                 template.convertAndSendToUser(principal.getName(), URL_PLAYER_HANDS, game.getPlayerHand(index));
             }
             return 1;
@@ -109,7 +112,7 @@ public class GameController {
             logger.warn("Card placement failed with hand card index %d and position (%d/%d)."
                     .formatted(handIndex, position.playerRow(), position.position()));
         }
-        // ToDo: return apprpiate http code
+        // ToDo: return appropriate http code
     }
 
     public void fold() {
