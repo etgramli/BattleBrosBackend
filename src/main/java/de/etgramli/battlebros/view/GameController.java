@@ -54,7 +54,7 @@ public class GameController implements IObserver {
         if (names.size() == 1) {
             return 0;
         } else if (names.size() == 2) {
-            game = new Game(new Player(names.get(0)), new Player(names.get(1)));
+            game = new Game(new Player(names.get(0), null), new Player(names.get(1), null));
             game.addObserver(this);
             logger.info("Game instance created");
             names.clear();

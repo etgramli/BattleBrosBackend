@@ -9,9 +9,13 @@ import java.util.List;
 public class Game implements GameInterface {
 
     private List<IObserver> observers = new ArrayList<>();
+
+    private int turn;
     int NUMBER_OF_PLAYERS = 2;
     private Player player1;
     private Player player2;
+
+    private Player turnPlayer;
 
     public Game(Player player1, Player player2){
         this.player1 = player1;
@@ -20,7 +24,10 @@ public class Game implements GameInterface {
 
     @Override
     public void startGame() {
-
+        player1.setUpGame();
+        player2.setUpGame();
+        turn = 1;
+        turnPlayer = player1;
     }
 
     public int getOtherPlayerNum(final int currentPlayerNum){
@@ -59,7 +66,11 @@ public class Game implements GameInterface {
 
     @Override
     public int getTotalValue(int playerIndex) {
-        return 0;
+        if (playerIndex == 0)
+            return player1.getTotalValue();
+        if (playerIndex == 1)
+            return player2.getTotalValue();
+        return -1;
     }
 
     @Override
