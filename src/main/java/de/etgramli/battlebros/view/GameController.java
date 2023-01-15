@@ -1,9 +1,6 @@
 package de.etgramli.battlebros.view;
 
-import de.etgramli.battlebros.model.Board;
-import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
-import de.etgramli.battlebros.model.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +38,54 @@ public class GameController {
     private final List<String> names = new ArrayList<>(2);
     private final LinkedHashMap<String, Principal> nameToPrincipal = new LinkedHashMap<>(2);
 
+    private class Game implements GameInterface {
+
+        public Game(List<String> playerNames) {
+            // ToDo
+        }
+
+        @Override
+        public int getRoundsWon(int playerIndex) {
+            return 0;
+        }
+
+        @Override
+        public int getCurrentPlayerIndex() {
+            return 0;
+        }
+
+        @Override
+        public String getPlayerName(int playerIndex) {
+            return null;
+        }
+
+        @Override
+        public List<?> getPlayerHand(int playerIndex) {
+            return null;
+        }
+
+        @Override
+        public List<List<?>> getPlayedCards() {
+            return null;
+        }
+
+        @Override
+        public boolean playCard(int cardHandIndex, Object position) {
+            return false;
+        }
+
+        @Override
+        public Set<?> getValidPositions() {
+            return null;
+        }
+
+        @Override
+        public void fold() {
+
+        }
+    }
+
+
     @MessageMapping("/joingame")
     @SendToUser(URL_JOIN_GAME)
     public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, final String playerName) {
@@ -50,14 +95,13 @@ public class GameController {
         if (names.size() < 2) {
             names.add(playerName);
             nameToPrincipal.put(playerName, sha.getUser());
-            logger.info("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s"
-                    .formatted(playerName, sha.getUser().getName(), names.size()));
+            logger.info(String.format("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s", playerName, sha.getUser().getName(), names.size()));
         }
 
         if (names.size() == 1) {
             return 0;
         } else if (names.size() == 2) {
-            gameInterface = new Game(List.of(new Player(names.get(0)), new Player(names.get(1))));
+            gameInterface = new Game(List.of(names.get(0), names.get(1)));
             logger.info("Game instance created");
             names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(gameInterface.getPlayerName(0), gameInterface.getPlayerName(1)));
@@ -78,31 +122,17 @@ public class GameController {
     @SendTo("/topic/board")
     public List<List<CardDTO>> getBoard() {
         final List<List<CardDTO>> board = new ArrayList<>(2);
-        for (List<Board.CardTuple> playerRow : gameInterface.getPlayedCards()) {
-            board.add(playerRow.stream().map(cardTuple -> CardDTO.of(cardTuple.card)).toList());
-        }
+        //for (List<Board.CardTuple> playerRow : gameInterface.getPlayedCards()) {
+        //    board.add(playerRow.stream().map(cardTuple -> CardDTO.of(cardTuple.card)).toList());
+        //}
         logger.info("Sent board state");
         return Collections.unmodifiableList(board);
-    }
-
-    @MessageMapping("/getvalidpositions")
-    public Set<Board.BoardPosition> getValidPositions() {
-        return gameInterface.getValidPositions();
     }
 
     @MessageMapping("/placecard")
     @SendTo("/topic/board")
     public void placeCard(int handIndex, int boardIndex) {
-        final Board.BoardPosition position = new Board.BoardPosition(gameInterface.getCurrentPlayerIndex(), boardIndex);
-        final boolean successfullyPlaced = gameInterface.playCard(handIndex, position);
-        if (successfullyPlaced) {
-            logger.info("Successfully played hand card with index %d at position (%d/%d)."
-                    .formatted(handIndex, position.playerRow(), position.position()));
-        } else {
-            logger.warn("Card placement failed with hand card index %d and position (%d/%d)."
-                    .formatted(handIndex, position.playerRow(), position.position()));
-        }
-        // ToDo: return appropriate http code
+        // ToDo
     }
 
     @MessageMapping("/fold")
@@ -125,7 +155,7 @@ public class GameController {
             if (hand.isEmpty()) {
                 logger.warn("Hand of player " + entry.getKey() + " is empty!");
             }
-            logger.info("Sent hand to user \"%s\" with uuid \"%s\"".formatted(entry.getKey(), principalName));
+            logger.info(String.format("Sent hand to user \"%s\" with uuid \"%s\"",entry.getKey(), principalName));
         }
     }
 

@@ -1,7 +1,6 @@
 package de.etgramli.battlebros.model.board;
 
 import de.etgramli.battlebros.CardUtil;
-import de.etgramli.battlebros.model.Board;
 import de.etgramli.battlebros.model.card.Card;
 import org.junit.jupiter.api.Test;
 

@@ -1,11 +1,5 @@
 package de.etgramli.battlebros.view;
 
-import de.etgramli.battlebros.model.card.Card;
-import de.etgramli.battlebros.model.card.CardElement;
-import de.etgramli.battlebros.model.card.effect.CardEffect;
-
-import java.util.stream.Collectors;
-
 /**
  * Contains data to be transferred to the client.
  * Infos important to the client:
@@ -14,15 +8,32 @@ import java.util.stream.Collectors;
  * - Element
  * - Effect text
  */
-public record CardDTO(String name,
-                      int value,
-                      CardElement element,
-                      String effectText) {
+public final class CardDTO {
+    private final int id;
 
-    public static CardDTO of(final Card card) {
-        final String effectText = card.effects().isEmpty()
-                ? "(Kein Effekt)"
-                : card.effects().stream().map(CardEffect::getText).collect(Collectors.joining(" "));
-        return new CardDTO(card.name(), card.value(), card.element(), effectText);
+    public CardDTO(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) return true;
+        if (obj == null || obj.getClass() != this.getClass()) return false;
+        var that = (CardDTO) obj;
+        return this.id == that.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public String toString() {
+        return "CardDTO[" + "id=" + id + ']';
     }
 }

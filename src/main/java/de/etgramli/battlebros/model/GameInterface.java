@@ -1,7 +1,5 @@
 package de.etgramli.battlebros.model;
 
-import de.etgramli.battlebros.model.card.Card;
-
 import java.util.List;
 import java.util.Set;
 
@@ -18,14 +16,14 @@ public interface GameInterface {
 
     String getPlayerName(int playerIndex);
 
-    List<Card> getPlayerHand(int playerIndex);
+    List<?> getPlayerHand(int playerIndex);
 
-    List<List<Board.CardTuple>> getPlayedCards();
+    List<List<?>> getPlayedCards();
 
     // Gameplay methods
-    boolean playCard(int cardHandIndex, Board.BoardPosition position);
+    boolean playCard(int cardHandIndex, Object position);
 
-    Set<Board.BoardPosition> getValidPositions();
+    Set<?> getValidPositions();
 
     void fold();
 }

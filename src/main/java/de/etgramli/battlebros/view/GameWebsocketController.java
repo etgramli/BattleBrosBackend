@@ -34,8 +34,9 @@ public class GameWebsocketController implements WebSocketMessageBrokerConfigurer
         registry.enableSimpleBroker(brokerUrl);  // Url to subscribe to (+ sub-urls)
         registry.setApplicationDestinationPrefixes(applicationPrefix);
         registry.setUserDestinationPrefix(userPrefix);
-        logger.info("Websocket controller configured to use broker url \"%s\" and application prefix \"%s\" and user destination prefix: \"%s\""
-                .formatted(brokerUrl, applicationPrefix, userPrefix));
+        logger.info(String.format(
+                "Websocket controller configured to use broker url \"%s\" and application prefix \"%s\" and user destination prefix: \"%s\"",
+                brokerUrl, applicationPrefix, userPrefix));
     }
 
     @Override
