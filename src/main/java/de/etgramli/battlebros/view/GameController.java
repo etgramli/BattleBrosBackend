@@ -57,7 +57,7 @@ public class GameController {
         if (names.size() == 1) {
             return 0;
         } else if (names.size() == 2) {
-            gameInterface = new Game(new Player(names.get(0)), new Player(names.get(1)));
+            gameInterface = new Game(new Player(names.get(0), null), new Player(names.get(1), null));
             logger.info("Game instance created");
             names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(gameInterface.getPlayerName(0), gameInterface.getPlayerName(1)));

@@ -9,7 +9,7 @@ class PlayerTest {
 
     @Test
     void name() {
-        Player player = new Player("Johnny");
+        Player player = new Player("Johnny", null);
         Assertions.assertTrue(player.getName().equals("Johnny"));
         Assertions.assertFalse(player.getName().equals("Johhhhhhhjnny"));
     }
