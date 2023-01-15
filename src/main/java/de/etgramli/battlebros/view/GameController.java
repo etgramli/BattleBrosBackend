@@ -117,7 +117,7 @@ public class GameController {
 
     private void updateBoards() {
         for (Principal principal : nameToPrincipal.values()) {
-            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, gameInterface.getCardsInPlay());
+            //template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, gameInterface.getCardsInPlay());
         }
     }
 }
