@@ -1,11 +1,14 @@
 package de.etgramli.battlebros.model;
 
+import java.util.List;
 import java.util.Map;
 
 public class Player {
 
     private String name;
     private Deck deck;
+
+    private Player opponent;
 
     private boolean hasPassed;
     private GameZone gameZoneDeck = new GameZone(false, false);
@@ -18,6 +21,10 @@ public class Player {
     public Player(String name, Deck deck){
         this.name = name;
         this.deck = deck;
+    }
+
+    public void setOpponent(Player opponent){
+        this.opponent = opponent;
     }
 
     public int getTotalValue(){
@@ -38,6 +45,10 @@ public class Player {
 
     public Map<Integer, Card> getCardsInPlay(){
         return gameField.getCards();
+    }
+
+    public List<Card> getCardsInHand(){
+        return gameZoneHand.getCards();
     }
 
     public boolean hasPassed(){
@@ -111,9 +122,33 @@ public class Player {
     }
 
     public boolean playCard(int handIndex, int gameFieldPosition){
-        if (gameZoneHand.getCard(handIndex)==null || gameField.getCard(gameFieldPosition)==null)
+        if (gameZoneHand.getCard(handIndex)==null || !cardPlayableAt(gameFieldPosition))
             return false;
+
         gameField.addCard(gameZoneHand.removeCard(handIndex), gameFieldPosition);
+        return true;
+    }
+
+    public int getAmountOfCardsOnField(){
+        return gameField.getAmountOfCards();
+    }
+
+    public Card getCardOnFieldAt(int position){
+        return gameField.getCard(position);
+    }
+
+    private boolean cardPlayableAt(int gameFieldPosition){
+        if (getCardOnFieldAt(gameFieldPosition) != null)
+            return false;
+
+        if (getAmountOfCardsOnField()==0 && opponent.getAmountOfCardsOnField()==0 && gameFieldPosition!=0)
+            return false;
+
+        if (opponent.getCardOnFieldAt(gameFieldPosition)==null
+                && getCardOnFieldAt(gameFieldPosition-1)==null
+                && getCardOnFieldAt(gameFieldPosition+1)==null)
+            return false;
+
         return true;
     }
 }

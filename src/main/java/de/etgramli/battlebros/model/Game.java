@@ -55,6 +55,7 @@ public class Game implements GameInterface {
         turnPlayer.cleanUpForNewBattle();
         getNonTurnPlayer().cleanUpForNewBattle();
         turn++;
+        notifyObservers();
     }
 
     private void endTheBattle(){
@@ -74,10 +75,16 @@ public class Game implements GameInterface {
 
     @Override
     public void startGame() {
+        player1.setOpponent(player2);
         player1.setUpGame();
+
+        player2.setOpponent(player1);
         player2.setUpGame();
+
         turn = 1;
         turnPlayer = player1;
+
+        notifyObservers();
     }
 
     public int getOtherPlayerNum(final int currentPlayerNum){
@@ -98,12 +105,15 @@ public class Game implements GameInterface {
 
     @Override
     public List<Card> getCardsInHand(int playerIndex) {
-        return null;
+        return getPlayer(playerIndex).getCardsInHand();
     }
 
     @Override
     public List<Integer> getCardIDsInHand(int playerIndex) {
-        return null;
+        List<Integer> result = new ArrayList<>();
+        for (Card card : getCardsInHand(playerIndex))
+            result.add(card.getId());
+        return result;
     }
 
     public Map<Integer, Card> getCardsInPlay(int playerIndex){
@@ -130,7 +140,10 @@ public class Game implements GameInterface {
 
     @Override
     public boolean playCard(int playerIndex, int cardHandIndex, int position) {
-        return getPlayer(playerIndex).playCard(cardHandIndex, position);
+        boolean result = getPlayer(playerIndex).playCard(cardHandIndex, position);
+        if (result)
+            notifyObservers();
+        return result;
     }
 
     @Override

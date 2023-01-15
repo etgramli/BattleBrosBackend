@@ -35,4 +35,8 @@ public class GameZone {
         return cards.get(position);
     }
 
+    public List<Card> getCards(){
+        return cards;
+    }
+
 }
