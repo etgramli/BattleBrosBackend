@@ -6,6 +6,7 @@ import de.etgramli.battlebros.util.IObservable;
 import de.etgramli.battlebros.util.IObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +32,7 @@ public final class Game implements IObservable, GameInterface {
     // Needs to be a LinkedList so that it also can be used as a queue
     private final List<LinkedList<Card>> playerDecks = new ArrayList<>(NUMBER_OF_PLAYERS);
 
-    public Game(final Collection<Player> players) {
+    public Game(@NonNull final Collection<Player> players) {
         if (players.size() != NUMBER_OF_PLAYERS) {
             throw new IllegalArgumentException("Number of players must be %d!".formatted(NUMBER_OF_PLAYERS));
         }

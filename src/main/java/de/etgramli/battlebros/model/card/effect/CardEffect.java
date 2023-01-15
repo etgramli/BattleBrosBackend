@@ -7,7 +7,7 @@ import org.springframework.lang.NonNull;
  * Abstract Effect type to set basic attributes common to all effects like source, target, text and
  * whether the effect is activated on the card entering the game.
  */
-public sealed class CardEffect permits ValueModifyEffect {
+public class CardEffect {
     private final String effectText;
     private final EffectType type;
     private final EffectApplication target;
