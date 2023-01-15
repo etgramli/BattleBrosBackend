@@ -29,6 +29,10 @@ public class GameField {
         return cards;
     }
 
+    public int getAmountOfCards(){
+        return cards.size();
+    }
+
     public void addCard(Card card, int position){
         cards.put(position, card);
     }
