@@ -17,7 +17,6 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,12 +74,17 @@ public class GameController implements IObserver {
     @MessageMapping("/board")
     @SendTo("/topic/board")
     public List<List<CardDTO>> getBoard() {
-        final List<List<CardDTO>> board = new ArrayList<>(2);
-        //for (List<Board.CardTuple> playerRow : gameInterface.getPlayedCards()) {
-        //    board.add(playerRow.stream().map(cardTuple -> CardDTO.of(cardTuple.card)).toList());
-        //}
         logger.info("Sent board state");
-        return Collections.unmodifiableList(board);
+        return getCardDtoBoard(game.getCardIDsInPlay());
+    }
+
+    @NonNull
+    private static List<List<CardDTO>> getCardDtoBoard(@NonNull final List<List<Integer>> cardIDs) {
+        final List<List<CardDTO>> cardDTOs = new ArrayList<>(cardIDs.size());
+        for (List<Integer> side : cardIDs) {
+            cardDTOs.add(side.stream().map(CardDTO::new).toList());
+        }
+        return cardDTOs;
     }
 
     @MessageMapping("/placecard")
@@ -90,7 +94,7 @@ public class GameController implements IObserver {
     }
 
     @MessageMapping("/pass")
-    public void fold() {
+    public void pass() {
         game.pass();
     }
 
