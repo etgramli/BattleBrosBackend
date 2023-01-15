@@ -30,8 +30,8 @@ public class GameWebsocketController implements WebSocketMessageBrokerConfigurer
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
         final String brokerUrl = "/topic";
         final String applicationPrefix = "/app";
-        final String userPrefix = "/user";
-        registry.enableSimpleBroker(brokerUrl);  // Url to subscribe to (+ sub-urls)
+        final String userPrefix = "/user";  // User-specific queues get prepended by this prefix
+        registry.enableSimpleBroker(brokerUrl);
         registry.setApplicationDestinationPrefixes(applicationPrefix);
         registry.setUserDestinationPrefix(userPrefix);
         logger.info(String.format(
