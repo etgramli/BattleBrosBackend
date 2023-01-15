@@ -1,6 +1,5 @@
 package de.etgramli.battlebros.view;
 
-import de.etgramli.battlebros.model.Card;
 import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
@@ -21,7 +20,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Controller
 public class GameController {
