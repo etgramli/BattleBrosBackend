@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 @Controller
 public class GameController implements IObserver {
@@ -73,18 +75,23 @@ public class GameController implements IObserver {
      */
     @MessageMapping("/board")
     @SendTo("/topic/board")
-    public List<List<CardDTO>> getBoard() {
+    public List<Map<Integer, CardDTO>> getBoard() {
         logger.info("Sent board state");
-        return getCardDtoBoard(game.getCardIDsInPlay());
+        return getCardDtoBoard();
     }
 
     @NonNull
-    private static List<List<CardDTO>> getCardDtoBoard(@NonNull final List<List<Integer>> cardIDs) {
-        final List<List<CardDTO>> cardDTOs = new ArrayList<>(cardIDs.size());
-        for (List<Integer> side : cardIDs) {
-            cardDTOs.add(side.stream().map(CardDTO::new).toList());
+    private List<Map<Integer, CardDTO>> getCardDtoBoard() {
+        final List<Map<Integer, CardDTO>> boardDto = new ArrayList<>(2);
+
+        for (Map<Integer, Integer> side : List.of(game.getCardIDsInPlay(0), game.getCardIDsInPlay(1))) {
+            final SortedMap<Integer, CardDTO> sideDto = new TreeMap<>();
+            for (var entry : side.entrySet()) {
+                sideDto.put(entry.getKey(), new CardDTO(entry.getValue()));
+            }
+            boardDto.add(sideDto);
         }
-        return cardDTOs;
+        return boardDto;
     }
 
     @MessageMapping("/placecard")
@@ -120,7 +127,7 @@ public class GameController implements IObserver {
     private void updateBoards() {
         for (Principal principal : nameToPrincipal.values()) {
             // ToDo: may convert to expected data type from frontend
-            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, game.getCardsInPlay());
+            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, getCardDtoBoard());
         }
     }
 
