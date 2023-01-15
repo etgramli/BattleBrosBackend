@@ -1,26 +1,70 @@
 package de.etgramli.battlebros.model;
 
+import java.util.Map;
+
 public class Player {
 
     private String name;
-
     private Deck deck;
+
+    private boolean hasPassed;
     private GameZone gameZoneDeck = new GameZone(false, false);
     private GameZone gameZoneLife = new GameZone(false, false);
     private GameZone gameZoneHand = new GameZone(true, false);
     private GameZone gameZoneDiscard = new GameZone(true, true);
 
-    private GameField field = new GameField();
+    private GameField gameField = new GameField();
 
     public Player(String name, Deck deck){
         this.name = name;
         this.deck = deck;
     }
 
+    public int getTotalValue(){
+        int total = 0;
+        for(Card card : gameField.getAllCards()){
+            total += card.getValue();
+        }
+        return total;
+    }
+
+    public int getAmountOfLifeCards(){
+        return gameZoneLife.getAmountOfCards();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Map<Integer, Card> getCardsInPlay(){
+        return gameField.getCards();
+    }
+
+    public boolean hasPassed(){
+        return hasPassed;
+    }
+
+    public void pass(){
+        hasPassed = true;
+    }
+
     public void setUpGame(){
         gameZoneDeck.addCards(deck.getCards());
         addLifeCards(3);
         drawCards(6);
+        hasPassed = false;
+    }
+
+    public void cleanUpForNewBattle(){
+        hasPassed = false;
+        removeAllCardsFromField();
+        drawCards(3);
+    }
+
+    public void removeAllCardsFromField(){
+        for(Integer position : gameField.getAllTakenPositions()){
+            gameZoneDiscard.addCard(gameField.removeCard(position));
+        }
     }
 
     public int drawCards(int amount){ //returns the amount of cards actually drawn
@@ -59,19 +103,17 @@ public class Player {
         return true;
     }
 
-    public int getTotalValue(){
-        int total = 0;
-        for(Card card : field.getAllCards()){
-            total += card.getValue();
-        }
-        return total;
+    public boolean removeALifeCard(){ //return true, if player then loses the game
+        if (gameZoneLife.getAmountOfCards() <= 0)
+            return true;
+        gameZoneDeck.addCard(gameZoneLife.removeCard(0));
+        return gameZoneLife.getAmountOfCards() <= 0;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public boolean playCard(int handIndex, int gameFieldPosition){
+        if (gameZoneHand.getCard(handIndex)==null || gameField.getCard(gameFieldPosition)==null)
+            return false;
+        gameField.addCard(gameZoneHand.removeCard(handIndex), gameFieldPosition);
+        return true;
     }
 }

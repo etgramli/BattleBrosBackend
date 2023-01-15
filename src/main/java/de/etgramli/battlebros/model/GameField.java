@@ -18,10 +18,25 @@ public class GameField {
         return result;
     }
 
+    public List<Integer> getAllTakenPositions(){
+        List<Integer> result = new ArrayList<>();
+        for (Map.Entry<Integer, Card> entry : cards.entrySet())
+            result.add(entry.getKey());
+        return result;
+    }
+
+    public Map<Integer, Card> getCards(){
+        return cards;
+    }
+
     public void addCard(Card card, int position){
         cards.put(position, card);
     }
     public Card getCard(int position){
         return cards.get(position);
+    }
+
+    public Card removeCard(int position){
+        return cards.remove(position);
     }
 }

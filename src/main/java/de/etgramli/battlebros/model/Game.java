@@ -4,7 +4,9 @@ import de.etgramli.battlebros.util.IObservable;
 import de.etgramli.battlebros.util.IObserver;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Game implements GameInterface {
 
@@ -22,6 +24,54 @@ public class Game implements GameInterface {
         this.player2 = player2;
     }
 
+    private Player getPlayer(int playerIndex){
+        if (playerIndex == 0)
+            return player1;
+        if (playerIndex == 1)
+            return player2;
+        return null;
+    }
+
+    private Player getTurnPlayer(){
+        return turnPlayer;
+    }
+
+    private Player getNonTurnPlayer(){
+        if (turnPlayer == player1)
+            return player2;
+        return player1;
+    }
+
+    private void advanceToNextTurn(){
+        turn++;
+        changeTurnPlayer();
+    }
+
+    private void changeTurnPlayer(){
+        turnPlayer = getNonTurnPlayer();
+    }
+
+    private void advanceToNextBattle(){
+        turnPlayer.cleanUpForNewBattle();
+        getNonTurnPlayer().cleanUpForNewBattle();
+        turn++;
+    }
+
+    private void endTheBattle(){
+        boolean endOfGameReached;
+        if (getNonTurnPlayer().getTotalValue() >= turnPlayer.getTotalValue()) {
+            endOfGameReached = turnPlayer.removeALifeCard();
+            changeTurnPlayer();
+        } else {
+            endOfGameReached = getNonTurnPlayer().removeALifeCard();
+        }
+
+        if (endOfGameReached){
+            //...
+        }
+        advanceToNextBattle();
+    }
+
     @Override
     public void startGame() {
         player1.setUpGame();
@@ -36,12 +86,14 @@ public class Game implements GameInterface {
 
     @Override
     public int getTurnPlayerIndex() {
-        return 0;
+        if (turnPlayer == player1)
+            return 0;
+        return 1;
     }
 
     @Override
     public String getPlayerName(int playerIndex) {
-        return null;
+        return getPlayer(playerIndex).getName();
     }
 
     @Override
@@ -54,33 +106,31 @@ public class Game implements GameInterface {
         return null;
     }
 
-    @Override
-    public List<List<Card>> getCardsInPlay() {
-        return null;
+    public Map<Integer, Card> getCardsInPlay(int playerIndex){
+        return getPlayer(playerIndex).getCardsInPlay();
     }
+    public Map<Integer, Integer> getCardIDsInPlay(int playerIndex){
+        Map<Integer, Card> cardsInPlayer = getCardsInPlay(playerIndex);
 
-    @Override
-    public List<List<Integer>> getCardIDsInPlay() {
-        return null;
+        Map<Integer, Integer> result = new HashMap<>();
+        for (Map.Entry<Integer, Card> entry : cardsInPlayer.entrySet())
+            result.put(entry.getKey(), entry.getValue().getId());
+        return result;
     }
 
     @Override
     public int getTotalValue(int playerIndex) {
-        if (playerIndex == 0)
-            return player1.getTotalValue();
-        if (playerIndex == 1)
-            return player2.getTotalValue();
-        return -1;
+        return getPlayer(playerIndex).getTotalValue();
     }
 
     @Override
     public int getAmountOfLifeCards(int playerIndex) {
-        return 0;
+        return getPlayer(playerIndex).getAmountOfLifeCards();
     }
 
     @Override
     public boolean playCard(int playerIndex, int cardHandIndex, int position) {
-        return false;
+        return getPlayer(playerIndex).playCard(cardHandIndex, position);
     }
 
     @Override
@@ -95,12 +145,15 @@ public class Game implements GameInterface {
 
     @Override
     public void chooseYesOrNo(boolean accept) {
-
     }
 
     @Override
     public void pass() {
-
+        getTurnPlayer().pass();
+        if (getNonTurnPlayer().hasPassed()){
+            endTheBattle();
+        }
+        advanceToNextTurn();
     }
 
     @Override

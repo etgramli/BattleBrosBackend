@@ -3,6 +3,7 @@ package de.etgramli.battlebros.model;
 import de.etgramli.battlebros.util.IObservable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public interface GameInterface extends IObservable {
@@ -18,8 +19,8 @@ public interface GameInterface extends IObservable {
     List<Card> getCardsInHand(int playerIndex);
     List<Integer> getCardIDsInHand(int playerIndex);
 
-    List<List<Card>> getCardsInPlay();
-    List<List<Integer>> getCardIDsInPlay();
+    Map<Integer, Card> getCardsInPlay(int playerIndex);
+    Map<Integer, Integer> getCardIDsInPlay(int playerIndex);
 
     int getTotalValue(int playerIndex);
 
