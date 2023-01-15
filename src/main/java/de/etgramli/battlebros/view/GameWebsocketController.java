@@ -27,8 +27,8 @@ public class GameWebsocketController implements WebSocketMessageBrokerConfigurer
     private static final Logger logger = LoggerFactory.getLogger(GameWebsocketController.class);
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry registry) {
-        final String brokerUrl = "/user/queue/specific-user";
+    public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
+        final String brokerUrl = "/topic";
         final String applicationPrefix = "/app";
         final String userPrefix = "/user";
         registry.enableSimpleBroker(brokerUrl);  // Url to subscribe to (+ sub-urls)
@@ -39,7 +39,7 @@ public class GameWebsocketController implements WebSocketMessageBrokerConfigurer
     }
 
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
+    public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         registry.addEndpoint("/stomp")
                 .setAllowedOrigins("http://localhost:8080", "http://localhost:8089")
                 .setHandshakeHandler(new CustomHandshakeHandler())
