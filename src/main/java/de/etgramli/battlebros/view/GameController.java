@@ -3,6 +3,7 @@ package de.etgramli.battlebros.view;
 import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
+import de.etgramli.battlebros.util.IObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class GameController {
+public class GameController implements IObserver {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
 
     private static final String URL_JOIN_GAME = "/topic/joingame";
@@ -35,7 +36,7 @@ public class GameController {
     @Autowired
     private SimpMessagingTemplate template;
 
-    private GameInterface gameInterface;
+    private GameInterface game;
     private final List<String> names = new ArrayList<>(2);
     private final LinkedHashMap<String, Principal> nameToPrincipal = new LinkedHashMap<>(2);
 
@@ -55,10 +56,11 @@ public class GameController {
         if (names.size() == 1) {
             return 0;
         } else if (names.size() == 2) {
-            gameInterface = new Game(new Player(names.get(0)), new Player(names.get(1)));
+            game = new Game(new Player(names.get(0)), new Player(names.get(1)));
+            game.addObserver(this);
             logger.info("Game instance created");
             names.clear();
-            template.convertAndSend(URL_PLAYER_NAMES, List.of(gameInterface.getPlayerName(0), gameInterface.getPlayerName(1)));
+            template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
             updateHands();
             return 1;
@@ -91,7 +93,7 @@ public class GameController {
 
     @MessageMapping("/pass")
     public void fold() {
-        gameInterface.pass();
+        game.pass();
     }
 
 
@@ -104,7 +106,7 @@ public class GameController {
         int counter = 0;
         for (Map.Entry<String, Principal> entry : nameToPrincipal.entrySet()) {
             final String principalName = entry.getValue().getName();
-            final List<?> hand = gameInterface.getCardsInHand(counter++);
+            final List<?> hand = game.getCardsInHand(counter++);
             template.convertAndSendToUser(principalName, URL_PLAYER_HANDS, hand);
             if (hand.isEmpty()) {
                 logger.warn("Hand of player " + entry.getKey() + " is empty!");
@@ -115,7 +117,13 @@ public class GameController {
 
     private void updateBoards() {
         for (Principal principal : nameToPrincipal.values()) {
-            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, gameInterface.getCardsInPlay());
+            // ToDo: may convert to expected data type from frontend
+            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, game.getCardsInPlay());
         }
+    }
+
+    @Override
+    public void update() {
+        updateHandsAndBoards();
     }
 }
