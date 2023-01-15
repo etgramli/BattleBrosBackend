@@ -31,11 +31,11 @@ public final class Board {
     private final List<List<Card>> graveyards;
 
     public Board() {
-        playedCards = new ArrayList<>(Game.NUMBER_OF_PLAYERS);
+        playedCards = new ArrayList<>(GameInterface.NUMBER_OF_PLAYERS);
         playedCards.add(new ArrayList<>());
         playedCards.add(new ArrayList<>());
 
-        graveyards = new ArrayList<>(Game.NUMBER_OF_PLAYERS);
+        graveyards = new ArrayList<>(GameInterface.NUMBER_OF_PLAYERS);
         graveyards.add(new ArrayList<>());
         graveyards.add(new ArrayList<>());
     }
@@ -150,7 +150,7 @@ public final class Board {
         final Set<BoardPosition> validPositions = new HashSet<>();
 
         final ArrayList<CardTuple> playerRow = playedCards.get(playerIndex);
-        final ArrayList<CardTuple> otherPlayerRow = playedCards.get(Game.getOtherPlayerNum(playerIndex));
+        final ArrayList<CardTuple> otherPlayerRow = playedCards.get(GameInterface.getOtherPlayerNum(playerIndex));
         for (int rowNum = 0; rowNum < playerRow.size(); ++rowNum) {
             if (playerRow.get(rowNum) == null) {    // No card played here
                 final BoardPosition position = new BoardPosition(playerIndex, rowNum);
@@ -195,7 +195,7 @@ public final class Board {
                         .toList();
                 for (CardEffect effect : blockingEffects) {
                     switch (effect.getTarget()) {
-                        case FACING -> blockedPositions.add(new BoardPosition(Game.getOtherPlayerNum(playerNum), rowNum));
+                        case FACING -> blockedPositions.add(new BoardPosition(GameInterface.getOtherPlayerNum(playerNum), rowNum));
                         case NEIGHBOR -> {
                             blockedPositions.add(new BoardPosition(playerNum, rowNum - 1));
                             blockedPositions.add(new BoardPosition(playerNum, rowNum + 1));
@@ -260,7 +260,7 @@ public final class Board {
             elementEffects.addAll(sameRow.get(cardIndex + 1).card.effects());
         }
         // Get facing card effect
-        final List<CardTuple> otherRow = playedCards.get(Game.getOtherPlayerNum(playerIndex));
+        final List<CardTuple> otherRow = playedCards.get(GameInterface.getOtherPlayerNum(playerIndex));
         if (cardIndex > 0 && cardIndex < otherRow.size()) {
             elementEffects.addAll(otherRow.get(cardIndex).card.effects());
         }
@@ -295,7 +295,7 @@ public final class Board {
                 continue;
             }
             BoardPosition cardPosition = optionalCardPosition.get();
-            final int otherPlayerNum = Game.getOtherPlayerNum(cardPosition.playerRow);
+            final int otherPlayerNum = GameInterface.getOtherPlayerNum(cardPosition.playerRow);
             for (CardEffect effect : cardTuple.card.effects()) {
                 if (effect.getType().equals(EffectType.DISABLE_EFFECT)) {
                     switch (effect.getTarget()) {
@@ -329,7 +329,7 @@ public final class Board {
      * @return Position on the board or empty, if not on the board.
      */
     private Optional<BoardPosition> getPosition(final CardTuple cardTuple) {
-        for (int currentPlayerNum = 0; currentPlayerNum < Game.NUMBER_OF_PLAYERS; ++currentPlayerNum) {
+        for (int currentPlayerNum = 0; currentPlayerNum < GameInterface.NUMBER_OF_PLAYERS; ++currentPlayerNum) {
             final List<CardTuple> currentPlayerRow = playedCards.get(currentPlayerNum);
             for (int position = 0; position < currentPlayerRow.size(); ++position) {
                 CardTuple found = currentPlayerRow.get(position);

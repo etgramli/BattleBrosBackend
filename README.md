@@ -32,12 +32,17 @@ The table shows the server's URLs for incoming messages and which URLs get updat
 | New Game        | /newgame     |                                    | Create new game                         |
 | Join Game       | /joingame    |                                    | Join an existing game                   |
 | Play card       | /placecard   | /topic/board                       | Place card and triggers board update    |
-| Set player name | /setname     | /topic/game                        | Set player's name and update game state |
 | Fold            | /fold        |                                    | Fold round - next player's turn         |
 
-### Important STOMP URLs (ToDo: re-create table upfront)
-| Purpose             | URL                       |
-|---------------------|---------------------------|
-| User-specific Queue | /user                     |
-| App prefix          | /app                      |
-| Broker URL          | /user/queue/specific-user |
+### Important STOMP URLs
+| Purpose             | URL    |
+|---------------------|--------|
+| User-specific Queue | /user  |
+| App prefix          | /app   |
+| Broker URL          | /topic |
+
+#### User-Topics
+| Purpose      | URL                     |
+|--------------|-------------------------|
+| /topic/hand  | The player's hand cards |
+| /topic/board | Board state             |

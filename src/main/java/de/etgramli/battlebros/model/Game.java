@@ -16,10 +16,9 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public final class Game implements IObservable {
+public final class Game implements IObservable, GameInterface {
 
     private static final Logger logger = LoggerFactory.getLogger(Game.class);
-    public static final int NUMBER_OF_PLAYERS = 2;
 
     private final Board board;
     private final List<Player> players;
@@ -52,23 +51,23 @@ public final class Game implements IObservable {
         logger.info("Initialized game");
     }
 
-    public static int getOtherPlayerNum(final int currentPlayerNum) {
-        return (currentPlayerNum + 1) % NUMBER_OF_PLAYERS;
-    }
-
     // Getters
+    @Override
     public int getRoundsWon(final int playerIndex) {
         return roundsWon[playerIndex];
     }
 
+    @Override
     public int getCurrentPlayerIndex() {
         return currentPlayer;
     }
 
+    @Override
     public String getPlayerName(final int playerIndex) {
         return players.get(playerIndex).name();
     }
 
+    @Override
     public List<Card> getPlayerHand(final int playerIndex) {
         if (playerIndex < 0 || playerIndex > 1) {
             throw new IllegalArgumentException("playerIndex must be 0 or 1, but was " + playerIndex);
@@ -76,11 +75,13 @@ public final class Game implements IObservable {
         return List.copyOf(playerHands.get(playerIndex));
     }
 
+    @Override
     public List<List<Board.CardTuple>> getPlayedCards() {
         return board.getImmutableState();
     }
 
     // Gameplay methods
+    @Override
     public boolean playCard(final int cardHandIndex, final Board.BoardPosition position) {
         final Set<Board.BoardPosition> validPositions = board.getValidPositionsToPlayCard(currentPlayer);
         if (!validPositions.contains(position)) {
@@ -97,10 +98,12 @@ public final class Game implements IObservable {
         return true;
     }
 
+    @Override
     public Set<Board.BoardPosition> getValidPositions() {
         return board.getValidPositionsToPlayCard(currentPlayer);
     }
 
+    @Override
     public void fold() {
         logger.info("Player %d folded".formatted(currentPlayer));
         folded.addLast(currentPlayer);
@@ -116,7 +119,7 @@ public final class Game implements IObservable {
     }
 
     private void switchPlayer() {
-        currentPlayer = getOtherPlayerNum(currentPlayer);
+        currentPlayer = GameInterface.getOtherPlayerNum(currentPlayer);
     }
 
     private void drawCardsBeforeRound() {
