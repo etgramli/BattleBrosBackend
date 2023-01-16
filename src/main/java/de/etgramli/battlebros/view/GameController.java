@@ -33,6 +33,7 @@ public class GameController implements IObserver {
     private static final String URL_PLAYER_HANDS = "/topic/hand";
     private static final String URL_GAME_BOARD = "/topic/board";
     private static final String URL_PLAYER_STRENGTH = "/topic/strength";
+    private static final String URL_LIFE_CARDS = "/topic/lifecards";
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -106,8 +107,7 @@ public class GameController implements IObserver {
     }
 
     private void updateStrength() {
-        List<Integer> strengths = List.of(game.getTotalValue(0), game.getTotalValue(1));
-        strengths = List.of(12, 23);
+        final List<Integer> strengths = List.of(game.getTotalValue(0), game.getTotalValue(1));
         for (Principal principal : nameToPrincipal.values()) {
             template.convertAndSendToUser(principal.getName(), URL_PLAYER_STRENGTH, strengths);
         }
@@ -128,10 +128,18 @@ public class GameController implements IObserver {
         return boardDto;
     }
 
+    private void updateLifeCards() {
+        final List<Integer> numLifeCardsPerPlayer = List.of(game.getAmountOfLifeCards(0), game.getAmountOfLifeCards(1));
+        for (Principal principal : nameToPrincipal.values()) {
+            template.convertAndSendToUser(principal.getName(), URL_LIFE_CARDS, numLifeCardsPerPlayer);
+        }
+    }
+
     @Override
     public void update() {
         updateHands();
         updateBoards();
         updateStrength();
+        updateLifeCards();
     }
 }
