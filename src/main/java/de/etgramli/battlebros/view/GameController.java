@@ -62,7 +62,7 @@ public class GameController implements IObserver {
             names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
-            updateHandsAndBoards();
+            update();
             return 1;
         } else {
             // ToDo: Return 404 or Forbidden
@@ -81,11 +81,6 @@ public class GameController implements IObserver {
         game.pass();
     }
 
-
-    private void updateHandsAndBoards() {
-        updateHands();
-        updateBoards();
-    }
 
     private void updateHands() {
         int counter = 0;
@@ -124,6 +119,7 @@ public class GameController implements IObserver {
 
     @Override
     public void update() {
-        updateHandsAndBoards();
+        updateHands();
+        updateBoards();
     }
 }
