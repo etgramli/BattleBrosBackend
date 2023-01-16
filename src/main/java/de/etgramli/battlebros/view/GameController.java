@@ -1,5 +1,6 @@
 package de.etgramli.battlebros.view;
 
+import de.etgramli.battlebros.model.Card;
 import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
@@ -115,19 +116,25 @@ public class GameController implements IObserver {
         int counter = 0;
         for (Map.Entry<String, Principal> entry : nameToPrincipal.entrySet()) {
             final String principalName = entry.getValue().getName();
-            final List<?> hand = game.getCardsInHand(counter++);
+            final List<Integer> hand = game.getCardsInHand(counter++).stream().map(Card::getId).toList();
             template.convertAndSendToUser(principalName, URL_PLAYER_HANDS, hand);
             if (hand.isEmpty()) {
                 logger.warn("Hand of player " + entry.getKey() + " is empty!");
             }
-            logger.info(String.format("Sent hand to user \"%s\" with uuid \"%s\"",entry.getKey(), principalName));
+            logger.info("Sent hand to user \"%s\" with uuid \"%s\": %s"
+                    .formatted(entry.getKey(), principalName, hand));
         }
     }
 
     private void updateBoards() {
         for (Principal principal : nameToPrincipal.values()) {
             // ToDo: may convert to expected data type from frontend
-            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, getCardDtoBoard());
+            List<Map<Integer, CardDTO>> board = getCardDtoBoard();
+            board = List.of(
+                    Map.of(0, new CardDTO(0), 1, new CardDTO(2)),
+                    Map.of(1, new CardDTO(3), 2, new CardDTO(4))
+            );
+            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, board);
         }
     }
 
