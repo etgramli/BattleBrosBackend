@@ -29,7 +29,7 @@ public class Player {
 
     public int getTotalValue(){
         int total = 0;
-        for(Card card : gameField.getAllCards()){
+        for(Card card : gameField.getListOfAllCards()){
             total += card.getValue();
         }
         return total;
@@ -61,9 +61,14 @@ public class Player {
 
     public void setUpGame(){
         gameZoneDeck.addCards(deck.getCards());
+        shuffleDeck();
         addLifeCards(3);
         drawCards(6);
         hasPassed = false;
+    }
+
+    private void shuffleDeck(){
+        gameZoneDeck.shuffle();
     }
 
     public void cleanUpForNewBattle(){
@@ -80,7 +85,7 @@ public class Player {
 
     public int drawCards(int amount){ //returns the amount of cards actually drawn
         int cardsDrawn = 0;
-        for (int i=0; i<= amount; i++) {
+        for (int i=0; i< amount; i++) {
             if (drawACard())
                 cardsDrawn++;
             else
@@ -98,7 +103,7 @@ public class Player {
 
     public int addLifeCards(int amount){ //returns the amount of cards actually added
         int cardsAdded = 0;
-        for (int i=0; i<= amount; i++) {
+        for (int i=0; i< amount; i++) {
             if (addALifeCard())
                 cardsAdded++;
             else
@@ -122,7 +127,7 @@ public class Player {
     }
 
     public boolean playCard(int handIndex, int gameFieldPosition){
-        if (gameZoneHand.getCard(handIndex)==null || !cardPlayableAt(gameFieldPosition))
+        if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards() || !cardPlayableAt(gameFieldPosition))
             return false;
 
         gameField.addCard(gameZoneHand.removeCard(handIndex), gameFieldPosition);
@@ -137,18 +142,22 @@ public class Player {
         return gameField.getCard(position);
     }
 
+    public Map<Integer, Card> getCardsOnField(){
+        return gameField.getAllCards();
+    }
+
     private boolean cardPlayableAt(int gameFieldPosition){
         if (getCardOnFieldAt(gameFieldPosition) != null)
             return false;
 
-        if (getAmountOfCardsOnField()==0 && opponent.getAmountOfCardsOnField()==0 && gameFieldPosition!=0)
-            return false;
-
-        if (opponent.getCardOnFieldAt(gameFieldPosition)==null
+        if (getAmountOfCardsOnField()==0 && opponent.getAmountOfCardsOnField()==0) {
+            if (gameFieldPosition!=0)
+                return false;
+        } else if (opponent.getCardOnFieldAt(gameFieldPosition)==null
                 && getCardOnFieldAt(gameFieldPosition-1)==null
-                && getCardOnFieldAt(gameFieldPosition+1)==null)
+                && getCardOnFieldAt(gameFieldPosition+1)==null) {
             return false;
-
+        }
         return true;
     }
 }

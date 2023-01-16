@@ -141,8 +141,10 @@ public class Game implements GameInterface {
     @Override
     public boolean playCard(int playerIndex, int cardHandIndex, int position) {
         boolean result = getPlayer(playerIndex).playCard(cardHandIndex, position);
-        if (result)
+        if (result) {
+            advanceToNextTurn();
             notifyObservers();
+        }
         return result;
     }
 

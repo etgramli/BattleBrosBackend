@@ -11,11 +11,15 @@ public class GameField {
     public GameField(){
     }
 
-    public List<Card> getAllCards(){
+    public List<Card> getListOfAllCards(){
         List<Card> result = new ArrayList<>();
         for (Map.Entry<Integer, Card> entry : cards.entrySet())
             result.add(entry.getValue());
         return result;
+    }
+
+    public Map<Integer, Card> getAllCards(){
+        return cards;
     }
 
     public List<Integer> getAllTakenPositions(){
