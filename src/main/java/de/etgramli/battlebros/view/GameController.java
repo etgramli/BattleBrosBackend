@@ -62,37 +62,12 @@ public class GameController implements IObserver {
             names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
-            updateHands();
+            updateHandsAndBoards();
             return 1;
         } else {
             // ToDo: Return 404 or Forbidden
             return -1;
         }
-    }
-
-    /**
-     * Return a copy of the state of the board using a DTO.
-     * @return Unmodifiable nested list of CardDTOs.
-     */
-    @MessageMapping("/board")
-    @SendTo("/topic/board")
-    public List<Map<Integer, CardDTO>> getBoard() {
-        logger.info("Sent board state");
-        return getCardDtoBoard();
-    }
-
-    @NonNull
-    private List<Map<Integer, CardDTO>> getCardDtoBoard() {
-        final List<Map<Integer, CardDTO>> boardDto = new ArrayList<>(2);
-
-        for (Map<Integer, Integer> side : List.of(game.getCardIDsInPlay(0), game.getCardIDsInPlay(1))) {
-            final SortedMap<Integer, CardDTO> sideDto = new TreeMap<>();
-            for (var entry : side.entrySet()) {
-                sideDto.put(entry.getKey(), new CardDTO(entry.getValue()));
-            }
-            boardDto.add(sideDto);
-        }
-        return boardDto;
     }
 
     @MessageMapping("/placecard")
@@ -127,15 +102,24 @@ public class GameController implements IObserver {
     }
 
     private void updateBoards() {
+        final List<Map<Integer, CardDTO>> board = getCardDtoBoard();
         for (Principal principal : nameToPrincipal.values()) {
-            // ToDo: may convert to expected data type from frontend
-            List<Map<Integer, CardDTO>> board = getCardDtoBoard();
-            board = List.of(
-                    Map.of(0, new CardDTO(0), 1, new CardDTO(2)),
-                    Map.of(1, new CardDTO(3), 2, new CardDTO(4))
-            );
             template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, board);
         }
+    }
+
+    @NonNull
+    private List<Map<Integer, CardDTO>> getCardDtoBoard() {
+        final List<Map<Integer, CardDTO>> boardDto = new ArrayList<>(2);
+
+        for (Map<Integer, Integer> side : List.of(game.getCardIDsInPlay(0), game.getCardIDsInPlay(1))) {
+            final SortedMap<Integer, CardDTO> sideDto = new TreeMap<>();
+            for (var entry : side.entrySet()) {
+                sideDto.put(entry.getKey(), new CardDTO(entry.getValue()));
+            }
+            boardDto.add(sideDto);
+        }
+        return boardDto;
     }
 
     @Override

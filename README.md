@@ -42,6 +42,8 @@ The table shows the server's URLs for incoming messages and which URLs get updat
 | Broker URL          | /topic |
 
 #### User-Topics
+All of the following urls must be subscribed in the client with a preceding "/user".
+
 | Purpose      | URL                     |
 |--------------|-------------------------|
 | /topic/hand  | The player's hand cards |
