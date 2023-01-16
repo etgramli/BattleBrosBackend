@@ -32,6 +32,7 @@ public class GameController implements IObserver {
     private static final String URL_PLAYER_NAMES = "/topic/names";
     private static final String URL_PLAYER_HANDS = "/topic/hand";
     private static final String URL_GAME_BOARD = "/topic/board";
+    private static final String URL_PLAYER_STRENGTH = "/topic/strength";
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -50,7 +51,8 @@ public class GameController implements IObserver {
         if (names.size() < 2) {
             names.add(playerName);
             nameToPrincipal.put(playerName, sha.getUser());
-            logger.info(String.format("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s", playerName, sha.getUser().getName(), names.size()));
+            logger.info("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s"
+                    .formatted(playerName, sha.getUser().getName(), names.size()));
         }
 
         if (names.size() == 1) {
@@ -103,6 +105,15 @@ public class GameController implements IObserver {
         }
     }
 
+    private void updateStrength() {
+        List<Integer> strengths = List.of(game.getTotalValue(0), game.getTotalValue(1));
+        strengths = List.of(12, 23);
+        for (Principal principal : nameToPrincipal.values()) {
+            template.convertAndSendToUser(principal.getName(), URL_PLAYER_STRENGTH, strengths);
+        }
+        logger.info("Sent strengths: " + strengths);
+    }
+
     @NonNull
     private List<Map<Integer, CardDTO>> getCardDtoBoard() {
         final List<Map<Integer, CardDTO>> boardDto = new ArrayList<>(2);
@@ -121,5 +132,6 @@ public class GameController implements IObserver {
     public void update() {
         updateHands();
         updateBoards();
+        updateStrength();
     }
 }
