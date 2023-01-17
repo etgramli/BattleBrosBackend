@@ -1,16 +1,15 @@
 package de.etgramli.battlebros.util;
 
-import java.util.ArrayList;
+import org.springframework.lang.NonNull;
+
 import java.util.EnumSet;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public final class CollectionUtil {
     private CollectionUtil() {}
 
-    public static String join(final CharSequence delimiter, final EnumSet<?> values) {
-        final List<String> stringValues = new ArrayList<>(values.size());
-        values.stream().map(Enum::toString).forEachOrdered(stringValues::add);
-
-        return String.join(delimiter, stringValues);
+    @NonNull
+    public static String join(@NonNull final CharSequence delimiter, @NonNull final EnumSet<?> values) {
+        return values.stream().map(Enum::toString).collect(Collectors.joining(delimiter));
     }
 }
