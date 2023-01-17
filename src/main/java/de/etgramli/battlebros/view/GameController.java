@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.annotation.SendToUser;
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -65,7 +65,7 @@ public class GameController implements IObserver {
             names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
-            update();
+            game.startGame();
             return 1;
         } else {
             // ToDo: Return 404 or Forbidden
@@ -74,9 +74,30 @@ public class GameController implements IObserver {
     }
 
     @MessageMapping("/placecard")
-    @SendTo("/topic/board")
-    public void placeCard(int handIndex, int boardIndex) {
-        // ToDo
+    public void placeCard(@NonNull final SimpMessageHeaderAccessor sha, final int handIndex, final int boardIndex) {
+        final int currentPlayerIndex = game.getTurnPlayerIndex();
+
+        // Test if current player index is correct
+        if (sha.getUser() == null) {    // User must have Principal with UUID
+            logger.error("No username provided!");
+            return;
+        }
+        final String currentPlayerName = game.getPlayerName(currentPlayerIndex);
+        final String callingPlayerUuid = sha.getUser().getName();
+        final Optional<String> callingPlayerName = nameToPrincipal.entrySet().stream()
+                .filter(entry -> entry.getValue().getName().equals(callingPlayerUuid))
+                .map(Map.Entry::getKey)
+                .findFirst();
+        if (callingPlayerName.isEmpty()) {  // User must have one of the player's UUID
+            logger.error("Player with UUID \"%s\" not found!".formatted(callingPlayerUuid));
+            return;
+        }
+        if (!currentPlayerName.equals(callingPlayerName.get())) {   // Current player name must be calling player name
+            logger.error("Wrong player (%s) made call to place card!");
+            return;
+        }
+
+        game.playCard(currentPlayerIndex, handIndex, boardIndex);
     }
 
     @MessageMapping("/pass")
