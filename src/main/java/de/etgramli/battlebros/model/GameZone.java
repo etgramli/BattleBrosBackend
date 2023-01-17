@@ -1,6 +1,7 @@
 package de.etgramli.battlebros.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GameZone {
@@ -16,6 +17,10 @@ public class GameZone {
 
     public int getAmountOfCards(){
         return cards.size();
+    }
+
+    public void shuffle(){
+        Collections.shuffle(cards);
     }
 
     public void addCard(Card card){
