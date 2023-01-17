@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ public class GameController implements IObserver {
     private SimpMessagingTemplate template;
 
     private GameInterface game;
-    private final List<String> names = new ArrayList<>(2);
     private final LinkedHashMap<String, Principal> nameToPrincipal = new LinkedHashMap<>(2);
 
 
@@ -49,20 +49,19 @@ public class GameController implements IObserver {
         if (sha.getUser() == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        if (names.size() < 2) {
-            names.add(playerName);
+        if (nameToPrincipal.size() < 2) {
             nameToPrincipal.put(playerName, sha.getUser());
             logger.info("Player with name \"%s\" and UUID \"%s\" joined the game. Got index: %s"
-                    .formatted(playerName, sha.getUser().getName(), names.size()));
+                    .formatted(playerName, sha.getUser().getName(), nameToPrincipal.size()));
         }
 
-        if (names.size() == 1) {
+        if (nameToPrincipal.size() == 1) {
             return 0;
-        } else if (names.size() == 2) {
-            game = new Game(new Player(names.get(0), null), new Player(names.get(1), null));
+        } else if (nameToPrincipal.size() == 2) {
+            final List<Player> players = nameToPrincipal.keySet().stream().map(name -> new Player(name, null)).toList();
+            game = new Game(players.get(0), players.get(1));
             game.addObserver(this);
             logger.info("Game instance created");
-            names.clear();
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
 
             game.startGame();
