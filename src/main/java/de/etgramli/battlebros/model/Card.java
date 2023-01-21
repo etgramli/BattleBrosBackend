@@ -95,6 +95,23 @@ public class Card {
         new Card(50, "Blätterdach", 2, List.of(Element.EARTH)),
         new Card(51, "Baumkrone", 3, List.of(Element.EARTH)),
         new Card(52, "Luftschlange", 3, List.of(Element.AIR)),
-        new Card(53, "Gittermastkranich", 0, List.of(Element.AIR))
+        new Card(53, "Gittermastkranich", 0, List.of(Element.AIR)),
+        new Card(54, "Fliegende Klatsche", 2, List.of(Element.AIR)),
+        new Card(55, "Verbieter", 2, List.of(Element.AIR)),
+        new Card(56, "Verstummer", 2, List.of(Element.AIR)),
+        new Card(57, "Verdünner", 2, List.of(Element.AIR)),
+        new Card(58, "Fliegenpilz", 2, List.of(Element.AIR)),
+        new Card(59, "Erzbengel", 3, List.of(Element.AIR)),
+        new Card(60, "Schaurige Wolke", 2, List.of(Element.AIR)),
+        new Card(61, "Dämond", 4, List.of(Element.AIR)),
+        new Card(62, "Wolkenkratzer", 4, List.of(Element.AIR)),
+        new Card(63, "Schluckspecht", 0, List.of(Element.AIR)),
+        new Card(64, "Luftikuss", 0, List.of(Element.AIR)),
+        new Card(65, "Wirbelkind", 2, List.of(Element.AIR)),
+        new Card(66, "Feiges Huhn", 2, List.of(Element.AIR)),
+        new Card(67, "Nebelbank", 2, List.of(Element.AIR)),
+        new Card(68, "Wolkendecke", 3, List.of(Element.AIR)),
+        new Card(69, "Anitwicht", 3, List.of()),
+        new Card(70, "Omniwicht", 3, List.of(Element.AIR, Element.WATER, Element.EARTH, Element.FIRE))
     );
 }
