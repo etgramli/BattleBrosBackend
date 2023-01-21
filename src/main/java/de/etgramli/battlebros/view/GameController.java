@@ -58,9 +58,9 @@ public class GameController implements IObserver {
         if (nameToPrincipal.size() == 1) {
             return 0;
         } else if (nameToPrincipal.size() == 2) {
-            final Deck testDeck = new Deck(Stream.of(1,2,3,4,5,6,7,8,9,10).map(Card::getCard).toList());
-            final List<Player> players = nameToPrincipal.keySet().stream().map(name -> new Player(name, testDeck)).toList();
-            game = new Game(players.get(0), players.get(1));
+            final List<String> players = List.copyOf(nameToPrincipal.keySet());
+            game = new Game(new Player(players.get(0), Deck.DECKS.get("Feurio!")),
+                            new Player(players.get(1), Deck.DECKS.get("The River is flowing")));
             game.addObserver(this);
             logger.info("Game instance created");
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
