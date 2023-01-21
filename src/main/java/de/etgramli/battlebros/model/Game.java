@@ -1,6 +1,5 @@
 package de.etgramli.battlebros.model;
 
-import de.etgramli.battlebros.util.IObservable;
 import de.etgramli.battlebros.util.IObserver;
 
 import java.util.ArrayList;
@@ -69,6 +68,7 @@ public class Game implements GameInterface {
 
         if (endOfGameReached){
             //...
+            notifyObservers();  // So that observers query number of life cards and can test whether one player has 0
         }
         advanceToNextBattle();
     }
