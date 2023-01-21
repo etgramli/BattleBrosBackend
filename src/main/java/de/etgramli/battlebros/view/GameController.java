@@ -33,7 +33,7 @@ public class GameController implements IObserver {
     private static final String URL_GAME_BOARD = "/topic/board";
     private static final String URL_PLAYER_STRENGTH = "/topic/strength";
     private static final String URL_LIFE_CARDS = "/topic/lifecards";
-    // ToDo: send active player
+    private static final String URL_ACTIVE_PLAYER = "/topic/activeplayer";
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -154,11 +154,19 @@ public class GameController implements IObserver {
         }
     }
 
+    private void updateActivePlayer() {
+        final int activePlayerIndex = game.getTurnPlayerIndex();
+        for (Principal principal : nameToPrincipal.values()) {
+            template.convertAndSendToUser(principal.getName(), URL_ACTIVE_PLAYER, activePlayerIndex);
+        }
+    }
+
     @Override
     public void update() {
         updateHands();
         updateBoards();
         updateStrength();
         updateLifeCards();
+        updateActivePlayer();
     }
 }
