@@ -1,6 +1,7 @@
 package de.etgramli.battlebros.view;
 
 import de.etgramli.battlebros.model.Card;
+import de.etgramli.battlebros.model.Deck;
 import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
@@ -16,14 +17,11 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.stream.Stream;
 
 @Controller
 public class GameController implements IObserver {
@@ -35,10 +33,12 @@ public class GameController implements IObserver {
     private static final String URL_GAME_BOARD = "/topic/board";
     private static final String URL_PLAYER_STRENGTH = "/topic/strength";
     private static final String URL_LIFE_CARDS = "/topic/lifecards";
+    // ToDo: send active player
 
     @Autowired
     private SimpMessagingTemplate template;
 
+    // ToDo: Allow for multiple games
     private GameInterface game;
     private final LinkedHashMap<String, Principal> nameToPrincipal = new LinkedHashMap<>(2);
 
@@ -58,7 +58,8 @@ public class GameController implements IObserver {
         if (nameToPrincipal.size() == 1) {
             return 0;
         } else if (nameToPrincipal.size() == 2) {
-            final List<Player> players = nameToPrincipal.keySet().stream().map(name -> new Player(name, null)).toList();
+            final Deck testDeck = new Deck(Stream.of(1,2,3,4,5,6,7,8,9,10).map(Card::getCard).toList());
+            final List<Player> players = nameToPrincipal.keySet().stream().map(name -> new Player(name, testDeck)).toList();
             game = new Game(players.get(0), players.get(1));
             game.addObserver(this);
             logger.info("Game instance created");
@@ -73,7 +74,7 @@ public class GameController implements IObserver {
     }
 
     @MessageMapping("/placecard")
-    public void placeCard(@NonNull final SimpMessageHeaderAccessor sha, final int handIndex, final int boardIndex) {
+    public void placeCard(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final String indices) {
         final int currentPlayerIndex = game.getTurnPlayerIndex();
 
         // Test if current player index is correct
@@ -81,6 +82,18 @@ public class GameController implements IObserver {
             logger.error("No username provided!");
             return;
         }
+
+        final int commaIndex = indices.indexOf(',');
+        final int handIndex = Integer.parseInt(indices.substring(0, commaIndex));
+        final int boardIndex = Integer.parseInt(indices.substring(commaIndex + 1));
+
+        if (indices.length() != 3) {
+            logger.error("Indices array from frontend is wrong size: %d, was expecting: 2 (hand index, board index)"
+                    .formatted(indices.length()));
+        }
+        logger.info("Player with UUID %s tried to place hand card %s at board position %d"
+                .formatted(sha.getUser().getName(), handIndex, boardIndex));
+
         final String currentPlayerName = game.getPlayerName(currentPlayerIndex);
         final String callingPlayerUuid = sha.getUser().getName();
         final Optional<String> callingPlayerName = nameToPrincipal.entrySet().stream()
@@ -120,9 +133,9 @@ public class GameController implements IObserver {
     }
 
     private void updateBoards() {
-        final List<Map<Integer, CardDTO>> board = getCardDtoBoard();
+        final BoardDTO boardDto = new BoardDTO(game.getCardsInPlay(0), game.getCardsInPlay(1));
         for (Principal principal : nameToPrincipal.values()) {
-            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, board);
+            template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, boardDto);
         }
     }
 
@@ -132,20 +145,6 @@ public class GameController implements IObserver {
             template.convertAndSendToUser(principal.getName(), URL_PLAYER_STRENGTH, strengths);
         }
         logger.info("Sent strengths: " + strengths);
-    }
-
-    @NonNull
-    private List<Map<Integer, CardDTO>> getCardDtoBoard() {
-        final List<Map<Integer, CardDTO>> boardDto = new ArrayList<>(2);
-
-        for (Map<Integer, Integer> side : List.of(game.getCardIDsInPlay(0), game.getCardIDsInPlay(1))) {
-            final SortedMap<Integer, CardDTO> sideDto = new TreeMap<>();
-            for (var entry : side.entrySet()) {
-                sideDto.put(entry.getKey(), new CardDTO(entry.getValue()));
-            }
-            boardDto.add(sideDto);
-        }
-        return boardDto;
     }
 
     private void updateLifeCards() {
