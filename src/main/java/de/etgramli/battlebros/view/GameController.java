@@ -21,7 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Controller
 public class GameController implements IObserver {
@@ -105,7 +104,7 @@ public class GameController implements IObserver {
             return;
         }
         if (!currentPlayerName.equals(callingPlayerName.get())) {   // Current player name must be calling player name
-            logger.error("Wrong player (%s) made call to place card!");
+            logger.error("Wrong player (%s) made call to place card!".formatted(sha.getUser().getName()));
             return;
         }
 
@@ -113,8 +112,32 @@ public class GameController implements IObserver {
     }
 
     @MessageMapping("/pass")
-    public void pass() {
+    public void pass(@NonNull final SimpMessageHeaderAccessor sha) {
+        final int currentPlayerIndex = game.getTurnPlayerIndex();
+
+        // Test if current player index is correct
+        if (sha.getUser() == null) {    // User must have Principal with UUID
+            logger.error("No username provided!");
+            return;
+        }
+
+        final String currentPlayerName = game.getPlayerName(currentPlayerIndex);
+        final String callingPlayerUuid = sha.getUser().getName();
+        final Optional<String> callingPlayerName = nameToPrincipal.entrySet().stream()
+                .filter(entry -> entry.getValue().getName().equals(callingPlayerUuid))
+                .map(Map.Entry::getKey)
+                .findFirst();
+        if (callingPlayerName.isEmpty()) {  // User must have one of the player's UUID
+            logger.error("Player with UUID \"%s\" not found!".formatted(callingPlayerUuid));
+            return;
+        }
+        if (!currentPlayerName.equals(callingPlayerName.get())) {   // Current player name must be calling player name
+            logger.error("Wrong player (%s) made call to pass!".formatted(sha.getUser().getName()));
+            return;
+        }
+
         game.pass();
+        logger.info("Player (%s) passed!".formatted(sha.getUser().getName()));
     }
 
 

@@ -169,6 +169,8 @@ public class Game implements GameInterface {
             endTheBattle();
         }
         advanceToNextTurn();
+
+        notifyObservers();
     }
 
     @Override
