@@ -9,6 +9,7 @@ public class Player {
     private Deck deck;
 
     private Player opponent;
+	private Game game;
 
     private boolean hasPassed;
     private GameZone gameZoneDeck = new GameZone(false, false);
@@ -26,12 +27,24 @@ public class Player {
     public void setOpponent(Player opponent){
         this.opponent = opponent;
     }
+	
+	public Player getOpponent(){
+		return opponent;
+	}
+	
+	public void setGame(Game game){
+		this.game = game;
+	}
 
     public int getTotalValue(){
         int total = 0;
-        for(Card card : gameField.getListOfAllCards()){
+        /*for(Card card : gameField.getListOfAllCards()){
             total += card.getValue();
-        }
+        }*/
+		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
+			if (gameField.isCardFaceUp(entry.getKey()))
+				total += entry.getValue().getValue();
+		}
         return total;
     }
 
@@ -46,6 +59,10 @@ public class Player {
     public Map<Integer, Card> getCardsInPlay(){
         return gameField.getCards();
     }
+	
+	public Card getCardInPlay(int position){
+		return gameField.getCard(position);
+	}
 
     public List<Card> getCardsInHand(){
         return gameZoneHand.getCards();
@@ -119,20 +136,52 @@ public class Player {
         return true;
     }
 
-    public boolean removeALifeCard(){ //return true, if player then loses the game
+    public boolean removeALifeCard(){
         if (gameZoneLife.getAmountOfCards() <= 0)
-            return true;
-        gameZoneDeck.addCard(gameZoneLife.removeCard(0));
-        return gameZoneLife.getAmountOfCards() <= 0;
-    }
-
-    public boolean playCard(int handIndex, int gameFieldPosition){
-        if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards() || !cardPlayableAt(gameFieldPosition))
             return false;
-
-        gameField.addCard(gameZoneHand.removeCard(handIndex), gameFieldPosition);
+        gameZoneDeck.addCard(gameZoneLife.removeCard(0));
         return true;
     }
+	
+	public boolean hasNoLifeLeft(){
+		return gameZoneLife.getAmountOfCards() <= 0;
+	}
+
+    public boolean playCard(int handIndex, int gameFieldPosition){
+        if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards() || !isCardPlayableAt(gameFieldPosition))
+            return false;
+
+		Card card = gameZoneHand.removeCard(handIndex);
+        gameField.addCard(card, gameFieldPosition);
+		game.activateComesIntoPlayAbility(this, card, gameFieldPosition);
+        return true;
+    }
+	
+	public boolean flipOwnCardFaceUp(int gameFieldPosition){
+		return flipCard(true, true, gameFieldPosition);
+	}
+    public boolean flipOwnCardFaceDown(int gameFieldPosition){
+		return flipCard(false, true, gameFieldPosition);
+	}
+    public boolean flipOpponentCardFaceUp(int gameFieldPosition){
+		return flipCard(true, false, gameFieldPosition);
+	}
+    public boolean flipOpponentCardFaceDown(int gameFieldPosition){
+		return flipCard(false, false, gameFieldPosition);
+	}
+	private boolean flipCard(boolean faceUp, boolean mine, int gameFieldPosition){
+		GameField field;
+		if (mine)
+			field = gameField;
+		else
+			field = opponent.getGameField();
+		
+		return field.turnCard(faceUp, gameFieldPosition);
+	}
+	
+	public GameField getGameField(){
+		return gameField;
+	}
 
     public int getAmountOfCardsOnField(){
         return gameField.getAmountOfCards();
@@ -146,7 +195,7 @@ public class Player {
         return gameField.getAllCards();
     }
 
-    private boolean cardPlayableAt(int gameFieldPosition){
+    private boolean isCardPlayableAt(int gameFieldPosition){
         if (getCardOnFieldAt(gameFieldPosition) != null)
             return false;
 

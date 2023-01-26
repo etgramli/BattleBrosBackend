@@ -1,8 +1,6 @@
 package de.etgramli.battlebros.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Deck {
@@ -15,21 +13,22 @@ public class Deck {
         assert DECKS.values().stream().allMatch(Deck::checkIfLegal);
     }
 
-    private List<Card> cards = new ArrayList<>();
+    private Set<Card> cards = new HashSet<>();
 
     public Deck(){}
-    public Deck(List<Card> cards){
+    public Deck(Collection<Card> cards){
         this.cards.addAll(cards);
     }
 
     public boolean addCard(Card card){
-        if (cards.contains(card))
-            return false;
-        cards.add(card);
-        return true;
+        //if (cards.contains(card))
+        //    return false;
+        //cards.add(card);
+        //return true;
+		return cards.add(card);
     }
 
-    public boolean addCards(List<Card> cards){
+    public boolean addCards(Collection<Card> cards){
         boolean atLeastOneSuccessful = false;
         for (Card card : cards) {
             if (addCard(card))
@@ -38,27 +37,34 @@ public class Deck {
         return atLeastOneSuccessful;
     }
 
-    public boolean removeCard(int index){
+    /*public boolean removeCard(int index){
         if (index < 0 || index >= cards.size())
             return false;
         cards.remove(index);
         return true;
-    }
+    }*/
 
     public boolean removeCard(Card card){
-        if (!cards.contains(card))
+        /*if (!cards.contains(card))
             return false;
         cards.remove(card);
-        return true;
+        return true;*/
+		return cards.remove(card);
     }
 
     public List<Card> getCards(){
-        return cards;
+        return new ArrayList<>(cards);
     }
 
     public boolean checkIfLegal(){
         // ToDo: Hallo Herr Game-Designer. Muss hier auch auf Dupletten geprüft werden? Oder darf man eine Karte auch mehrfach im Deck haben?!?
         // Und man könnte diese Methode im Konstruktor aufrufen und ggf eine IllegalArgumentException werfen
+		
+		// Ja hoi, dupletten sind verboten, das muss hier gecheckt werden. Dafür gibts doch bestimmt eine java collections methode oder so, oder?
+		// Im Konstruktor aufrufen ist evtl blöd, weil ich fände es schöner wenn man im deckeditor auch nicht-legale decks bauen darf, aber bei denen
+		// dann einfach ein dicker roter textlabel darauf aufmerksam macht, dass das deck nicht legal ist.
+		// LG, Josh der geniale Game Design Virtuoso
+		// EDIT: Ich hab die liste mit karten hier jetzt von einer List zu einem Set gemacht, dann kann man keine dupletten haben.
         return cards.size() == 20;
     }
 }

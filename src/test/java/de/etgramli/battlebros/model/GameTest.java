@@ -1,18 +1,21 @@
 package de.etgramli.battlebros.model;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameTest {
 
-    @Test
-    void gameTest() {
+    static Game game;
+	static Player player1;
+    static Player player2;
+    static boolean terminate = false;
+
+
+    public static void main(String[] args) {
         Deck deck1 = new Deck();
         deck1.addCard(Card.getCard(1));
         deck1.addCard(Card.getCard(2));
@@ -37,6 +40,30 @@ class GameTest {
         assertTrue(deck1.checkIfLegal());
 
         List<Card> listOfCardsForDeck2 = new ArrayList<>();
+        listOfCardsForDeck2.add(Card.getCard(1));
+        listOfCardsForDeck2.add(Card.getCard(2));
+        listOfCardsForDeck2.add(Card.getCard(3));
+        listOfCardsForDeck2.add(Card.getCard(4));
+        listOfCardsForDeck2.add(Card.getCard(5));
+        listOfCardsForDeck2.add(Card.getCard(6));
+        listOfCardsForDeck2.add(Card.getCard(7));
+        listOfCardsForDeck2.add(Card.getCard(8));
+        listOfCardsForDeck2.add(Card.getCard(9));
+        listOfCardsForDeck2.add(Card.getCard(10));
+        listOfCardsForDeck2.add(Card.getCard(11));
+        listOfCardsForDeck2.add(Card.getCard(12));
+        listOfCardsForDeck2.add(Card.getCard(13));
+        listOfCardsForDeck2.add(Card.getCard(14));
+        listOfCardsForDeck2.add(Card.getCard(15));
+        listOfCardsForDeck2.add(Card.getCard(16));
+        listOfCardsForDeck2.add(Card.getCard(17));
+        listOfCardsForDeck2.add(Card.getCard(18));
+        listOfCardsForDeck2.add(Card.getCard(19));
+        listOfCardsForDeck2.add(Card.getCard(20));
+        Deck deck2 = new Deck(listOfCardsForDeck2);
+        assertTrue(deck2.checkIfLegal());
+		
+		/*List<Card> listOfCardsForDeck2 = new ArrayList<>();
         listOfCardsForDeck2.add(Card.getCard(21));
         listOfCardsForDeck2.add(Card.getCard(22));
         listOfCardsForDeck2.add(Card.getCard(23));
@@ -58,17 +85,19 @@ class GameTest {
         listOfCardsForDeck2.add(Card.getCard(39));
         listOfCardsForDeck2.add(Card.getCard(40));
         Deck deck2 = new Deck(listOfCardsForDeck2);
-        assertTrue(deck2.checkIfLegal());
+        assertTrue(deck2.checkIfLegal());*/
 
-        Player player1 = new Player("Joshman, Epic G8mer", deck1);
-        Player player2 = new Player("Java_Jim, L33tH4xx0r", deck2);
+        player1 = new Player("Joshua", deck1);
+        player2 = new Player("Etienne", deck2);
 
-        Game game = new Game(player1, player2);
+        game = new Game(player1, player2);
 
         game.startGame();
         drawGameState(player1, player2);
+		
+		gameLoop();
 
-        assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 0));
+        /*assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 0));
         drawGameState(player1, player2);
         
         assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 0));
@@ -83,17 +112,71 @@ class GameTest {
         assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, -1));
         drawGameState(player1, player2);
 
-        game.pass();
+        game.pass();*/
 
     }
+	
+	static void gameLoop(){
+		while(!terminate){
+			if (doGameAction())
+				drawGameState(player1, player2);
+		}
+		System.out.println("ERFOLGREICH TERMINIERT...");
+	}
+	
+	static boolean doGameAction(){
+		System.out.println("Player(p1|p2), Action(play|pass|choose|end), Index(play:handIdx,fieldIdx|pass:none|choose:playerIdx,fieldIdx)");
+		
+		Scanner in = new Scanner(System.in);
+        String inputs = in.nextLine();
 
-    void drawGameState(Player player1, Player player2) {
+        if (inputs.trim().equalsIgnoreCase("end")) {
+            terminate = true;
+            return false;
+        }
+		
+		String[] inputParts = inputs.split(",");
+		
+		if (inputParts.length!=2 && inputParts.length!=4)
+			return false;
+		
+		int actorIdx;
+		String input = inputParts[0].trim().toLowerCase();
+		if (input.equals("p1"))
+			actorIdx = 0;
+		else if (input.equals("p2"))
+			actorIdx = 1;
+		else
+			return false;
+		
+		input = inputParts[1].trim().toLowerCase();
+		if (input.equals("play")){
+			if (inputParts.length!=4)
+				return false;
+			int handIdx = Integer.parseInt(inputParts[2].trim());
+			int fieldIdx = Integer.parseInt(inputParts[3].trim());
+			return game.playCard(actorIdx, handIdx-1, fieldIdx);
+		} else if (input.equals("pass")){
+			if (inputParts.length!=2)
+				return false;
+			return game.pass(actorIdx);
+		} else if (input.equals("choose")){
+			if (inputParts.length!=4)
+				return false;
+			int playerIdx = Integer.parseInt(inputParts[2].trim());
+			int fieldIdx = Integer.parseInt(inputParts[3].trim());
+			return game.chooseCardInPlay(actorIdx, playerIdx-1, fieldIdx);
+		}
+		return false;
+	}
+
+    static void drawGameState(Player player1, Player player2) {
         drawPlayerState(player1);
         drawPlayerState(player2);
         System.out.println();
     }
 
-    void drawPlayerState(Player player){
+    static void drawPlayerState(Player player){
         System.out.println(player.getName());
         System.out.printf("Hand: ");
         for (Card card : player.getCardsInHand())

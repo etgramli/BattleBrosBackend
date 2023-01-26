@@ -7,6 +7,7 @@ import java.util.Map;
 
 public class GameField {
     private Map<Integer, Card> cards  = new HashMap<Integer, Card>();
+	private Map<Integer, Boolean> cardFacings = new HashMap<Integer, Boolean>();
 
     public GameField(){
     }
@@ -28,6 +29,15 @@ public class GameField {
             result.add(entry.getKey());
         return result;
     }
+	
+	 public List<Integer> getAllFaceDownPositions(){
+        List<Integer> result = new ArrayList<>();
+        for (Map.Entry<Integer, Boolean> entry : cardFacings.entrySet()){
+            if (!entry.getValue())
+				result.add(entry.getKey());
+		}
+        return result;
+    }
 
     public Map<Integer, Card> getCards(){
         return cards;
@@ -39,12 +49,26 @@ public class GameField {
 
     public void addCard(Card card, int position){
         cards.put(position, card);
+		cardFacings.put(position, true);
     }
     public Card getCard(int position){
         return cards.get(position);
     }
+	
+	public boolean isCardFaceUp(int position){
+		return cardFacings.get(position);
+	}
+	
+	public boolean turnCard(boolean faceUp, int position){
+		if (cards.get(position) == null)
+			return false;
+		
+		cardFacings.put(position, faceUp);
+		return true;
+	}
 
     public Card removeCard(int position){
+		cardFacings.remove(position);
         return cards.remove(position);
     }
 }

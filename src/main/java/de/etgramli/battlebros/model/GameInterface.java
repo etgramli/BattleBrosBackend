@@ -32,11 +32,11 @@ public interface GameInterface extends IObservable {
 
     boolean discardCard(int playerIndex, int cardHandIndex);
 
-    boolean chooseCardInPlay(int playerRow, int xPosition);
+	boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition);
 
-    void chooseYesOrNo(boolean accept);
+    boolean chooseYesOrNo(int playerIndex, boolean accept);
 
-    void pass();
+    boolean pass(int playerIndex);
 
 
 }
