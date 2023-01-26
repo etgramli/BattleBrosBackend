@@ -47,6 +47,8 @@ public class Game implements GameInterface {
     }
 
     private void changeTurnPlayer(){
+        if (getNonTurnPlayer().hasPassed())
+            return;
         turnPlayer = getNonTurnPlayer();
     }
 
