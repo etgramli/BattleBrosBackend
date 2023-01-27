@@ -396,6 +396,11 @@ public class Game implements GameInterface {
     }
 
     @Override
+    public void removeObservers() {
+        observers.clear();
+    }
+
+    @Override
     public void notifyObservers() {
         for (IObserver observer : observers)
             observer.update();

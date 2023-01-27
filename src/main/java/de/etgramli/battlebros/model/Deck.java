@@ -56,6 +56,11 @@ public class Deck {
         return new ArrayList<>(cards);
     }
 
+    /**
+     * Tests whether a deck is legal by checking the set size (has to be 20). So the deck is the correct size and does
+     * not contain duplicates.
+     * @return True if size is 20 and not contain duplicates.
+     */
     public boolean checkIfLegal(){
         // ToDo: Hallo Herr Game-Designer. Muss hier auch auf Dupletten geprüft werden? Oder darf man eine Karte auch mehrfach im Deck haben?!?
         // Und man könnte diese Methode im Konstruktor aufrufen und ggf eine IllegalArgumentException werfen

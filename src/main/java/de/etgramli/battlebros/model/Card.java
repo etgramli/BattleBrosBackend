@@ -2,6 +2,7 @@ package de.etgramli.battlebros.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Card {
 	
@@ -66,6 +67,32 @@ public class Card {
 		this.abilityFaq = abilityFaq;
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Card card = (Card) o;
+
+        if (id != card.id) return false;
+        if (value != card.value) return false;
+        if (!name.equals(card.name)) return false;
+        if (!elements.equals(card.elements)) return false;
+        if (!Objects.equals(abilityText, card.abilityText)) return false;
+        return Objects.equals(abilityFaq, card.abilityFaq);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + name.hashCode();
+        result = 31 * result + value;
+        result = 31 * result + elements.hashCode();
+        result = 31 * result + (abilityText != null ? abilityText.hashCode() : 0);
+        result = 31 * result + (abilityFaq != null ? abilityFaq.hashCode() : 0);
+        return result;
+    }
 
     private static final List<Card> cardCatalogue = List.of(
         new Card(1, "Feuersalamander", 3, List.of(Element.FIRE), "", ""),		//ability done
