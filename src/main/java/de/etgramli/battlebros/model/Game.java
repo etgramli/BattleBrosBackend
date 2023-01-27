@@ -326,6 +326,11 @@ public class Game implements GameInterface {
 	}
 	
 	// M E T H O D S (OTHERS)
+
+	public List<Integer> getPositionsOfFaceDownCards(int playerIndex){
+		return getPlayer(playerIndex).getPositionsOfAllFaceUpBros();
+	}
+
 	private boolean notAbleToPlayDiscardOrPass(int playerIndex){
 		return currentlyResolvingAnAbility() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
 	}

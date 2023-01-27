@@ -19,6 +19,9 @@ public interface GameInterface extends IObservable {
     String getPlayerName(int playerIndex);
 
     List<Card> getCardsInHand(int playerIndex);
+
+    List<Integer> getPositionsOfFaceDownCards(int playerIndex);
+
     List<Integer> getCardIDsInHand(int playerIndex);
 
     Map<Integer, Card> getCardsInPlay(int playerIndex);
