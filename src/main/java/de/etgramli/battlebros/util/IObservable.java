@@ -6,5 +6,7 @@ package de.etgramli.battlebros.util;
 public interface IObservable {
     void addObserver(IObserver observer);
 
+    void removeObservers();
+
     void notifyObservers();
 }

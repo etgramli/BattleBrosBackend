@@ -23,8 +23,9 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @Controller
 public class GameController {
@@ -42,11 +43,11 @@ public class GameController {
     private SimpMessagingTemplate template;
 
     private final List<GameInstance> openGames = new ArrayList<>();
-    private final List<GameInstance> startedGames = new ArrayList<>();
+    private final Map<String, GameInstance> playerUuidToGame = new HashMap<>();
 
     @NonNull
-    private Optional<GameInstance> getGameByPlayerUuid(@NonNull final String uuid) {
-        return startedGames.stream().filter(gameInstance -> gameInstance.hasPlayerUuid(uuid)).findAny();
+    private GameInstance getGameByPlayerUuid(@NonNull final String uuid) {
+        return playerUuidToGame.get(uuid);
     }
 
     @MessageMapping("/showgames")
@@ -91,12 +92,7 @@ public class GameController {
             logger.error("Received indices were not valid: " + message);
         }
         final String userUuid = sha.getUser().getName();
-        final Optional<GameInstance> game = getGameByPlayerUuid(userUuid);
-        if (game.isEmpty()) {
-            logger.warn("User with uuid %s tried to place card, but is not attached to a game!".formatted(userUuid));
-        } else {
-            game.get().placeCard(sha.getUser(), message.getHandIndex(), message.getBoardIndex());
-        }
+        getGameByPlayerUuid(userUuid).placeCard(sha.getUser(), message.getHandIndex(), message.getBoardIndex());
     }
 
     @MessageMapping("/pass")
@@ -106,12 +102,7 @@ public class GameController {
             return;
         }
         final String userUuid = sha.getUser().getName();
-        final Optional<GameInstance> game = getGameByPlayerUuid(userUuid);
-        if (game.isEmpty()) {
-            logger.warn("User with uuid %s tried to place card, but is not attached to a game!".formatted(userUuid));
-        } else {
-            game.get().pass(sha.getUser());
-        }
+        getGameByPlayerUuid(userUuid).pass(sha.getUser());
     }
 
 
@@ -139,7 +130,8 @@ public class GameController {
             playerPrincipals[1] = principal;
 
             openGames.remove(this);
-            startedGames.add(this);
+            playerUuidToGame.put(playerPrincipals[0].getName(), this);
+            playerUuidToGame.put(playerPrincipals[1].getName(), this);
 
             game = new Game(new Player(playerOneName, Deck.DECKS.get("Feurio!")),
                             new Player(playerName, Deck.DECKS.get("The River is flowing")));
@@ -202,6 +194,13 @@ public class GameController {
             final List<Integer> numLifeCardsPerPlayer = List.of(game.getAmountOfLifeCards(0), game.getAmountOfLifeCards(1));
             for (Principal principal : playerPrincipals) {
                 template.convertAndSendToUser(principal.getName(), URL_LIFE_CARDS, numLifeCardsPerPlayer);
+            }
+            // If a player won: remove game and detach observer to garbage-collect
+            if (numLifeCardsPerPlayer.get(0) == 0 || numLifeCardsPerPlayer.get(1) == 0) {
+                for (Principal principal : playerPrincipals) {
+                    playerUuidToGame.remove(principal.getName());
+                }
+                game.removeObservers();
             }
         }
 
