@@ -56,15 +56,12 @@ public class Deck {
         return new ArrayList<>(cards);
     }
 
-    public boolean checkIfLegal(){
-        // ToDo: Hallo Herr Game-Designer. Muss hier auch auf Dupletten geprüft werden? Oder darf man eine Karte auch mehrfach im Deck haben?!?
-        // Und man könnte diese Methode im Konstruktor aufrufen und ggf eine IllegalArgumentException werfen
-		
-		// Ja hoi, dupletten sind verboten, das muss hier gecheckt werden. Dafür gibts doch bestimmt eine java collections methode oder so, oder?
-		// Im Konstruktor aufrufen ist evtl blöd, weil ich fände es schöner wenn man im deckeditor auch nicht-legale decks bauen darf, aber bei denen
-		// dann einfach ein dicker roter textlabel darauf aufmerksam macht, dass das deck nicht legal ist.
-		// LG, Josh der geniale Game Design Virtuoso
-		// EDIT: Ich hab die liste mit karten hier jetzt von einer List zu einem Set gemacht, dann kann man keine dupletten haben.
+    /**
+     * Tests whether a deck is legal by checking the set size (has to be 20). So the deck is the correct size and does
+     * not contain duplicates.
+     * @return True if size is 20 and not contain duplicates.
+     */
+    public boolean checkIfLegal() {
         return cards.size() == 20;
     }
 }
