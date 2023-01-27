@@ -65,6 +65,10 @@ public class Deck {
 		// dann einfach ein dicker roter textlabel darauf aufmerksam macht, dass das deck nicht legal ist.
 		// LG, Josh der geniale Game Design Virtuoso
 		// EDIT: Ich hab die liste mit karten hier jetzt von einer List zu einem Set gemacht, dann kann man keine dupletten haben.
+		
+		// EDIT2: Man kann noch ein Attribut für den Decknamen hinzufügen, aber darum können wir uns ja kümmern wenn wir den deckbuilder machen
+		//        Cool wären auch noch so tags mit denen im deckbuilder dann einzelne karten versehen sind, sodass man easy nach karten filtern kann
+		//        tags wie zB: "abwerfen", "aufdecken", "karten ziehen", "feuer-fähigkeit", "verbot-fähigkeit", etc.
         return cards.size() == 20;
     }
 }

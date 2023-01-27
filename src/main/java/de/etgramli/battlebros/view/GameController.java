@@ -136,7 +136,7 @@ public class GameController implements IObserver {
             return;
         }
 
-        game.pass();
+        //game.pass(); TODO josh: musste ich hier entfernen weil ich methodenkopf von pass() geändert habe
         logger.info("Player (%s) passed!".formatted(sha.getUser().getName()));
     }
 

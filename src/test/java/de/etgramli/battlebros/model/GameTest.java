@@ -96,48 +96,36 @@ class GameTest {
         drawGameState(player1, player2);
 		
 		gameLoop();
-
-        /*assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 0));
-        drawGameState(player1, player2);
-        
-        assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 0));
-        drawGameState(player1, player2);
-
-        assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, 1));
-        drawGameState(player1, player2);
-
-        game.pass();
-        drawGameState(player1, player2);
-
-        assertTrue(game.playCard(game.getTurnPlayerIndex(), 0, -1));
-        drawGameState(player1, player2);
-
-        game.pass();*/
-
     }
 	
 	static void gameLoop(){
 		while(!terminate){
-			if (doGameAction())
-				drawGameState(player1, player2);
+			try{
+				if (doGameAction())
+					drawGameState(player1, player2);
+			} catch(Exception ignored){
+				ignored.printStackTrace();
+			}
 		}
-		System.out.println("ERFOLGREICH TERMINIERT...");
+		System.out.println("ERFOLGREICH BEENDET...");
+	}
+
+	static void printGameActionInstructions(){
+		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,Y/N/fieldIdx|chooseHand:handIdx)");
 	}
 	
 	static boolean doGameAction(){
-		System.out.println("Player(p1|p2), Action(play|pass|choose|end), Index(play:handIdx,fieldIdx|pass:none|choose:playerIdx,fieldIdx)");
-		
 		Scanner in = new Scanner(System.in);
         String inputs = in.nextLine();
 
-        if (inputs.trim().equalsIgnoreCase("end")) {
+        if (inputs.trim().equalsIgnoreCase("exit")) {
             terminate = true;
             return false;
         }
 		
 		String[] inputParts = inputs.split(",");
 		
-		if (inputParts.length!=2 && inputParts.length!=4)
+		if (inputParts.length<2 || inputParts.length>4)
 			return false;
 		
 		int actorIdx;
@@ -156,6 +144,11 @@ class GameTest {
 			int handIdx = Integer.parseInt(inputParts[2].trim());
 			int fieldIdx = Integer.parseInt(inputParts[3].trim());
 			return game.playCard(actorIdx, handIdx-1, fieldIdx);
+		} else if (input.equals("discard")){
+			if (inputParts.length!=3)
+				return false;
+			int handIdx = Integer.parseInt(inputParts[2].trim());
+			return game.discardCard(actorIdx, handIdx-1);
 		} else if (input.equals("pass")){
 			if (inputParts.length!=2)
 				return false;
@@ -164,28 +157,57 @@ class GameTest {
 			if (inputParts.length!=4)
 				return false;
 			int playerIdx = Integer.parseInt(inputParts[2].trim());
-			int fieldIdx = Integer.parseInt(inputParts[3].trim());
-			return game.chooseCardInPlay(actorIdx, playerIdx-1, fieldIdx);
+			String inputParts3 = inputParts[3].trim().toLowerCase();
+			boolean result = false;
+			if (inputParts3.equals("y"))
+				result = game.chooseYesOrNo(actorIdx, true);
+			else if (inputParts3.equals("n"))
+				result = game.chooseYesOrNo(actorIdx, false);
+			else {
+				int fieldIdx = Integer.parseInt(inputParts3);
+				result = game.chooseCardInPlay(actorIdx, playerIdx-1, fieldIdx);
+			}
+			return result;
+		} else if (input.equals("choosehand")) {
+			if (inputParts.length!=3)
+				return false;
+			int handIdx = Integer.parseInt(inputParts[2].trim());
+			return game.chooseCardInHand(actorIdx, handIdx-1);
 		}
 		return false;
 	}
 
     static void drawGameState(Player player1, Player player2) {
-        drawPlayerState(player1);
-        drawPlayerState(player2);
-        System.out.println();
+		System.out.println("\n\n______ Zug=" + game.getTurnNumber() + " AmZug=" + game.getTurnPlayer().getName() + " ______");
+		if (game.currentlyResolvingAnAbility())
+			System.out.println("!!! Es wird gerade die Fähigkeit verrechnet von: " + game.getCardCorrespondingToCurrentlyResolvingAbility().getName());
+        drawPlayerState(player1, 0);
+        drawPlayerState(player2, 1);
+		printGameActionInstructions();
     }
 
-    static void drawPlayerState(Player player){
-        System.out.println(player.getName());
-        System.out.printf("Hand: ");
-        for (Card card : player.getCardsInHand())
-            System.out.printf(card.getName() + "  ");
-        System.out.printf("\nCards on Field: ");
-        for (Map.Entry<Integer, Card> entry : player.getCardsOnField().entrySet())
-            System.out.printf("[" + entry.getKey() + ": "+ entry.getValue().getName() + "]  ");
-        System.out.println("\nTotalValue: " + player.getTotalValue());
+    static void drawPlayerState(Player player, int playerIndex){
+        System.out.println(player.getName() + " (p" + (playerIndex+1) + ")");
+		
+		System.out.println("TotalValue: " + player.getTotalValue());
         System.out.println("Life: " + player.getAmountOfLifeCards());
+		
+        System.out.printf("Hand: ");
+		int i=1;
+        for (Card card : player.getCardsInHand()){
+            System.out.printf(i++ + "=" + card.getName() + "(" + card.getValue() + ")  ");
+		}
+		
+        System.out.printf("\nCards on Field: ");
+        for (Map.Entry<Integer, Card> entry : player.getCardsOnField().entrySet()){
+			boolean isFaceUp = player.isCardFaceUp(entry.getKey());
+			String faceDownText = "";
+			if (!isFaceUp)
+				faceDownText = " VERDECKT";
+            System.out.printf("[" + entry.getKey() + ": "+ entry.getValue().getName() + "(" + player.getValueOfCardOnFieldAt(entry.getKey()) + ")" + faceDownText + "]  ");
+		}
+		
+		System.out.println("\n");
     }
 
 }

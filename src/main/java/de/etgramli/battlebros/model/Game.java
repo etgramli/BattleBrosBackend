@@ -1,6 +1,7 @@
 package de.etgramli.battlebros.model;
 
 import de.etgramli.battlebros.util.IObserver;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +29,14 @@ public class Game implements GameInterface {
 	
 	
 	// G E T T E R S
+	public int getTurnNumber(){
+		return turn;
+	}
+	
+	public Card getCardCorrespondingToCurrentlyResolvingAbility(){
+		return currentAbility.getCard();
+	}
+	
     private Player getPlayer(int playerIndex){
         if (playerIndex == 0)
             return player1;
@@ -36,7 +45,7 @@ public class Game implements GameInterface {
         return null;
     }
 
-    private Player getTurnPlayer(){
+    public Player getTurnPlayer(){
         return turnPlayer;
     }
 
@@ -120,8 +129,8 @@ public class Game implements GameInterface {
 	
 	@Override
     public boolean playCard(int playerIndex, int cardHandIndex, int position) {
-        if (getPlayer(playerIndex) != turnPlayer)
-            return false;
+        if (notAbleToPlayDiscardOrPass(playerIndex))
+			return false;
 
         boolean result = getPlayer(playerIndex).playCard(cardHandIndex, position);
         if (result) {
@@ -133,54 +142,21 @@ public class Game implements GameInterface {
     }
 	
 	@Override
-    public boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition) {
-		if (noCurrentAbility())
+    public boolean discardCard(int playerIndex, int cardHandIndex) {
+		if (notAbleToPlayDiscardOrPass(playerIndex))
 			return false;
 		
-		Player actor = currentAbility.getActor();
-		if (actor==null || actor!=getPlayer(playerIndex) || playerIndex<0 || playerIndex>1 || playerRow<0 || playerRow>1)
-			return false;
-		
-		if (getPlayer(playerRow).getCardInPlay(xPosition) == null)
-			return false;
-		
-		List<Integer> exceptions;
-        boolean ownSideOfField;
-		if (playerIndex==playerRow){
-			if (!currentAbility.canChooseFromOwnField())
-				return false;
-			ownSideOfField = true;
-			exceptions = currentAbility.fromOwnFieldExcept();
-		} else {
-			if (!currentAbility.canChooseFromOpponentField())
-				return false;
-			ownSideOfField = false;
-			exceptions = currentAbility.fromOpponentFieldExcept();
-		}
-		
-		if (exceptions!=null && exceptions.contains(xPosition))
-				return false;
-		
-		resolveAbilityWithChosenCardInPlay(actor, ownSideOfField, xPosition);
-        return true;
+		boolean result = getPlayer(playerIndex).discardCard(cardHandIndex);
+		if (result) {
+			notifyObservers();
+			advanceToNextTurn();
+        }
+        return result;
     }
-
-    @Override
-    public boolean chooseYesOrNo(int playerIndex, boolean accept) { //TODO add playerIndex
-		if (noCurrentAbility() || !currentAbility.isOptional()
-                || currentAbility.getActor()==null
-                || currentAbility.getActor()!=getPlayer(playerIndex))
-			return false;
-		else if (!accept)
-			advanceFromAbility();
-		else
-			resolveAbilityWithAccepting();
-        return true;
-    }
-
-    @Override
-    public boolean pass(int playerIndex) { //TODO add playerIndex
-		if (currentlyResolvingAnAbility() || getPlayer(playerIndex)!=turnPlayer)
+	
+	@Override
+    public boolean pass(int playerIndex) {
+		if (notAbleToPlayDiscardOrPass(playerIndex))
 			return false;
 		
         getTurnPlayer().pass();
@@ -193,19 +169,104 @@ public class Game implements GameInterface {
 		return true;
     }
 	
+	@Override
+    public boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition) {
+		if (notAbleToResolveAbility(playerIndex) || playerRow<0 || playerRow>1)
+			return false;
+		
+		if (getPlayer(playerRow).getCardInPlay(xPosition) == null)
+			return false;
+		
+		List<Integer> allowed;
+        boolean ownSideOfField;
+		if (playerIndex==playerRow){
+			if (!currentAbility.canChooseFromOwnField())
+				return false;
+			ownSideOfField = true;
+			allowed = currentAbility.fromOwnFieldAllowed();
+		} else {
+			if (!currentAbility.canChooseFromOpponentField())
+				return false;
+			ownSideOfField = false;
+			allowed = currentAbility.fromOpponentFieldAllowed();
+		}
+		
+		if (allowed!=null && !allowed.contains(xPosition))
+				return false;
+		
+		resolveAbilityWithChosenCardInPlay(currentAbility.getActor(), ownSideOfField, xPosition);
+        return true;
+    }
 	
-	// M E T H O D S (OTHERS)
-	private boolean currentlyResolvingAnAbility(){
-		return !noCurrentAbility();
-	}
-	private boolean noCurrentAbility(){
-		return currentAbility == null;
+	@Override
+	public boolean chooseCardsInPlay(int playerIndex, List<Pair<Integer,Integer>> selections){
+		if (notAbleToResolveAbility(playerIndex) || selections.isEmpty())
+			return false;
+		
+		for (Pair<Integer,Integer> entry : selections){
+			int playerRow = entry.getKey();
+			int xPosition = entry.getValue();
+			
+			if (getPlayer(playerRow).getCardInPlay(xPosition) == null)
+				return false;
+		
+			List<Integer> allowed;
+			boolean ownSideOfField;
+			if (playerIndex==playerRow){
+				if (!currentAbility.canChooseFromOwnField())
+					return false;
+				ownSideOfField = true;
+				allowed = currentAbility.fromOwnFieldAllowed();
+			} else {
+				if (!currentAbility.canChooseFromOpponentField())
+					return false;
+				ownSideOfField = false;
+				allowed = currentAbility.fromOpponentFieldAllowed();
+			}
+			
+			if (allowed!=null && !allowed.contains(xPosition))
+					return false;
+		}
+		resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
+		return true;
 	}
 	
-	public void setCurrentAbility(ResolvableAbility ability){
-		currentAbility = ability;
+	@Override
+	public boolean chooseCardInDiscard(int playerIndex, int discardIndex){
+		return false; //TODO
 	}
 	
+	@Override
+	public boolean chooseCardsInDiscard(int playerIndex, List<Pair<Integer,Integer>> selections){
+		return false; //TODO
+	}
+	
+	@Override
+	public boolean chooseCardInHand(int playerIndex, int handIndex){
+		if (notAbleToPlayDiscardOrPass(playerIndex)
+			|| !currentAbility.canChooseFromOwnHand()
+			|| handIndex < 0
+			|| handIndex >= getPlayer(playerIndex).getAmountOfCardsInHand()
+			|| (currentAbility.fromOwnHandAllowed()!=null && !currentAbility.fromOwnHandAllowed().contains(handIndex)))
+			return false;
+		
+		resolveAbilityWithChosenCardInHand(currentAbility.getActor(), handIndex);
+		return true;
+	}
+
+    @Override
+    public boolean chooseYesOrNo(int playerIndex, boolean accept) {
+		if (notAbleToResolveAbility(playerIndex) || !currentAbility.isOptional())
+			return false;
+		else if (!accept)
+			advanceFromAbility();
+		else
+			resolveAbilityWithAccepting();
+        return true;
+    }
+	
+	
+	// M E T H O D S (Activate ComesIntoPlay-ABILITIES)
 	public void activateComesIntoPlayAbility(Player player, Card card, int gameFieldPosition){
 		switch (card.getId()){
 			case 2: //Ausbrecher
@@ -218,21 +279,24 @@ public class Game implements GameInterface {
 				player.flipOpponentCardFaceDown(gameFieldPosition);
 				break;
 			case 5: //Verascher
-				//todo
+				setCurrentAbility(new ResolvableAbility(5, player, gameFieldPosition));
 				break;
 			//todo don't implement Fönix here but in Unterweltfährmann's ability
 			case 7: //Potzblitz
-				//todo
+				setCurrentAbility(new ResolvableAbility(7, player, gameFieldPosition));
 				break;
 		}
 	}
 	
+	
+	// M E T H O D S (Resolve Resolvable-ABILITIES)
 	private void resolveAbilityWithAccepting(){
 		//todo
 	}
 	
 	private void resolveAbilityWithChosenCardInPlay(Player actor, boolean targetingOwnRow, int xPosition){
 		switch(currentAbility.getCardId()){
+			// FLIP CHOSEN CARD FACE DOWN
 			case 2: // Ausbrecher
 			case 5: // Verascher
 				if (targetingOwnRow)
@@ -242,6 +306,45 @@ public class Game implements GameInterface {
 				advanceFromAbility();
 				break;
 		}
+	}
+	
+	private void resolveAbilityWithChosenCardsInPlay(Player actor, List<Pair<Integer,Integer>> selections){
+		//TODO
+	}
+	
+	private void resolveAbilityWithChosenCardInHand(Player actor, int handIndex){
+		switch(currentAbility.getCardId()){
+			case 7: //Potzblitz
+				actor.discardCard(handIndex);
+				if (actor.getAmountOfCardsInHand() > actor.getOpponent().getAmountOfCardsInHand()
+					&& currentAbility.getProgress() == 0)
+					currentAbility.advanceProgress();
+				else
+					advanceFromAbility();
+				break;
+		}
+	}
+	
+	// M E T H O D S (OTHERS)
+	private boolean notAbleToPlayDiscardOrPass(int playerIndex){
+		return currentlyResolvingAnAbility() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
+	}
+	
+	private boolean notAbleToResolveAbility(int playerIndex){
+		return noCurrentAbility()
+			|| currentAbility.getActor()==null
+			|| currentAbility.getActor()!=getPlayer(playerIndex);
+	}
+	
+	public boolean currentlyResolvingAnAbility(){
+		return !noCurrentAbility() && currentAbility.getActor()!=null;
+	}
+	private boolean noCurrentAbility(){
+		return currentAbility == null;
+	}
+	
+	public void setCurrentAbility(ResolvableAbility ability){
+		currentAbility = ability;
 	}
 	
 	private void advanceFromAbility(){
@@ -269,16 +372,6 @@ public class Game implements GameInterface {
     }
 
     private void endTheBattle(){
-        /*boolean endOfGameReached;
-		if (getNonTurnPlayer().getTotalValue() >= turnPlayer.getTotalValue()) {
-			turnPlayer.removeALifeCard();
-            endOfGameReached = turnPlayer.hasNoLifeLeft();
-            changeTurnPlayer();
-        } else {
-			getNonTurnPlayer().removeALifeCard();
-            endOfGameReached = turnPlayer.hasNoLifeLeft();
-        }*/
-		
 		Player loser;
 		if (getNonTurnPlayer().getTotalValue() >= turnPlayer.getTotalValue()){
 			loser = turnPlayer;
@@ -291,15 +384,10 @@ public class Game implements GameInterface {
 		notifyObservers();
 
         if (loser.hasNoLifeLeft()){
-            //todo GAME ENDED HERE
+            //todo GAME ENDS HERE
         } else {
 			advanceToNextBattle();
 		}
-    }
-
-    @Override
-    public boolean discardCard(int playerIndex, int cardHandIndex) {
-        return false;
     }
 
     @Override

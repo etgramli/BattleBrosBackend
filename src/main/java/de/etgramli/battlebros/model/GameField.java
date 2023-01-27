@@ -30,14 +30,22 @@ public class GameField {
         return result;
     }
 	
-	 public List<Integer> getAllFaceDownPositions(){
-        List<Integer> result = new ArrayList<>();
+	public List<Integer> getAllFaceUpPositions(){
+		return getAllPositionsFacing(true);
+    }
+	
+	public List<Integer> getAllFaceDownPositions(){
+        return getAllPositionsFacing(false);
+    }
+	
+	private List<Integer> getAllPositionsFacing(boolean up){
+		List<Integer> result = new ArrayList<>();
         for (Map.Entry<Integer, Boolean> entry : cardFacings.entrySet()){
-            if (!entry.getValue())
+            if (entry.getValue() == up)
 				result.add(entry.getKey());
 		}
         return result;
-    }
+	}
 
     public Map<Integer, Card> getCards(){
         return cards;
@@ -51,12 +59,24 @@ public class GameField {
         cards.put(position, card);
 		cardFacings.put(position, true);
     }
+	
+	public void addCardFaceDown(Card card, int position){
+        cards.put(position, card);
+		cardFacings.put(position, false);
+    }
+	
     public Card getCard(int position){
         return cards.get(position);
     }
 	
 	public boolean isCardFaceUp(int position){
+        if (cardFacings.get(position) == null)
+            return false;
 		return cardFacings.get(position);
+	}
+	
+	public boolean isCardFaceDown(int position){
+		return !isCardFaceUp(position);
 	}
 	
 	public boolean turnCard(boolean faceUp, int position){

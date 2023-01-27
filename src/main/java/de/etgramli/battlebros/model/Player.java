@@ -1,5 +1,6 @@
 package de.etgramli.battlebros.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -41,10 +42,8 @@ public class Player {
         /*for(Card card : gameField.getListOfAllCards()){
             total += card.getValue();
         }*/
-		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
-			if (gameField.isCardFaceUp(entry.getKey()))
-				total += entry.getValue().getValue();
-		}
+		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet())
+			total += getValueOfCardOnFieldAt(entry.getKey());
         return total;
     }
 
@@ -157,6 +156,15 @@ public class Player {
         return true;
     }
 	
+	public boolean discardCard(int handIndex){
+		if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards())
+            return false;
+		
+		Card card = gameZoneHand.removeCard(handIndex);
+		gameZoneDiscard.addCard(card);
+		return true;
+	}
+	
 	public boolean flipOwnCardFaceUp(int gameFieldPosition){
 		return flipCard(true, true, gameFieldPosition);
 	}
@@ -186,10 +194,67 @@ public class Player {
     public int getAmountOfCardsOnField(){
         return gameField.getAmountOfCards();
     }
+	
+	public int getAmountOfCardsInHand(){
+		return gameZoneHand.getAmountOfCards();
+	}
 
     public Card getCardOnFieldAt(int position){
         return gameField.getCard(position);
     }
+	
+	public int getValueOfCardOnFieldAt(int position){
+		if (gameField.isCardFaceDown(position))
+			return 0;
+		
+		int result = gameField.getCard(position).getValue();
+        if (isCardFaceUp(position-1))
+		    result += checkValueModifyingAbilities(gameField.getCard(position - 1));
+
+        if (isCardFaceUp(position+1))
+            result += checkValueModifyingAbilities(gameField.getCard(position + 1));
+
+		return result;
+	}
+	
+	private int checkValueModifyingAbilities(Card card){
+		if (card == null)
+			return 0;
+		
+		int result = 0;
+		switch(card.getId()){
+			case 15: //Anfeuerer
+				result++;
+				break;
+		}
+		return result;
+	}
+	
+	public int getHighestValueOnField(){
+		int result = 0;
+		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
+			if (gameField.isCardFaceUp(entry.getKey())){
+				int value = getValueOfCardOnFieldAt(entry.getKey());
+				if (value > result)
+					result = value;
+			}
+		}
+        return result;
+	}
+	
+	public List<Integer> getPositionsOfAllBrosWithValue(int value){
+		List<Integer> result = new ArrayList<>();
+        for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
+			int key = entry.getKey();
+            if (getValueOfCardOnFieldAt(key) == value)
+				result.add(key);
+		}
+        return result;
+	}
+
+	public boolean isCardFaceUp(int position){
+		return gameField.isCardFaceUp(position);
+	}
 
     public Map<Integer, Card> getCardsOnField(){
         return gameField.getAllCards();
@@ -209,4 +274,12 @@ public class Player {
         }
         return true;
     }
+	
+	public List<Integer> getPositionsOfAllFaceUpBros(){
+		return gameField.getAllFaceUpPositions();
+	}
+	
+	public List<Integer> getPositionsOfAllFaceDownBros(){
+		return gameField.getAllFaceDownPositions();
+	}
 }
