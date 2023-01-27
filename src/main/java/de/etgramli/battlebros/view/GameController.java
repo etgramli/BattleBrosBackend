@@ -154,24 +154,17 @@ public class GameController {
             if (game == null) {
                 return playerOneName + "'s game";
             } else {
-                final String firstPlayerName = game.getPlayerName(0);
-                final String secondPlayerName = game.getPlayerName(1);
-                return "%s's and %s's game".formatted(firstPlayerName, secondPlayerName);
+                return "%s's and %s's game".formatted(game.getPlayerName(0), game.getPlayerName(1));
             }
         }
 
         private void updateHands() {
-            int counter = 0;
-            for (Principal principal : playerPrincipals) {
-                final String principalName = principal.getName();
-                final List<Integer> hand = game.getCardsInHand(counter).stream().map(Card::getId).toList();
-                template.convertAndSendToUser(principalName, URL_PLAYER_HANDS, hand);
-                if (hand.isEmpty()) {
-                    logger.warn("Hand of player " + game.getPlayerName(counter) + " is empty!");
-                }
+            for (int i = 0; i < playerPrincipals.length; i++) {
+                final String uuid = playerPrincipals[i].getName();
+                final List<Integer> hand = game.getCardsInHand(i).stream().map(Card::getId).toList();
+                template.convertAndSendToUser(uuid, URL_PLAYER_HANDS, hand);
                 logger.info("Sent hand to user \"%s\" with uuid \"%s\": %s"
-                        .formatted(game.getPlayerName(counter), principalName, hand));
-                counter++;
+                        .formatted(game.getPlayerName(i), uuid, hand));
             }
         }
 
@@ -219,10 +212,6 @@ public class GameController {
             updateStrength();
             updateLifeCards();
             updateActivePlayer();
-        }
-
-        public boolean hasPlayerUuid(@NonNull final String uuid) {
-            return Arrays.stream(playerPrincipals).map(Principal::getName).anyMatch(uuid::equals);
         }
 
         public void pass(@NonNull final Principal principal) {
