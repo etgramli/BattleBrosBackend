@@ -6,9 +6,9 @@ import java.util.List;
 
 public class GameZone {
 
-    private List<Card> cards  = new ArrayList<>();
-    private boolean isVisibleToOwner;
-    private boolean isVisibleToOpponent;
+    private final List<Card> cards  = new ArrayList<>();
+    private final boolean isVisibleToOwner;
+    private final boolean isVisibleToOpponent;
 
     public GameZone(boolean isVisibleToOwner, boolean isVisibleToOpponent){
         this.isVisibleToOwner = isVisibleToOwner;

@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 public class GameField {
-    private Map<Integer, Card> cards  = new HashMap<Integer, Card>();
-	private Map<Integer, Boolean> cardFacings = new HashMap<Integer, Boolean>();
+    private final Map<Integer, Card> cards  = new HashMap<Integer, Card>();
+	private final Map<Integer, Boolean> cardFacings = new HashMap<Integer, Boolean>();
 
     public GameField(){
     }

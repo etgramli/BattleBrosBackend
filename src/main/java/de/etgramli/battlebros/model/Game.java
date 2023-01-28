@@ -16,8 +16,8 @@ public class Game implements GameInterface {
     private int turn;
 	private ResolvableAbility currentAbility = null;
     int NUMBER_OF_PLAYERS = 2;
-    private Player player1; //index is 0
-    private Player player2; //index is 1
+    private final Player player1; //index is 0
+    private final Player player2; //index is 1
     private Player turnPlayer;
 
 
@@ -328,7 +328,7 @@ public class Game implements GameInterface {
 	// M E T H O D S (OTHERS)
 
 	public List<Integer> getPositionsOfFaceDownCards(int playerIndex){
-		return getPlayer(playerIndex).getPositionsOfAllFaceUpBros();
+		return getPlayer(playerIndex).getPositionsOfAllFaceDownBros();
 	}
 
 	private boolean notAbleToPlayDiscardOrPass(int playerIndex){

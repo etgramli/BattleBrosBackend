@@ -13,7 +13,7 @@ public class Deck {
         assert DECKS.values().stream().allMatch(Deck::checkIfLegal);
     }
 
-    private Set<Card> cards = new HashSet<>();
+    private final Set<Card> cards = new HashSet<>();
 
     public Deck(){}
     public Deck(Collection<Card> cards){

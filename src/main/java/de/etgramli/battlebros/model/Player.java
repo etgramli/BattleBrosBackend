@@ -6,19 +6,19 @@ import java.util.Map;
 
 public class Player {
 
-    private String name;
-    private Deck deck;
+    private final String name;
+    private final Deck deck;
 
     private Player opponent;
 	private Game game;
 
     private boolean hasPassed;
-    private GameZone gameZoneDeck = new GameZone(false, false);
-    private GameZone gameZoneLife = new GameZone(false, false);
-    private GameZone gameZoneHand = new GameZone(true, false);
-    private GameZone gameZoneDiscard = new GameZone(true, true);
+    private final GameZone gameZoneDeck = new GameZone(false, false);
+    private final GameZone gameZoneLife = new GameZone(false, false);
+    private final GameZone gameZoneHand = new GameZone(true, false);
+    private final GameZone gameZoneDiscard = new GameZone(true, true);
 
-    private GameField gameField = new GameField();
+    private final GameField gameField = new GameField();
 
     public Player(String name, Deck deck){
         this.name = name;
@@ -265,8 +265,7 @@ public class Player {
             return false;
 
         if (getAmountOfCardsOnField()==0 && opponent.getAmountOfCardsOnField()==0) {
-            if (gameFieldPosition!=0)
-                return false;
+            return gameFieldPosition == 0;
         } else if (opponent.getCardOnFieldAt(gameFieldPosition)==null
                 && getCardOnFieldAt(gameFieldPosition-1)==null
                 && getCardOnFieldAt(gameFieldPosition+1)==null) {

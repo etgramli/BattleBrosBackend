@@ -4,7 +4,7 @@ import java.util.List;
 
 public class ResolvableAbility {
 	
-	private int cardId;
+	private final int cardId;
 	private Player actor = null;
 	private boolean isOptional = false;
 	private int progress = 0; //counts how many steps are already finished (most abilities consist of just 1 step)
