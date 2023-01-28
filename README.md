@@ -5,6 +5,7 @@ This is an implementation of the game logic of the awesome game BattleBros.
 - Logo
 - Select pre-built decks
 - Deck builder
+- In-Game turn clock (~1 minute per action), game loss when it runs out
 - User accounts
   - Unlock cards after a period of time
   - Number of wins/losses
