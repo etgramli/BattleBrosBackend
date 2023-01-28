@@ -163,8 +163,7 @@ public class GameController {
         }
 
         private void updateBoards() {
-            final BoardDTO boardDto = new BoardDTO(game.getCardsInPlay(0), game.getCardsInPlay(1),
-                    game.getPositionsOfFaceDownCards(0), game.getPositionsOfFaceDownCards(1));
+            final BoardDTO boardDto = BoardDTO.from(game);
             for (Principal principal : playerPrincipals) {
                 template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, boardDto);
             }

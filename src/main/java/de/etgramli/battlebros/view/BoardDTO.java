@@ -1,29 +1,30 @@
 package de.etgramli.battlebros.view;
 
 import de.etgramli.battlebros.model.Card;
+import de.etgramli.battlebros.model.GameInterface;
 import org.springframework.lang.NonNull;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
-public class BoardDTO {
-    private final List<List<Map.Entry<Integer, CardDTO>>> board;
+import static de.etgramli.battlebros.util.CollectionUtil.listFromMap;
+
+public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
 
     @NonNull
     private static TreeMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards) {
-        final TreeMap<Integer, CardDTO> playerOneBoard = new TreeMap<>();
-        for (Map.Entry<Integer, Card> entry : playedCards.entrySet()) {
-            playerOneBoard.put(entry.getKey(), CardDTO.of(entry.getValue()));
-        }
-        return playerOneBoard;
+        return playedCards.entrySet().stream().collect(
+                Collectors.toMap(Map.Entry::getKey, e -> CardDTO.from(e.getValue()), (a, b) -> b, TreeMap::new));
     }
 
-    public BoardDTO(@NonNull final Map<Integer, Card> playerOneCards,
-                    @NonNull final Map<Integer, Card> playerTwoCards,
-                    @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
-                    @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
+    @NonNull
+    public static BoardDTO from(@NonNull final Map<Integer, Card> playerOneCards,
+                                @NonNull final Map<Integer, Card> playerTwoCards,
+                                @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
+                                @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
         final TreeMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards);
         final TreeMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards);
 
@@ -35,13 +36,14 @@ public class BoardDTO {
         playerOneBoard.keySet().forEach(i -> playerTwoBoard.putIfAbsent(i, null));
         playerTwoBoard.keySet().forEach(i -> playerOneBoard.putIfAbsent(i, null));
 
-        board = List.of(
-                playerOneBoard.entrySet().stream().toList(),
-                playerTwoBoard.entrySet().stream().toList()
-        );
+        return new BoardDTO(List.of(listFromMap(playerOneBoard), listFromMap(playerTwoBoard)));
     }
 
-    public List<List<Map.Entry<Integer, CardDTO>>> getBoard() {
-        return board;
+    @NonNull
+    public static BoardDTO from(@NonNull final GameInterface game) {
+        return from(game.getCardsInPlay(0),
+                    game.getCardsInPlay(1),
+                    game.getPositionsOfFaceDownCards(0),
+                    game.getPositionsOfFaceDownCards(1));
     }
 }

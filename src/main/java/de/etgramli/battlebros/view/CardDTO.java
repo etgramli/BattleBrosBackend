@@ -11,7 +11,7 @@ import org.springframework.lang.NonNull;
 public record CardDTO(int id) {
 
     @NonNull
-    public static CardDTO of(@NonNull final Card card) {
+    public static CardDTO from(@NonNull final Card card) {
         return new CardDTO(card.getId());
     }
 
