@@ -31,6 +31,8 @@ public interface GameInterface extends IObservable {
 
     int getAmountOfLifeCards(int playerIndex);
 
+    List<Boolean> hasPassed();
+
     // Gameplay methods
     boolean playCard(int playerIndex, int cardHandIndex, int position);
 

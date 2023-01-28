@@ -45,6 +45,11 @@ public class Game implements GameInterface {
         return null;
     }
 
+	@Override
+	public List<Boolean> hasPassed() {
+		return List.of(player1.hasPassed(), player2.hasPassed());
+	}
+
     public Player getTurnPlayer(){
         return turnPlayer;
     }
