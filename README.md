@@ -8,8 +8,23 @@ This is an implementation of the game logic of the awesome game BattleBros.
 - User accounts
   - Unlock cards after a period of time
   - Number of wins/losses
-  - Profile picture
-  - Resume-able games
+  - Profile picture (upload a picture OR choose a battle bro artwork)
+  - Resume-able, asynchronous games
+  - friend list and chat outside of games
+  - unlockable versions of cards with visual effect and voice line when played
+- Additional in-game features
+  - chat with opponent
+  - log with all taken game actions and hoverable card names
+  - large image of last hovered card, with written out name, value, element & ability text
+  - card specific rules FAQs, viewable by right-clicking a card
+  - making display of these additional features optional/toggleable
+- Single Player content
+  - play against AI
+  - solve puzzles
+- Additional links
+  - page with rules explanation
+  - maybe even playable rules tutorial
+  - link to purchasable physical cards
 
 ## Rules
 This is a game for two players, each having a deck of 12 cards.
