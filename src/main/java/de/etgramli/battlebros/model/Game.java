@@ -359,7 +359,9 @@ public class Game implements GameInterface {
 	
     private void advanceToNextTurn(){
         turn++;
-        changeTurnPlayer();
+
+		if (getNonTurnPlayer().hasPassed())
+			changeTurnPlayer();
 		notifyObservers();
     }
 
