@@ -15,8 +15,9 @@ public record CardDTO(int id) {
         return new CardDTO(card.getId());
     }
 
-    @NonNull
-    public static CardDTO of(final int cardId) {
-        return CardDTO.of(Card.getCard(cardId));
+    public static CardDTO getFaceDown() {
+        return CARD_FACE_DOWN;
     }
+
+    private static final CardDTO CARD_FACE_DOWN = new CardDTO(0);
 }
