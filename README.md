@@ -1,6 +1,15 @@
 # BattleBros
 This is an implementation of the game logic of the awesome game BattleBros.
 
+## ToDo
+- Logo
+- Select pre-built decks
+- Deck builder
+- User accounts
+  - Unlock cards after a period of time
+  - Number of wins/losses
+  - Profile picture
+
 ## Rules
 This is a game for two players, each having a deck of 12 cards.
 
@@ -25,14 +34,7 @@ Here are specific rules that occur rarely, but then are very important.
 - ?
 
 ## WebSocket communication
-The table shows the server's URLs for incoming messages and which URLs get updated due to the changed state (by that incoming messages).
-
-| Action          | Incoming URL | Triggers update to subscribing URL | Description                             |
-|-----------------|--------------|------------------------------------|-----------------------------------------|
-| New Game        | /newgame     |                                    | Create new game                         |
-| Join Game       | /joingame    |                                    | Join an existing game                   |
-| Play card       | /placecard   | /topic/board                       | Place card and triggers board update    |
-| Fold            | /fold        |                                    | Fold round - next player's turn         |
+An overview on the URLs used to send/receive messages to create and update game instances.
 
 ### Important STOMP URLs
 | Purpose             | URL    |
@@ -40,6 +42,18 @@ The table shows the server's URLs for incoming messages and which URLs get updat
 | User-specific Queue | /user  |
 | App prefix          | /app   |
 | Broker URL          | /topic |
+
+### Messages
+The server listens to the following URLs for messages from the web client to the described actions. All of them trigger
+at least one response on the URL(s) mentioned in "User-Topics".
+
+| Incoming URL | Description                          |
+|--------------|--------------------------------------|
+| /hostgame    | Create new game                      |
+| /joingame    | Join an existing game                |
+| /placecard   | Place card and triggers board update |
+| /pass        | Pass round - next player's turn      |
+| /showgames   | Manually reload games list           |
 
 #### User-Topics
 All the following urls must be subscribed in the client with a preceding "/user" to get automatic updates.
