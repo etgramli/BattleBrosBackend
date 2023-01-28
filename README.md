@@ -12,7 +12,7 @@ Each card has a value and an element attached, some have effects.
 Effects may change values, prohibit effect or flip cards.
 An effect can affect the card itself, neighbor cards (left, right), the facing card or cards of a specific element.
 
-Cards can only be placed at empty posisions, that directly connects to an already played card (but not digonally).
+Cards can only be placed at empty positions, that directly connects to an already played card (but not digonally).
 
 ### Game modes
 - Pre-built decks
@@ -42,11 +42,15 @@ The table shows the server's URLs for incoming messages and which URLs get updat
 | Broker URL          | /topic |
 
 #### User-Topics
-All of the following urls must be subscribed in the client with a preceding "/user".
+All the following urls must be subscribed in the client with a preceding "/user" to get automatic updates.
 
-| Purpose          | URL                                     |
-|------------------|-----------------------------------------|
-| /topic/hand      | The player's hand cards                 |
-| /topic/board     | Board state                             |
-| /topic/strength  | Current strength of each player's cards |
-| /topic/lifecards | Amount of life cards                    |
+| URL                 | Purpose                                                      |
+|---------------------|--------------------------------------------------------------|
+| /topic/hand         | The player's hand cards                                      |
+| /topic/board        | Board state                                                  |
+| /topic/strength     | Current strength of each player's cards                      |
+| /topic/lifecards    | Amount of life cards                                         |
+| /topic/names        | Names of the players of the current game                     |
+| /topic/activeplayer | Index of the active player (which player's turn)             |
+| /topic/showgames    | List of open games (which you can join)                      |
+| /topic/joingame     | Returns the index of the players after the 2nd player joined |
