@@ -16,7 +16,8 @@ class BoardDTOTest {
     void getBoard_emptyPlayerBoards() {
         final Map<Integer, Card> playedCards = Collections.emptyMap();
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(playedCards, playedCards, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCards, playedCards,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -31,7 +32,8 @@ class BoardDTOTest {
         final Map<Integer, Card> playedCardsOne = Collections.emptyMap();
         final Map<Integer, Card> playedCardsTwo = Map.of(0, Card.getCard(1), 1, Card.getCard(2), 2, Card.getCard(3));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(playedCardsOne, playedCardsTwo, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCardsOne, playedCardsTwo,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -44,7 +46,8 @@ class BoardDTOTest {
     void getBoard_samePlayerBoards() {
         final Map<Integer, Card> playedCards = Map.of(0, Card.getCard(1), 1, Card.getCard(2), 2, Card.getCard(3));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(playedCards, playedCards, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCards, playedCards,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -61,7 +64,8 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(-1, Card.getCard(1), 0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(otherPlayedCards, thisPlayedCards, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -79,7 +83,8 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2), 1, Card.getCard(4));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(otherPlayedCards, thisPlayedCards, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -97,7 +102,8 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(-1, Card.getCard(1), 0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2), 1, Card.getCard(7));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = new BoardDTO(otherPlayedCards, thisPlayedCards, Collections.emptyList(), Collections.emptyList()).getBoard();
+        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
+                Collections.emptyList(), Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
