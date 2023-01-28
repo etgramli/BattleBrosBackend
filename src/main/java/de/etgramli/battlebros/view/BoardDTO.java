@@ -15,7 +15,7 @@ public class BoardDTO {
     private static TreeMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards) {
         final TreeMap<Integer, CardDTO> playerOneBoard = new TreeMap<>();
         for (Map.Entry<Integer, Card> entry : playedCards.entrySet()) {
-            playerOneBoard.put(entry.getKey(), CardDTO.of(entry.getValue()));
+            playerOneBoard.put(entry.getKey(), CardDTO.from(entry.getValue()));
         }
         return playerOneBoard;
     }
