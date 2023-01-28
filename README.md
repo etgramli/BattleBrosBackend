@@ -9,6 +9,7 @@ This is an implementation of the game logic of the awesome game BattleBros.
   - Unlock cards after a period of time
   - Number of wins/losses
   - Profile picture
+  - Resume-able games
 
 ## Rules
 This is a game for two players, each having a deck of 12 cards.
