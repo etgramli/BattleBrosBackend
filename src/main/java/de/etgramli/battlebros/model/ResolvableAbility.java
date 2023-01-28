@@ -47,9 +47,9 @@ public class ResolvableAbility {
 				if (opponentsHighestValue > highestValue)
 					highestValue = opponentsHighestValue;
 				canChooseFromOwnField = true;
-				fromOwnFieldAllowed = actor.getPositionsOfAllBrosWithValue(highestValue);
+				fromOwnFieldAllowed = actor.getPositionsOfAllFaceUpBrosWithValue(highestValue);
 				canChooseFromOpponentField = true;
-				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllBrosWithValue(highestValue);
+				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBrosWithValue(highestValue);
 				break;
 			case 7: //Potzblitz
 				actor = activator.getOpponent();

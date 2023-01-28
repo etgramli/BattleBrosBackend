@@ -242,11 +242,11 @@ public class Player {
         return result;
 	}
 	
-	public List<Integer> getPositionsOfAllBrosWithValue(int value){
+	public List<Integer> getPositionsOfAllFaceUpBrosWithValue(int value){
 		List<Integer> result = new ArrayList<>();
         for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
 			int key = entry.getKey();
-            if (getValueOfCardOnFieldAt(key) == value)
+            if (isCardFaceUp(key) && getValueOfCardOnFieldAt(key) == value)
 				result.add(key);
 		}
         return result;
