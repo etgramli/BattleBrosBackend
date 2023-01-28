@@ -72,7 +72,7 @@ at least one response on the URL(s) mentioned in "User-Topics".
 | /pass        | Pass round - next player's turn      |
 | /showgames   | Manually reload games list           |
 
-#### User-Topics
+### User-Topics
 All the following urls must be subscribed in the client with a preceding "/user" to get automatic updates.
 
 | URL                 | Purpose                                                      |
