@@ -22,7 +22,6 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,17 +37,13 @@ public class GameController {
     private static final String URL_LIFE_CARDS = "/topic/lifecards";
     private static final String URL_ACTIVE_PLAYER = "/topic/activeplayer";
     private static final String URL_SHOW_GAMES_LIST = "/topic/showgames";
+    public static final String URL_JOIN_GAME = "/topic/joingame";
 
     @Autowired
     private SimpMessagingTemplate template;
 
     private final List<GameInstance> openGames = new ArrayList<>();
     private final Map<String, GameInstance> playerUuidToGame = new HashMap<>();
-
-    @NonNull
-    private GameInstance getGameByPlayerUuid(@NonNull final String uuid) {
-        return playerUuidToGame.get(uuid);
-    }
 
     @MessageMapping("/showgames")
     @SendTo(URL_SHOW_GAMES_LIST)
@@ -64,7 +59,6 @@ public class GameController {
         if (sha.getUser() == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        // ToDo: prevent user to host 2 games at once
         openGames.add(new GameInstance(playerName, sha.getUser()));
         logger.info("Player with name \"%s\" and UUID \"%s\" hosts a new game. Got index: 1"
                 .formatted(playerName, sha.getUser().getName()));
@@ -73,7 +67,7 @@ public class GameController {
     }
 
     @MessageMapping("/joingame")
-    @SendToUser("/topic/joingame")
+    @SendToUser(URL_JOIN_GAME)
     public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final JoinGameMessage message) {
         if (sha.getUser() == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
@@ -91,8 +85,9 @@ public class GameController {
         if (!message.isValid()) {
             logger.error("Received indices were not valid: " + message);
         }
-        final String userUuid = sha.getUser().getName();
-        getGameByPlayerUuid(userUuid).placeCard(sha.getUser(), message.getHandIndex(), message.getBoardIndex());
+        final Principal callingPlayer = sha.getUser();
+        final String userUuid = callingPlayer.getName();
+        playerUuidToGame.get(userUuid).placeCard(callingPlayer, message.getHandIndex(), message.getBoardIndex());
     }
 
     @MessageMapping("/pass")
@@ -101,8 +96,9 @@ public class GameController {
             logger.error("No username provided!");
             return;
         }
-        final String userUuid = sha.getUser().getName();
-        getGameByPlayerUuid(userUuid).pass(sha.getUser());
+        final Principal callingUser = sha.getUser();
+        final String userUuid = callingUser.getName();
+        playerUuidToGame.get(userUuid).pass(callingUser);
     }
 
 
@@ -139,13 +135,13 @@ public class GameController {
             game.addObserver(this);
 
             try {
-                Thread.sleep(100);
+                Thread.sleep(100);  // Give frontend time to subscribe to all URLS (when switching to game component)
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
             template.convertAndSend(URL_PLAYER_NAMES, List.of(game.getPlayerName(0), game.getPlayerName(1)));
-            template.convertAndSendToUser(playerPrincipals[0].getName(), "/topic/joingame", 0);
-            template.convertAndSendToUser(playerPrincipals[1].getName(), "/topic/joingame", 1);
+            template.convertAndSendToUser(playerPrincipals[0].getName(), URL_JOIN_GAME, 0);
+            template.convertAndSendToUser(playerPrincipals[1].getName(), URL_JOIN_GAME, 1);
 
             game.startGame();
         }
@@ -163,8 +159,6 @@ public class GameController {
                 final String uuid = playerPrincipals[i].getName();
                 final List<Integer> hand = game.getCardsInHand(i).stream().map(Card::getId).toList();
                 template.convertAndSendToUser(uuid, URL_PLAYER_HANDS, hand);
-                logger.info("Sent hand to user \"%s\" with uuid \"%s\": %s"
-                        .formatted(game.getPlayerName(i), uuid, hand));
             }
         }
 
@@ -181,7 +175,6 @@ public class GameController {
             for (Principal principal : playerPrincipals) {
                 template.convertAndSendToUser(principal.getName(), URL_PLAYER_STRENGTH, strengths);
             }
-            logger.info("Sent strengths: " + strengths);
         }
 
         private void updateLifeCards() {
@@ -199,9 +192,8 @@ public class GameController {
         }
 
         private void updateActivePlayer() {
-            final int activePlayerIndex = game.getTurnPlayerIndex();
             for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_ACTIVE_PLAYER, activePlayerIndex);
+                template.convertAndSendToUser(principal.getName(), URL_ACTIVE_PLAYER, game.getTurnPlayerIndex());
             }
         }
 
@@ -219,8 +211,7 @@ public class GameController {
 
             final boolean success = game.pass(indexOfPlayer(callingPlayerUuid));
 
-            logger.info("Player with UUID %s tried to pass (success: %b)"
-                    .formatted(principal.getName(), success));
+            logger.info("Player with UUID %s tried to pass (success: %b)".formatted(callingPlayerUuid, success));
         }
 
         public void placeCard(@NonNull final Principal principal, final int handIndex, final int boardIndex) {
@@ -228,7 +219,7 @@ public class GameController {
             final boolean success = game.playCard(indexOfPlayer(callingPlayerUuid), handIndex, boardIndex);
 
             logger.info("Player with UUID %s tried to place hand card %s at board position %d (success: %b)"
-                    .formatted(principal.getName(), handIndex, boardIndex, success));
+                    .formatted(callingPlayerUuid, handIndex, boardIndex, success));
         }
 
         private int indexOfPlayer(@NonNull final String principalUuid) {
