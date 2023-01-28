@@ -16,7 +16,7 @@ This is an implementation of the game logic of the awesome game BattleBros.
 - Additional in-game features
   - chat with opponent
   - log with all taken game actions and hoverable card names
-  - large image of last hovered card, with written out name, value, element & ability text
+  - large image of last hovered card, with written out name, value, element & ability text underneath
   - card specific rules FAQs, viewable by right-clicking a card
   - making display of these additional features optional/toggleable
 - Single Player content
