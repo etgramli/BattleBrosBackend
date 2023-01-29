@@ -14,9 +14,7 @@ on:
 
 jobs:
   build:
-
     runs-on: self-hosted
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up Adopt JDK 17
@@ -27,3 +25,13 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Shut down server
+        run: sudo service battle-bros stop
+      - name: Copy new server file
+        run: sudo rm /var/battle-bros/battle-bros-0.0.1-SNAPSHOT.jar && sudo cp target/battle-bros-0.0.1-SNAPSHOT.jar /var/battle-bros/
+      - name: Restart server
