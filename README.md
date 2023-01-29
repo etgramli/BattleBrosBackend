@@ -85,3 +85,4 @@ All the following urls must be subscribed in the client with a preceding "/user"
 | /topic/activeplayer | Index of the active player (which player's turn)             |
 | /topic/showgames    | List of open games (which you can join)                      |
 | /topic/joingame     | Returns the index of the players after the 2nd player joined |
+| /topic/passed       | Returns a list of Booleans that says which players passed    |

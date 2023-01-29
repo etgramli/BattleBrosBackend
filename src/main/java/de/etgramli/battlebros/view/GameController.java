@@ -38,6 +38,7 @@ public class GameController {
     private static final String URL_ACTIVE_PLAYER = "/topic/activeplayer";
     private static final String URL_SHOW_GAMES_LIST = "/topic/showgames";
     public static final String URL_JOIN_GAME = "/topic/joingame";
+    public static final String URL_PLAYERS_PASSED = "/topic/passed";
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -193,6 +194,12 @@ public class GameController {
         private void updateActivePlayer() {
             for (Principal principal : playerPrincipals) {
                 template.convertAndSendToUser(principal.getName(), URL_ACTIVE_PLAYER, game.getTurnPlayerIndex());
+            }
+        }
+
+        private void updatePlayersPassed() {
+            for (Principal principal : playerPrincipals) {
+                template.convertAndSendToUser(principal.getName(), URL_PLAYERS_PASSED, game.hasPassed());
             }
         }
 
