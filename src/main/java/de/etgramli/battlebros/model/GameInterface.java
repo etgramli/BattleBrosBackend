@@ -5,15 +5,14 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public interface GameInterface extends IObservable {
 
     void startGame();
 
-    int getOtherPlayerNum(final int currentPlayerNum);
-	
     // Getters
+    int getOtherPlayerNum(final int currentPlayerNum);
+
     int getTurnPlayerIndex();
 
     String getPlayerName(int playerIndex);
@@ -40,8 +39,21 @@ public interface GameInterface extends IObservable {
 	
 	boolean pass(int playerIndex);
 
+    /**
+     * A player chooses one card in play (due to an effect).
+     * @param playerIndex Index of the player choosing a card.
+     * @param playerRow Row of the cards, in which the card is.
+     * @param xPosition Position of the card in the row.
+     * @return  True if the action is successful (was allowed).
+     */
 	boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition);
-	
+
+    /**
+     * A player chooses multiple cards in play.
+     * @param playerIndex The index of the player choosing the cards.
+     * @param selections A list of pais, consisting of the row index and position of the card in the row.
+     * @return  True if the action is successful (was allowed).
+     */
 	boolean chooseCardsInPlay(int playerIndex, List<Pair<Integer,Integer>> selections);
 	
 	boolean chooseCardInDiscard(int playerIndex, int discardIndex);
@@ -49,7 +61,8 @@ public interface GameInterface extends IObservable {
 	boolean chooseCardsInDiscard(int playerIndex, List<Pair<Integer,Integer>> selections);
 	
 	boolean chooseCardInHand(int playerIndex, int handIndex);
+
+    boolean chooseCardInOpponentHand(int playerIndex, int handIndex);
 		
     boolean chooseYesOrNo(int playerIndex, boolean accept);
-
 }
