@@ -1,6 +1,8 @@
 # BattleBros
 This is an implementation of the game logic of the awesome game BattleBros.
 
+[![Java build with Maven](https://github.com/etgramli/BattleBrosBackend/actions/workflows/maven.yml/badge.svg)](https://github.com/etgramli/BattleBrosBackend/actions/workflows/maven.yml)
+
 ## ToDo
 - Logo
 - Select pre-built decks
