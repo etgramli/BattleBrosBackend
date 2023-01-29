@@ -210,6 +210,7 @@ public class GameController {
             updateStrength();
             updateLifeCards();
             updateActivePlayer();
+            updatePlayersPassed();
         }
 
         public void pass(@NonNull final Principal principal) {
