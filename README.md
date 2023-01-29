@@ -29,6 +29,19 @@ This is an implementation of the game logic of the awesome game BattleBros.
   - maybe even playable rules tutorial
   - link to purchasable physical cards
 
+## Card Unlocking System
+- Jeden Tag kann ein Account in den ersten 5 Kämpfen, die er spielt, Karten gewinnen.
+- Bei einer Niederlage gewinnt man eine völlig zufällige Karte. Bei einem Sieg werden dir drei zufällige Karten präsentiert und du kannst auswählen welche der drei Karten du erhältst.
+- Man kann auch Karten erhalten, die man bereits besitzt.
+- Überschüssige Karten schalten kosmetische Upgrades frei. (5 Kopien eines Bros = Diesen Bro als Profilbild, 10 Kopien = Spezialkarte mit VoiceLine und Glitzer)
+- Karten untereinander handeln ist nicht möglich
+- Standardprofilbilder, die für jeden account von beginn zur verfügung stehen, können sein: feuersymbol, wassersymbol, usw, und der battle bros icon, den wir noch machen müssen evtl in verschiedenen farben
+- Man kann dann auch machen dass bei den zufälligen karten, die man erhält/wählt immer zu mindestens 33% oder so eine karte dabei ist, von der man noch 0 exemplare hat
+Man könnte für jede karte machen:
+- 1/3 wahrscheinlichkeit: die karte ist eine random karte, die du noch nicht hast 
+- 1/3: die karte ist eine random karte, die in deinem oder dem gegn. Deck von diesem match kommt 
+- 1/3: diese karte ist komplett random
+
 ## Rules
 This is a game for two players, each having a deck of 12 cards.
 
