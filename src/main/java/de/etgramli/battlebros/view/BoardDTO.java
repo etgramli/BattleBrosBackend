@@ -21,10 +21,10 @@ public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
     }
 
     @NonNull
-    public static BoardDTO from(@NonNull final Map<Integer, Card> playerOneCards,
-                                @NonNull final Map<Integer, Card> playerTwoCards,
-                                @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
-                                @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
+    static BoardDTO from(@NonNull final Map<Integer, Card> playerOneCards,
+                         @NonNull final Map<Integer, Card> playerTwoCards,
+                         @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
+                         @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
         final TreeMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards);
         final TreeMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards);
 
