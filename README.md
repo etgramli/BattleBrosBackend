@@ -121,14 +121,15 @@ at least one response on the URL(s) mentioned in "User-Topics".
 ### User-Topics
 All the following urls must be subscribed in the client with a preceding "/user" to get automatic updates.
 
-| URL                 | Purpose                                                      |
-|---------------------|--------------------------------------------------------------|
-| /topic/hand         | The player's hand cards                                      |
-| /topic/board        | Board state                                                  |
-| /topic/strength     | Current strength of each player's cards                      |
-| /topic/lifecards    | Amount of life cards                                         |
-| /topic/names        | Names of the players of the current game                     |
-| /topic/activeplayer | Index of the active player (which player's turn)             |
-| /topic/showgames    | List of open games (which you can join)                      |
-| /topic/joingame     | Returns the index of the players after the 2nd player joined |
-| /topic/passed       | Returns a list of Booleans that says which players passed    |
+| URL                 | Purpose                                                                         |
+|---------------------|---------------------------------------------------------------------------------|
+| /topic/hand         | The player's hand cards                                                         |
+| /topic/board        | Board state                                                                     |
+| /topic/strength     | Current strength of each player's cards                                         |
+| /topic/lifecards    | Amount of life cards                                                            |
+| /topic/names        | Names of the players of the current game                                        |
+| /topic/activeplayer | Index of the active player (which player's turn)                                |
+| /topic/showgames    | List of open games (which you can join)                                         |
+| /topic/joingame     | Returns the index of the players after the 2nd player joined                    |
+| /topic/passed       | Returns a list of Booleans that says which players passed                       |
+| /topic/selectcard   | Send request from the backend to the frontend to ask the user  to select a card |

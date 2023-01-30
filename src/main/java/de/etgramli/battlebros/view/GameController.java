@@ -8,6 +8,9 @@ import de.etgramli.battlebros.model.Player;
 import de.etgramli.battlebros.util.IObserver;
 import de.etgramli.battlebros.view.messages.JoinGameMessage;
 import de.etgramli.battlebros.view.messages.PlaceCardMessage;
+import de.etgramli.battlebros.view.messages.select.SelectCardMessage;
+import de.etgramli.battlebros.view.messages.select.SelectType;
+import de.etgramli.battlebros.view.messages.select.UserSelectedCardMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static de.etgramli.battlebros.view.messages.select.SelectType.SELECT_DISCARDED_CARD;
+
+
 @Controller
 public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
@@ -39,6 +45,7 @@ public class GameController {
     private static final String URL_SHOW_GAMES_LIST = "/topic/showgames";
     public static final String URL_JOIN_GAME = "/topic/joingame";
     public static final String URL_PLAYERS_PASSED = "/topic/passed";
+    public static final String URL_SELECT_CARD = "/topic/selectcard";
 
     @Autowired
     private SimpMessagingTemplate template;
@@ -100,6 +107,16 @@ public class GameController {
         final Principal callingUser = sha.getUser();
         final String userUuid = callingUser.getName();
         playerUuidToGame.get(userUuid).pass(callingUser);
+    }
+
+    @MessageMapping("/selectcard")
+    public void selectCard(@NonNull final SimpMessageHeaderAccessor sha,
+                           @NonNull final UserSelectedCardMessage message) {
+        if (sha.getUser() == null) {
+            logger.error("No username provided!");
+            return;
+        }
+        playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
     }
 
 
@@ -213,6 +230,35 @@ public class GameController {
             updatePlayersPassed();
         }
 
+        private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectType type) {
+            final SelectCardMessage selectMyHandMessage = new SelectCardMessage(type);
+            final String playerUuid = playerPrincipals[playerIndex].getName();
+
+            template.convertAndSendToUser(playerUuid, URL_SELECT_CARD, selectMyHandMessage);
+
+            logger.info("Player %s has to select card of type %s".formatted(playerUuid, type));
+        }
+
+        @Override
+        public void selectMyHandCard(final int playerIndex) {
+            sendCardSelectMessage(playerIndex, SelectType.SELECT_MY_HAND_CARD);
+        }
+
+        @Override
+        public void selectMyPlayedCard(final int playerIndex) {
+            sendCardSelectMessage(playerIndex, SelectType.SELECT_MY_PLAYED_CARD);
+        }
+
+        @Override
+        public void selectOpponentPlayedCard(final int playerIndex) {
+            sendCardSelectMessage(playerIndex, SelectType.SELECT_OPPONENT_PLAYED_CARD);
+        }
+
+        @Override
+        public void selectDiscardedCard(final int playerIndex) {
+            sendCardSelectMessage(playerIndex, SELECT_DISCARDED_CARD);
+        }
+
         public void pass(@NonNull final Principal principal) {
             final String callingPlayerUuid = principal.getName();
 
@@ -227,6 +273,19 @@ public class GameController {
 
             logger.info("Player with UUID %s tried to place hand card %s at board position %d (success: %b)"
                     .formatted(callingPlayerUuid, handIndex, boardIndex, success));
+        }
+
+        public void selectCard(@NonNull final UserSelectedCardMessage message) {
+            final int playerIndex = message.playerIndex();
+            final int cardIndex = message.selectedCardIndex();
+            final boolean success = switch (message.type()) {
+                case SELECT_MY_HAND_CARD -> game.chooseCardInHand(playerIndex, cardIndex);
+                case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.playerIndex(), cardIndex);
+                case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, game.getOtherPlayerNum(playerIndex), cardIndex);
+                case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, message.selectedCardIndex());
+            };
+            logger.info("Player %d selected card (%s) with index %s (success: %b)"
+                    .formatted(playerIndex, message.type(), message.selectedCardIndex(), success));
         }
 
         private int indexOfPlayer(@NonNull final String principalUuid) {
