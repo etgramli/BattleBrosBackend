@@ -62,7 +62,5 @@ public interface GameInterface extends IObservable {
 	
 	boolean chooseCardInHand(int playerIndex, int handIndex);
 
-    boolean chooseCardInOpponentHand(int playerIndex, int handIndex);
-		
     boolean chooseYesOrNo(int playerIndex, boolean accept);
 }

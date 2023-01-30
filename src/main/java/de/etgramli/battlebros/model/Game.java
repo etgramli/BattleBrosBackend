@@ -260,12 +260,6 @@ public class Game implements GameInterface {
 	}
 
 	@Override
-	public boolean chooseCardInOpponentHand(int playerIndex, int handIndex) {
-		// ToDo
-		return false;
-	}
-
-	@Override
     public boolean chooseYesOrNo(int playerIndex, boolean accept) {
 		if (notAbleToResolveAbility(playerIndex) || !currentAbility.isOptional())
 			return false;
