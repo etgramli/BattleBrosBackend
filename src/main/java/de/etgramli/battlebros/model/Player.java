@@ -39,9 +39,6 @@ public class Player {
 
     public int getTotalValue(){
         int total = 0;
-        /*for(Card card : gameField.getListOfAllCards()){
-            total += card.getValue();
-        }*/
 		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet())
 			total += getValueOfCardOnFieldAt(entry.getKey());
         return total;
@@ -75,13 +72,22 @@ public class Player {
         hasPassed = true;
     }
 
-    public void setUpGame(){
-        gameZoneDeck.addCards(deck.getCards());
-        shuffleDeck();
+    public void setUpGameWithShuffling(){
+        setUpGame(true);
+    }
+	
+	public void setUpGameWithOutShuffling(){
+		setUpGame(false);
+    }
+	
+	private void setUpGame(boolean doShuffle){
+		gameZoneDeck.addCards(deck.getCards());
+        if (doShuffle)
+			shuffleDeck();
         addLifeCards(3);
         drawCards(6);
         hasPassed = false;
-    }
+	}
 
     private void shuffleDeck(){
         gameZoneDeck.shuffle();
@@ -100,6 +106,9 @@ public class Player {
     }
 
     public int drawCards(int amount){ //returns the amount of cards actually drawn
+		if (game.notAllowedToDrawCards(this))
+			return 0;
+	
         int cardsDrawn = 0;
         for (int i=0; i< amount; i++) {
             if (drawACard())
@@ -110,7 +119,10 @@ public class Player {
         return cardsDrawn;
     }
 
-    public boolean drawACard(){
+    private boolean drawACard(){
+		if (game.notAllowedToDrawCards(this))
+			return false;
+		
         if (gameZoneDeck.getAmountOfCards() <= 0)
             return false;
         gameZoneHand.addCard(gameZoneDeck.removeCard(0));
@@ -128,7 +140,7 @@ public class Player {
         return cardsAdded;
     }
 
-    public boolean addALifeCard(){
+    private boolean addALifeCard(){
         if (gameZoneDeck.getAmountOfCards() <= 0)
             return false;
         gameZoneLife.addCard(gameZoneDeck.removeCard(0));
@@ -178,6 +190,10 @@ public class Player {
 		return flipCard(false, false, gameFieldPosition);
 	}
 	private boolean flipCard(boolean faceUp, boolean mine, int gameFieldPosition){
+		//TODO check if flipping, affecting different players cards, etc is allowed:
+		//if (game.notAllowedToFlipCard(this, mine, gameField, faceUp))
+		//	return false;
+		
 		GameField field;
 		if (mine)
 			field = gameField;
@@ -208,27 +224,53 @@ public class Player {
 			return 0;
 		
 		int result = gameField.getCard(position).getValue();
-        if (isCardFaceUp(position-1))
-		    result += checkValueModifyingAbilities(gameField.getCard(position - 1));
-
-        if (isCardFaceUp(position+1))
-            result += checkValueModifyingAbilities(gameField.getCard(position + 1));
-
-		return result;
-	}
-	
-	private int checkValueModifyingAbilities(Card card){
-		if (card == null)
-			return 0;
 		
-		int result = 0;
-		switch(card.getId()){
-			case 15: //Anfeuerer
+		if (getElementsOfCardAt(position).contains(Element.FIRE)){ //if this bro is a fire bro
+			if (game.isThereAFaceUpUnnegatedOnSideOf(this, 16)) //Hitzkopf
 				result++;
-				break;
+			if (game.isThereAFaceUpUnnegatedOnSideOf(opponent, 16)) //Hitzkopf
+				result++;
+			//check card to the left
+			int positonToTheLeft = position - 1;
+			if (gameField.isCardFaceUp(positonToTheLeft) 
+				&& !game.isCardAbilityNegated(this, positonToTheLeft)
+				&& gameField.getCard(positonToTheLeft).getId()==17) //Kohlkopf
+				result += 2;
+			//check card to the right
+			int positionToTheRight = position + 1;
+			if (gameField.isCardFaceUp(positionToTheRight) 
+				&& !game.isCardAbilityNegated(this, positionToTheRight)
+				&& gameField.getCard(positionToTheRight).getId()==17) //Kohlkopf
+				result += 2;
+		}
+		
+		//check card to the left
+		int positonToTheLeft = position - 1;
+        if (gameField.isCardFaceUp(positonToTheLeft) 
+			&& !game.isCardAbilityNegated(this, positonToTheLeft)
+			&& gameField.getCard(positonToTheLeft).getId()==15) //Anfeuerer
+			result++;
+
+		//check card to the right
+		int positionToTheRight = position + 1;
+        if (gameField.isCardFaceUp(positionToTheRight) 
+			&& !game.isCardAbilityNegated(this, positionToTheRight)
+			&& gameField.getCard(positionToTheRight).getId()==15) //Anfeuerer
+			result++;
+		
+		//TODO check opposite card
+
+		if (result <= 0)
+			return 0;
+		if (gameField.getCard(position).getId()==14 && !game.isCardAbilityNegated(this, position)){ //Streichelholz
+			result *= 2;
 		}
 		return result;
 	}
+
+    public boolean isCardFaceUp(int xPosition){
+        return gameField.isCardFaceUp(xPosition);
+    }
 	
 	public int getHighestValueOnField(){
 		int result = 0;
@@ -246,14 +288,10 @@ public class Player {
 		List<Integer> result = new ArrayList<>();
         for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
 			int key = entry.getKey();
-            if (isCardFaceUp(key) && getValueOfCardOnFieldAt(key) == value)
+            if (gameField.isCardFaceUp(key) && getValueOfCardOnFieldAt(key) == value)
 				result.add(key);
 		}
         return result;
-	}
-
-	public boolean isCardFaceUp(int position){
-		return gameField.isCardFaceUp(position);
 	}
 
     public Map<Integer, Card> getCardsOnField(){
@@ -280,5 +318,10 @@ public class Player {
 	
 	public List<Integer> getPositionsOfAllFaceDownBros(){
 		return gameField.getAllFaceDownPositions();
+	}
+	
+	public List<Element> getElementsOfCardAt(int xPosition){
+		//TODO element changing abilities
+		return gameField.getCard(xPosition).getElements();
 	}
 }

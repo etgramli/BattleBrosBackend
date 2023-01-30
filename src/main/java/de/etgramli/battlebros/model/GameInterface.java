@@ -28,6 +28,9 @@ public interface GameInterface extends IObservable {
     Map<Integer, Integer> getCardIDsInPlay(int playerIndex);
 
     int getTotalValue(int playerIndex);
+	
+	List<ResolvableAbility> getAbilityQueue();
+	ResolvableAbility getCurrentlyResolvingAbility();
 
     int getAmountOfLifeCards(int playerIndex);
 
@@ -39,6 +42,8 @@ public interface GameInterface extends IObservable {
     boolean discardCard(int playerIndex, int cardHandIndex);
 	
 	boolean pass(int playerIndex);
+	
+	boolean chooseAbilityToResolve(int playerIndex, int abilityIndex);
 
 	boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition);
 	
@@ -50,6 +55,7 @@ public interface GameInterface extends IObservable {
 	
 	boolean chooseCardInHand(int playerIndex, int handIndex);
 		
-    boolean chooseYesOrNo(int playerIndex, boolean accept);
+    boolean chooseAccept(int playerIndex);
+    boolean chooseCancel(int playerIndex);
 
 }

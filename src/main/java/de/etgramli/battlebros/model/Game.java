@@ -15,6 +15,7 @@ public class Game implements GameInterface {
 
     private int turn;
 	private ResolvableAbility currentAbility = null;
+	private List<ResolvableAbility> abilityQueue = new ArrayList<>();
     int NUMBER_OF_PLAYERS = 2;
     private final Player player1; //index is 0
     private final Player player2; //index is 1
@@ -31,10 +32,6 @@ public class Game implements GameInterface {
 	// G E T T E R S
 	public int getTurnNumber(){
 		return turn;
-	}
-	
-	public Card getCardCorrespondingToCurrentlyResolvingAbility(){
-		return currentAbility.getCard();
 	}
 	
     private Player getPlayer(int playerIndex){
@@ -87,6 +84,16 @@ public class Game implements GameInterface {
             result.add(card.getId());
         return result;
     }
+	
+	@Override
+	public List<ResolvableAbility> getAbilityQueue(){
+		return abilityQueue;
+	}
+	
+	@Override
+	public ResolvableAbility getCurrentlyResolvingAbility(){
+		return currentAbility;
+	}
 
     public Map<Integer, Card> getCardsInPlay(int playerIndex){
         return getPlayer(playerIndex).getCardsInPlay();
@@ -110,21 +117,17 @@ public class Game implements GameInterface {
         return getPlayer(playerIndex).getAmountOfLifeCards();
     }
 	
-	public ResolvableAbility getCurrentAbility(){
-		return currentAbility;
-	}
-	
 	
 	// M E T H O D S (PLAYER ACTIONS)
 	@Override
     public void startGame() {
 		player1.setGame(this);
         player1.setOpponent(player2);
-        player1.setUpGame();
+        player1.setUpGameWithShuffling();
 
 		player2.setGame(this);
         player2.setOpponent(player1);
-        player2.setUpGame();
+        player2.setUpGameWithShuffling();
 
         turn = 1;
         turnPlayer = player1;
@@ -132,17 +135,29 @@ public class Game implements GameInterface {
         notifyObservers();
     }
 	
+	public void startGameWithoutShuffling(){
+		player1.setGame(this);
+        player1.setOpponent(player2);
+        player1.setUpGameWithOutShuffling();
+
+		player2.setGame(this);
+        player2.setOpponent(player1);
+        player2.setUpGameWithOutShuffling();
+
+        turn = 1;
+        turnPlayer = player1;
+
+        notifyObservers();
+	}
+	
 	@Override
     public boolean playCard(int playerIndex, int cardHandIndex, int position) {
         if (notAbleToPlayDiscardOrPass(playerIndex))
 			return false;
 
         boolean result = getPlayer(playerIndex).playCard(cardHandIndex, position);
-        if (result) {
+        if (result)
 			notifyObservers();
-			if (noCurrentAbility())
-				advanceToNextTurn();
-        }
         return result;
     }
 	
@@ -173,6 +188,21 @@ public class Game implements GameInterface {
         notifyObservers();
 		return true;
     }
+	
+	@Override
+	public boolean chooseAbilityToResolve(int playerIndex, int abilityIndex){
+		if (currentlyResolvingAnAbility()
+			|| getPlayer(playerIndex) != turnPlayer
+			|| turnPlayer.hasPassed()
+			|| abilityQueue == null
+			|| abilityQueue.size() <= 1
+			|| abilityIndex < 0
+			|| abilityIndex >= abilityQueue.size())
+			return false;
+		
+		moveAbilityFromQueueToCurrent(abilityIndex);
+		return true;
+	}
 	
 	@Override
     public boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition) {
@@ -232,6 +262,7 @@ public class Game implements GameInterface {
 			if (allowed!=null && !allowed.contains(xPosition))
 					return false;
 		}
+		
 		resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
 		return true;
 	}
@@ -248,7 +279,7 @@ public class Game implements GameInterface {
 	
 	@Override
 	public boolean chooseCardInHand(int playerIndex, int handIndex){
-		if (notAbleToPlayDiscardOrPass(playerIndex)
+		if (notAbleToResolveAbility(playerIndex)
 			|| !currentAbility.canChooseFromOwnHand()
 			|| handIndex < 0
 			|| handIndex >= getPlayer(playerIndex).getAmountOfCardsInHand()
@@ -260,48 +291,88 @@ public class Game implements GameInterface {
 	}
 
     @Override
-    public boolean chooseYesOrNo(int playerIndex, boolean accept) {
+    public boolean chooseAccept(int playerIndex) {
+		return false;
+		//TODO
+		//resolveAbilityWithAccepting();
+    }
+
+	@Override
+	public boolean chooseCancel(int playerIndex){
 		if (notAbleToResolveAbility(playerIndex) || !currentAbility.isOptional())
 			return false;
-		else if (!accept)
-			advanceFromAbility();
-		else
-			resolveAbilityWithAccepting();
-        return true;
-    }
+
+		advanceFromAbility();
+		return true;
+	}
 	
 	
 	// M E T H O D S (Activate ComesIntoPlay-ABILITIES)
 	public void activateComesIntoPlayAbility(Player player, Card card, int gameFieldPosition){
+		if (isCardAbilityNegated(player, gameFieldPosition))
+			return;
+		
 		switch (card.getId()){
 			case 2: //Ausbrecher
-				setCurrentAbility(new ResolvableAbility(2, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(2, player, gameFieldPosition));
 				break;
 			case 3: //Flammenwerfer
 				//todo
 				break;
 			case 4: //Kanonenfutterer
-				player.flipOpponentCardFaceDown(gameFieldPosition);
+				addAbilityToQueue(new ResolvableAbility(4, player, gameFieldPosition));
 				break;
 			case 5: //Verascher
-				setCurrentAbility(new ResolvableAbility(5, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(5, player, gameFieldPosition));
 				break;
-			//todo don't implement Fönix here but in Unterweltfährmann's ability
+				
+			//todo don't implement Fönix here, but instead in Unterweltfährmann's ability
+			
 			case 7: //Potzblitz
-				setCurrentAbility(new ResolvableAbility(7, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(7, player, gameFieldPosition));
+				break;
+			case 9: //Lavaboy
+				addAbilityToQueue(new ResolvableAbility(9, player, gameFieldPosition));
+				break;
+			case 11: //Abbrenngolem
+				addAbilityToQueue(new ResolvableAbility(11, player, gameFieldPosition));
 				break;
 		}
+		
+		advanceFromAbility();
 	}
 	
 	
 	// M E T H O D S (Resolve Resolvable-ABILITIES)
+	private void resolveAutomaticAbility(Player actor, int gameFieldPosition){
+		switch(currentAbility.getCardId()){
+			case 4: // Kanonenfutterer
+				actor.flipOpponentCardFaceDown(gameFieldPosition);
+				advanceFromAbility();
+				break;
+			case 9: //Lavaboy
+				actor.drawCards(1);
+				advanceFromAbility();
+				break;
+			case 11: //Abbrenngolem
+				actor.flipOwnCardFaceDown(gameFieldPosition);
+				advanceFromAbility();
+				break;
+			default:
+				advanceFromAbility();
+		}
+	}
+	
 	private void resolveAbilityWithAccepting(){
-		//todo
+		Player actor = currentAbility.getActor();
+		switch(currentAbility.getCardId()){
+			default:
+				advanceFromAbility();
+		}
 	}
 	
 	private void resolveAbilityWithChosenCardInPlay(Player actor, boolean targetingOwnRow, int xPosition){
 		switch(currentAbility.getCardId()){
-			// FLIP CHOSEN CARD FACE DOWN
 			case 2: // Ausbrecher
 			case 5: // Verascher
 				if (targetingOwnRow)
@@ -310,11 +381,16 @@ public class Game implements GameInterface {
 					actor.flipOpponentCardFaceDown(xPosition);
 				advanceFromAbility();
 				break;
+			default:
+				advanceFromAbility();
 		}
 	}
 	
 	private void resolveAbilityWithChosenCardsInPlay(Player actor, List<Pair<Integer,Integer>> selections){
-		//TODO
+		switch(currentAbility.getCardId()){
+			default:
+				advanceFromAbility();
+		}
 	}
 	
 	private void resolveAbilityWithChosenCardInHand(Player actor, int handIndex){
@@ -327,23 +403,46 @@ public class Game implements GameInterface {
 				else
 					advanceFromAbility();
 				break;
+			default:
+				advanceFromAbility();
 		}
 	}
 	
+	
 	// M E T H O D S (OTHERS)
-
+	public boolean notAllowedToDrawCards(Player player){
+		return isThereAFaceUpUnnegatedOnSideOf(player.getOpponent(), 8); //Magmann
+	}
+	
+	private boolean isThereAFaceUpUnnegatedOnAnySide(int cardId){
+		return isThereAFaceUpUnnegatedOnSideOf(player1, cardId)
+			|| isThereAFaceUpUnnegatedOnSideOf(player2, cardId);
+	}
+	
+	public boolean isThereAFaceUpUnnegatedOnSideOf(Player player, int cardId){
+		for (Integer position : player.getPositionsOfAllFaceUpBros()){
+			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isCardAbilityNegated(Player player, int xPosition){
+		return false; //TODO
+	}
+	
 	public List<Integer> getPositionsOfFaceDownCards(int playerIndex){
 		return getPlayer(playerIndex).getPositionsOfAllFaceDownBros();
 	}
 
 	private boolean notAbleToPlayDiscardOrPass(int playerIndex){
-		return currentlyResolvingAnAbility() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
+		return currentlyResolvingAnAbility() || !noAbilitiesInQueue() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
 	}
 	
 	private boolean notAbleToResolveAbility(int playerIndex){
 		return noCurrentAbility()
-			|| currentAbility.getActor()==null
-			|| currentAbility.getActor()!=getPlayer(playerIndex);
+				|| currentAbility.getActor() == null
+				|| currentAbility.getActor() != getPlayer(playerIndex);
 	}
 	
 	public boolean currentlyResolvingAnAbility(){
@@ -353,13 +452,32 @@ public class Game implements GameInterface {
 		return currentAbility == null;
 	}
 	
-	public void setCurrentAbility(ResolvableAbility ability){
-		currentAbility = ability;
+	public boolean currentlyWaitingForAbilityToBeChosen(){
+		return noCurrentAbility() && abilityQueue!=null && abilityQueue.size()>=2;
+	}
+	
+	private boolean noAbilitiesInQueue(){
+		return abilityQueue==null || abilityQueue.isEmpty();
+	}
+	
+	public void addAbilityToQueue(ResolvableAbility ability){
+		abilityQueue.add(ability);
 	}
 	
 	private void advanceFromAbility(){
-		currentAbility =  null;
-		advanceToNextTurn();
+		currentAbility = null;
+		
+		if (abilityQueue==null || abilityQueue.isEmpty())
+			advanceToNextTurn();
+		else if (abilityQueue.size() == 1){
+			moveAbilityFromQueueToCurrent(0);
+		}
+	}
+	
+	private void moveAbilityFromQueueToCurrent(int abilityIndex){
+		currentAbility = abilityQueue.remove(abilityIndex);
+			if (currentAbility.isAutomatic())
+				resolveAutomaticAbility(currentAbility.getActor(), currentAbility.getGameFieldPosition());
 	}
 	
     private void advanceToNextTurn(){

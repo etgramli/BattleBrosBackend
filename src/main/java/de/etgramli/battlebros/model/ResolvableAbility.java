@@ -5,8 +5,13 @@ import java.util.List;
 public class ResolvableAbility {
 	
 	private final int cardId;
+	private String abilityText = "";
 	private Player actor = null;
 	private boolean isOptional = false;
+
+	private boolean isAcceptable = false; //TODO
+	private boolean isAutomatic = false;
+	private int gameFieldPosition;
 	private int progress = 0; //counts how many steps are already finished (most abilities consist of just 1 step)
 	private boolean canChooseMultiple = false; //TODO make use of (Flammenwerfer)
 	
@@ -28,17 +33,22 @@ public class ResolvableAbility {
 	
 	public ResolvableAbility(int cardId, Player activator, int gameFieldPosition){
 		this.cardId = cardId;
+		this.abilityText = "platzhalter fähigkeitstext"; //TODO get from Card class
+		this.gameFieldPosition = gameFieldPosition;
 		switch (cardId){
 			case 2: //Ausbrecher
 				actor = activator;
-				isOptional = true;
 				canChooseFromOwnField = true;
-				fromOwnFieldAllowed = actor.getPositionsOfAllFaceUpBros(); //alt und falsch: fromOwnFieldAllowed = List.of(gameFieldPosition);
+				fromOwnFieldAllowed = actor.getPositionsOfAllFaceUpBros();
 				canChooseFromOpponentField = true;
 				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBros();
 				break;
 			case 3: //Flammenwerfer
-				//todo
+				//TODO
+				break;
+			case 4: //Kanonenfutterer
+				actor = activator;
+				isAutomatic = true;
 				break;
 			case 5: //Verascher
 				actor = activator.getOpponent();
@@ -55,9 +65,17 @@ public class ResolvableAbility {
 				actor = activator.getOpponent();
 				canChooseFromOwnHand = true;
 				break;
+			case 9: //Lavaboy
+				actor = activator.getOpponent();
+				isAutomatic = true;
+				break;
+			case 11: //Abbrenngolem
+				actor = activator;
+				isAutomatic = true;
+				break;
 		}
 		
-		if (!isOptional && !validOptionAvailable())
+		if (!isAutomatic && !isOptional && !validOptionAvailable())
 			isOptional = true;
 	}
 	
@@ -88,6 +106,10 @@ public class ResolvableAbility {
 		return cardId;
 	}
 	
+	public String getAbilityText(){
+		return abilityText;
+	}
+	
 	public Player getActor(){
 		return actor;
 	}
@@ -96,8 +118,16 @@ public class ResolvableAbility {
 		return Card.getCard(cardId);
 	}
 	
+	public int getGameFieldPosition(){
+		return gameFieldPosition;
+	}
+	
 	public boolean isOptional(){
 		return isOptional;
+	}
+	
+	public boolean isAutomatic(){
+		return isAutomatic;
 	}
 	
 	public boolean canChooseFromOwnHand(){

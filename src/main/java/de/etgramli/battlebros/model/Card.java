@@ -97,21 +97,21 @@ public class Card {
     private static final List<Card> cardCatalogue = List.of(
         new Card(1, "Feuersalamander", 3, List.of(Element.FIRE), "", ""),		//ability done
         new Card(2, "Ausbrecher", 0, List.of(Element.FIRE), "", ""),			//ability done
-        new Card(3, "Flammenwerfer", 0, List.of(Element.FIRE), "", ""),			//
+        new Card(3, "Flammenwerfer", 0, List.of(Element.FIRE), "", ""),
         new Card(4, "Kanonenfutterer", 2, List.of(Element.FIRE), "", ""),		//ability done
         new Card(5, "Verascher", 2, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(6, "Fönix", 3, List.of(Element.FIRE), "", ""),					//
+        new Card(6, "Fönix", 3, List.of(Element.FIRE), "", ""),
         new Card(7, "Potzblitz", 1, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(8, "Magmann", 2, List.of(Element.FIRE), "", ""),
-        new Card(9, "Lavaboy", 4, List.of(Element.FIRE), "", ""),
+        new Card(8, "Magmann", 2, List.of(Element.FIRE), "", ""),				//ability done
+        new Card(9, "Lavaboy", 4, List.of(Element.FIRE), "", ""),				//ability done
         new Card(10, "Fackeldackel", 4, List.of(Element.FIRE), "", ""),
-        new Card(11, "Abbrenngolem", 5, List.of(Element.FIRE), "", ""),
+        new Card(11, "Abbrenngolem", 5, List.of(Element.FIRE), "", ""),			//ability done
         new Card(12, "Heißer Feger", 0, List.of(Element.FIRE), "", ""),
         new Card(13, "Vulklon", 0, List.of(Element.FIRE), "", ""),
-        new Card(14, "Streichelholz", 2, List.of(Element.FIRE), "", ""),
+        new Card(14, "Streichelholz", 2, List.of(Element.FIRE), "", ""),		//ability done
         new Card(15, "Anfeuerer", 2, List.of(Element.FIRE), "", ""),			//ability done
-        new Card(16, "Hitzkopf", 3, List.of(Element.FIRE), "", ""),
-        new Card(17, "Kohlkopf", 1, List.of(Element.FIRE), "", ""),
+        new Card(16, "Hitzkopf", 3, List.of(Element.FIRE), "", ""),				//ability done
+        new Card(17, "Kohlkopf", 1, List.of(Element.FIRE), "", ""),				//ability done
         new Card(18, "Wasserläufer", 3, List.of(Element.WATER), "", ""),
         new Card(19, "Haihammer", 1, List.of(Element.WATER), "", ""),
         new Card(20, "Senkschlange", 2, List.of(Element.WATER), "", ""),

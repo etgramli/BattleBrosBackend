@@ -111,23 +111,23 @@ class GameTest {
 	}
 
 	static void printGameActionInstructions(){
-		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,Y/N/fieldIdx|chooseHand:handIdx)");
+		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|chooseAbility|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,fieldIdx or Y/N|chooseHand:handIdx|chooseAbility:abilityIdx)");
 	}
 	
-	static boolean doGameAction(){
+	static boolean doGameAction() {
 		Scanner in = new Scanner(System.in);
-        String inputs = in.nextLine();
+		String inputs = in.nextLine();
 
-        if (inputs.trim().equalsIgnoreCase("exit")) {
-            terminate = true;
-            return false;
-        }
-		
-		String[] inputParts = inputs.split(",");
-		
-		if (inputParts.length<2 || inputParts.length>4)
+		if (inputs.trim().equalsIgnoreCase("exit")) {
+			terminate = true;
 			return false;
-		
+		}
+
+		String[] inputParts = inputs.split(",");
+
+		if (inputParts.length < 2 || inputParts.length > 4)
+			return false;
+
 		int actorIdx;
 		String input = inputParts[0].trim().toLowerCase();
 		if (input.equals("p1"))
@@ -136,43 +136,48 @@ class GameTest {
 			actorIdx = 1;
 		else
 			return false;
-		
+
 		input = inputParts[1].trim().toLowerCase();
-		if (input.equals("play")){
-			if (inputParts.length!=4)
+		if (input.equals("play")) {
+			if (inputParts.length != 4)
 				return false;
 			int handIdx = Integer.parseInt(inputParts[2].trim());
 			int fieldIdx = Integer.parseInt(inputParts[3].trim());
-			return game.playCard(actorIdx, handIdx-1, fieldIdx);
-		} else if (input.equals("discard")){
-			if (inputParts.length!=3)
+			return game.playCard(actorIdx, handIdx - 1, fieldIdx);
+		} else if (input.equals("discard")) {
+			if (inputParts.length != 3)
 				return false;
 			int handIdx = Integer.parseInt(inputParts[2].trim());
-			return game.discardCard(actorIdx, handIdx-1);
-		} else if (input.equals("pass")){
-			if (inputParts.length!=2)
+			return game.discardCard(actorIdx, handIdx - 1);
+		} else if (input.equals("pass")) {
+			if (inputParts.length != 2)
 				return false;
 			return game.pass(actorIdx);
-		} else if (input.equals("choose")){
-			if (inputParts.length!=4)
+		} else if (input.equals("choose")) {
+			if (inputParts.length == 3){
+				String inputParts3 = inputParts[2].trim().toLowerCase();
+				if (inputParts3.equals("y"))
+					return game.chooseAccept(actorIdx);
+				else if (inputParts3.equals("n"))
+					return game.chooseCancel(actorIdx);
+				else
+					return false;
+			} else if (inputParts.length == 4){
+				int playerIdx = Integer.parseInt(inputParts[2].trim());
+				int fieldIdx = Integer.parseInt(inputParts[3].trim());
+				return game.chooseCardInPlay(actorIdx, playerIdx - 1, fieldIdx);
+			} else
 				return false;
-			int playerIdx = Integer.parseInt(inputParts[2].trim());
-			String inputParts3 = inputParts[3].trim().toLowerCase();
-			boolean result = false;
-			if (inputParts3.equals("y"))
-				result = game.chooseYesOrNo(actorIdx, true);
-			else if (inputParts3.equals("n"))
-				result = game.chooseYesOrNo(actorIdx, false);
-			else {
-				int fieldIdx = Integer.parseInt(inputParts3);
-				result = game.chooseCardInPlay(actorIdx, playerIdx-1, fieldIdx);
-			}
-			return result;
 		} else if (input.equals("choosehand")) {
-			if (inputParts.length!=3)
+			if (inputParts.length != 3)
 				return false;
 			int handIdx = Integer.parseInt(inputParts[2].trim());
-			return game.chooseCardInHand(actorIdx, handIdx-1);
+			return game.chooseCardInHand(actorIdx, handIdx - 1);
+		} else if (input.equals("chooseability")) {
+			if (inputParts.length != 3)
+				return false;
+			int abilityIdx = Integer.parseInt(inputParts[2].trim());
+			return game.chooseAbilityToResolve(actorIdx, abilityIdx - 1);
 		}
 		return false;
 	}
@@ -180,7 +185,15 @@ class GameTest {
     static void drawGameState(Player player1, Player player2) {
 		System.out.println("\n\n______ Zug=" + game.getTurnNumber() + " AmZug=" + game.getTurnPlayer().getName() + " ______");
 		if (game.currentlyResolvingAnAbility())
-			System.out.println("!!! Es wird gerade die Fähigkeit verrechnet von: " + game.getCardCorrespondingToCurrentlyResolvingAbility().getName());
+			System.out.println("!!! Es wird gerade folgende Fähigkeit verrechnet: " + Card.getCard(game.getCurrentlyResolvingAbility().getCardId()).getName() + ": \"" + game.getCurrentlyResolvingAbility().getAbilityText() + "\"");
+		
+		if (game.currentlyWaitingForAbilityToBeChosen()){
+			System.out.printf("!!! Folgende Fähigkeiten müssen noch verrechnet werden: ");
+			for (ResolvableAbility ability : game.getAbilityQueue())
+				System.out.printf("[" + Card.getCard(ability.getCardId()).getName() + ": \"" + ability.getAbilityText() + "\"]");
+			System.out.println();
+		}
+		
         drawPlayerState(player1, 0);
         drawPlayerState(player2, 1);
 		printGameActionInstructions();

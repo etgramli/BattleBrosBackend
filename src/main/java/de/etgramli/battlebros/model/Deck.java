@@ -13,7 +13,8 @@ public class Deck {
         assert DECKS.values().stream().allMatch(Deck::checkIfLegal);
     }
 
-    private final Set<Card> cards = new HashSet<>();
+    //private final Set<Card> cards = new HashSet<>();
+    private List<Card> cards = new ArrayList<>();
 
     public Deck(){}
     public Deck(Collection<Card> cards){
@@ -74,6 +75,6 @@ public class Deck {
 		// EDIT2: Man kann noch ein Attribut für den Decknamen hinzufügen, aber darum können wir uns ja kümmern wenn wir den deckbuilder machen
 		//        Cool wären auch noch so tags mit denen im deckbuilder dann einzelne karten versehen sind, sodass man easy nach karten filtern kann
 		//        tags wie zB: "abwerfen", "aufdecken", "karten ziehen", "feuer-fähigkeit", "verbot-fähigkeit", etc.
-        return cards.size() == 20;
+        return cards.size()==20 && new HashSet(cards).size()==20;
     }
 }
