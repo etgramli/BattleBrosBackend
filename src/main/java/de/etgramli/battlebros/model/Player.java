@@ -226,7 +226,7 @@ public class Player {
 		int result = gameField.getCard(position).getValue();
 		
 		if (getElementsOfCardAt(position).contains(Element.FIRE)
-            && gameField.getCard(position).getId() != 16){ //if this bro is a fire bro, but isn't Hitzkopf
+            && gameField.getCard(position).getId() != 16){ //if this bro is a fire bro, but isn't Hitzkopf TODO darf schon gebufft werden wenn es selbst hitzkopf ist, aber halt nur nicht von sich selbst, UND! es kann theoretisch mehr als 2 hitzköpfe geben, man muss auch kopien zählen können
 			if (game.isThereAFaceUpUnnegatedOnSideOf(this, 16)) //Hitzkopf
 				result++;
 			if (game.isThereAFaceUpUnnegatedOnSideOf(opponent, 16)) //Hitzkopf

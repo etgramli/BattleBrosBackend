@@ -9,9 +9,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AbilitiesTest {
-	
-	//todo rename to AbilityTest002
+public class AbilityTest002 {
 	
 	//Remember:
 	// At the beginning of a game: 3 life cards are added THEN 6 hand cards are drawn
@@ -82,7 +80,7 @@ public class AbilitiesTest {
 		System.out.println(game.getCardIDsInHand(secondPlayerIdx));
 		Assertions.assertTrue(game.getCardsInHand(firstPlayerIdx).get(0).getId() == ausbrecherId);
 		Assertions.assertTrue(game.getCardsInHand(secondPlayerIdx).get(0).getId() == ausbrecherId);
-		/*
+
 		{ //second player tries to do actions (can't because it't the other player's turn) 
 			Assertions.assertFalse(game.playCard(secondPlayerIdx, 0, 0));
 			Assertions.assertFalse(game.playCard(secondPlayerIdx, 1, 0));
@@ -115,8 +113,6 @@ public class AbilitiesTest {
 			//Assertions.assertFalse(game.chooseCardsInPlay(secondPlayerIdx, secondPlayerIdx, List.of(0,1,2,-1)));
 			//todo make extensive
 		}
-		*/
-		/*
 		{ //first player tries to do some illegal actions
 			Assertions.assertFalse(game.playCard(firstPlayerIdx, 0, 1));
 			Assertions.assertFalse(game.playCard(firstPlayerIdx, 0, 2));
@@ -138,10 +134,8 @@ public class AbilitiesTest {
 			Assertions.assertFalse(game.chooseCancel(firstPlayerIdx));
 			//todo make extensive
 		}
-		*/
 		{ //first player plays their ausbrecher. and then cancels the ability
 			assertTrue(game.playCard(firstPlayerIdx, 0, 0));
-			/*
 			Assertions.assertFalse(game.chooseAccept(firstPlayerIdx));
 			Assertions.assertFalse(game.pass(firstPlayerIdx));
 			Assertions.assertFalse(game.discardCard(firstPlayerIdx, 0));
@@ -169,7 +163,6 @@ public class AbilitiesTest {
 			Assertions.assertFalse(game.chooseCardInHand(firstPlayerIdx, 2));
 			Assertions.assertFalse(game.chooseCardInHand(firstPlayerIdx, -1));
 			Assertions.assertFalse(game.chooseCardInHand(firstPlayerIdx, 50));
-			*/
 			assertFalse(game.chooseCancel(firstPlayerIdx));
 			assertTrue(game.chooseCardInPlay(firstPlayerIdx, firstPlayerIdx, 0));
 			
