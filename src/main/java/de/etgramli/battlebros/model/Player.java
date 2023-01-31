@@ -225,7 +225,8 @@ public class Player {
 		
 		int result = gameField.getCard(position).getValue();
 		
-		if (getElementsOfCardAt(position).contains(Element.FIRE)){ //if this bro is a fire bro
+		if (getElementsOfCardAt(position).contains(Element.FIRE)
+            && gameField.getCard(position).getId() != 16){ //if this bro is a fire bro, but isn't Hitzkopf
 			if (game.isThereAFaceUpUnnegatedOnSideOf(this, 16)) //Hitzkopf
 				result++;
 			if (game.isThereAFaceUpUnnegatedOnSideOf(opponent, 16)) //Hitzkopf
