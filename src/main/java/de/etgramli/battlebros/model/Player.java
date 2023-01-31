@@ -223,26 +223,27 @@ public class Player {
 		if (gameField.isCardFaceDown(position))
 			return 0;
 		
-		int result = gameField.getCard(position).getValue();
+		int base = gameField.getCard(position).getValue();
+        int modifier = 0;
 		
 		if (getElementsOfCardAt(position).contains(Element.FIRE)
             && gameField.getCard(position).getId() != 16){ //if this bro is a fire bro, but isn't Hitzkopf TODO darf schon gebufft werden wenn es selbst hitzkopf ist, aber halt nur nicht von sich selbst, UND! es kann theoretisch mehr als 2 hitzköpfe geben, man muss auch kopien zählen können
 			if (game.isThereAFaceUpUnnegatedOnSideOf(this, 16)) //Hitzkopf
-				result++;
+                modifier++;
 			if (game.isThereAFaceUpUnnegatedOnSideOf(opponent, 16)) //Hitzkopf
-				result++;
+                modifier++;
 			//check card to the left
 			int positonToTheLeft = position - 1;
 			if (gameField.isCardFaceUp(positonToTheLeft) 
 				&& !game.isCardAbilityNegated(this, positonToTheLeft)
 				&& gameField.getCard(positonToTheLeft).getId()==17) //Kohlkopf
-				result += 2;
+                modifier += 2;
 			//check card to the right
 			int positionToTheRight = position + 1;
 			if (gameField.isCardFaceUp(positionToTheRight) 
 				&& !game.isCardAbilityNegated(this, positionToTheRight)
 				&& gameField.getCard(positionToTheRight).getId()==17) //Kohlkopf
-				result += 2;
+                modifier += 2;
 		}
 		
 		//check card to the left
@@ -250,23 +251,23 @@ public class Player {
         if (gameField.isCardFaceUp(positonToTheLeft) 
 			&& !game.isCardAbilityNegated(this, positonToTheLeft)
 			&& gameField.getCard(positonToTheLeft).getId()==15) //Anfeuerer
-			result++;
+            modifier++;
 
 		//check card to the right
 		int positionToTheRight = position + 1;
         if (gameField.isCardFaceUp(positionToTheRight) 
 			&& !game.isCardAbilityNegated(this, positionToTheRight)
 			&& gameField.getCard(positionToTheRight).getId()==15) //Anfeuerer
-			result++;
+            modifier++;
 		
 		//TODO check opposite card
 
-		if (result <= 0)
+		if (modifier <= 0)
 			return 0;
 		if (gameField.getCard(position).getId()==14 && !game.isCardAbilityNegated(this, position)){ //Streichelholz
-			result *= 2;
+            modifier *= 2;
 		}
-		return result;
+		return base + modifier;
 	}
 
     public boolean isCardFaceUp(int xPosition){
