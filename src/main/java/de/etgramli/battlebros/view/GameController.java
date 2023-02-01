@@ -255,8 +255,33 @@ public class GameController {
         }
 
         @Override
+        public void selectAnyPlayedCard(int playerIndex) {
+
+        }
+
+        @Override
+        public void selectAnyPlayedCards(int playerIndex) {
+
+        }
+
+        @Override
         public void selectDiscardedCard(final int playerIndex) {
             sendCardSelectMessage(playerIndex, SELECT_DISCARDED_CARD);
+        }
+
+        @Override
+        public void selectDiscardedCards(int playerIndex) {
+
+        }
+
+        @Override
+        public void selectNextAbilityToResolve(int playerIndex) {
+
+        }
+
+        @Override
+        public void selectAcceptAbility(int playerIndex) {
+
         }
 
         public void pass(@NonNull final Principal principal) {

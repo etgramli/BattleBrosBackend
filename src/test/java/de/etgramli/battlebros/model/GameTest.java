@@ -226,11 +226,12 @@ class GameTest {
 		
         System.out.printf("\nCards on Field: ");
         for (Map.Entry<Integer, Card> entry : player.getCardsOnField().entrySet()){
-			boolean isFaceUp = player.isCardFaceUp(entry.getKey());
-			String faceDownText = "";
-			if (!isFaceUp)
-				faceDownText = " VERDECKT";
-            System.out.printf("[" + entry.getKey() + ": "+ entry.getValue().getName() + "(" + player.getValueOfCardOnFieldAt(entry.getKey()) + ")" + faceDownText + "]  ");
+			String extraText = "";
+			if (!player.isCardFaceUp(entry.getKey()))
+				extraText = " VERDECKT";
+			if (player.getGame().isCardAbilityNegated(player, entry.getKey()))
+				extraText += " ANNULLIERT";
+            System.out.printf("[" + entry.getKey() + ": "+ entry.getValue().getName() + "(" + player.getValueOfCardOnFieldAt(entry.getKey()) + ")" + extraText + "]  ");
 		}
 		
 		System.out.println("\n");

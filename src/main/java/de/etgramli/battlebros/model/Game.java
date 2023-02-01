@@ -41,6 +41,15 @@ public class Game implements GameInterface {
             return player2;
         return null;
     }
+	
+	private int getPlayerIndex(Player player){
+		if (player == player1)
+			return 0;
+		else if (player == player2)
+			return 1;
+		else
+			return -1;
+	}
 
 	@Override
 	public List<Boolean> hasPassed() {
@@ -200,15 +209,17 @@ public class Game implements GameInterface {
 			return false;
 		
 		moveAbilityFromQueueToCurrent(abilityIndex);
+		notifyObservers();
 		return true;
 	}
 	
 	@Override
     public boolean chooseCardInPlay(int playerIndex, int playerRow, Integer xPosition) {
-		if (notAbleToResolveAbility(playerIndex) || playerRow<0 || playerRow>1)
-			return false;
-		
-		if (getPlayer(playerRow).getCardInPlay(xPosition) == null)
+		if (notAbleToResolveAbility(playerIndex)
+			|| playerRow<0
+			|| playerRow>1
+			|| currentAbility.canChooseMultiple()
+			|| getPlayer(playerRow).getCardInPlay(xPosition) == null)
 			return false;
 		
 		List<Integer> allowed;
@@ -229,12 +240,13 @@ public class Game implements GameInterface {
 				return false;
 		
 		resolveAbilityWithChosenCardInPlay(currentAbility.getActor(), ownSideOfField, xPosition);
+		notifyObservers();
         return true;
     }
 	
 	@Override
 	public boolean chooseCardsInPlay(int playerIndex, List<Pair<Integer,Integer>> selections){
-		if (notAbleToResolveAbility(playerIndex) || selections.isEmpty())
+		if (notAbleToResolveAbility(playerIndex) || selections.isEmpty() || !currentAbility.canChooseMultiple())
 			return false;
 		
 		for (Pair<Integer,Integer> entry : selections){
@@ -262,17 +274,45 @@ public class Game implements GameInterface {
 					return false;
 		}
 		
-		return resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
+		boolean result = resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
+		if (result)
+			notifyObservers();
+		return result;
 	}
 	
 	@Override
 	public boolean chooseCardInDiscard(int playerIndex, int discardIndex){
-		return false; //TODO
+		if (notAbleToResolveAbility(playerIndex)
+			|| !currentAbility.canChooseFromOwnDiscard()
+			|| currentAbility.canChooseMultiple()
+			|| discardIndex < 0
+			|| discardIndex >= getPlayer(playerIndex).getAmountOfCardsInDiscard()
+			|| (currentAbility.fromOwnDiscardAllowed()!=null && !currentAbility.fromOwnDiscardAllowed().contains(discardIndex))
+		)
+			return false;
+		
+		resolveAbilityWithChosenCardInDiscard(currentAbility.getActor(), discardIndex);
+		notifyObservers();
+		return true;
 	}
 	
 	@Override
-	public boolean chooseCardsInDiscard(int playerIndex, List<Pair<Integer,Integer>> selections){
-		return false; //TODO
+	public boolean chooseCardsInDiscard(int playerIndex, List<Integer> selections){
+		if (notAbleToResolveAbility(playerIndex)
+			|| selections.isEmpty()
+			|| !currentAbility.canChooseMultiple()
+			|| !currentAbility.canChooseFromOwnDiscard()
+		)
+			return false;
+		
+		for (Integer selection : selections){
+			if (currentAbility.fromOwnDiscardAllowed()!=null && !currentAbility.fromOwnDiscardAllowed().contains(selection))
+				return false;
+		}
+		
+		resolveAbilityWithChosenCardsInDiscard(currentAbility.getActor(), selections);
+		notifyObservers();
+		return true;
 	}
 	
 	@Override
@@ -281,18 +321,23 @@ public class Game implements GameInterface {
 			|| !currentAbility.canChooseFromOwnHand()
 			|| handIndex < 0
 			|| handIndex >= getPlayer(playerIndex).getAmountOfCardsInHand()
+			|| currentAbility.canChooseMultiple()
 			|| (currentAbility.fromOwnHandAllowed()!=null && !currentAbility.fromOwnHandAllowed().contains(handIndex)))
 			return false;
 		
 		resolveAbilityWithChosenCardInHand(currentAbility.getActor(), handIndex);
+		notifyObservers();
 		return true;
 	}
 
     @Override
     public boolean chooseAccept(int playerIndex) {
-		return false;
-		//TODO
-		//resolveAbilityWithAccepting();
+		if (notAbleToResolveAbility(playerIndex) || !currentAbility.isAcceptable())
+			return false;
+		
+		resolveAbilityWithAccepting(currentAbility.getActor());
+		notifyObservers();
+		return true;
     }
 
 	@Override
@@ -301,16 +346,19 @@ public class Game implements GameInterface {
 			return false;
 
 		advanceFromAbility();
+		notifyObservers();
 		return true;
 	}
 	
 	
 	// M E T H O D S (Activate ComesIntoPlay-ABILITIES)
-	public void activateComesIntoPlayAbility(Player player, Card card, int gameFieldPosition){
-		if (isCardAbilityNegated(player, gameFieldPosition))
+	public void activateComesIntoPlayAbility(Player player, int gameFieldPosition){
+		if (isCardAbilityNegated(player, gameFieldPosition)) {
+			advanceFromAbility();
 			return;
+		}
 		
-		switch (card.getId()){
+		switch (getIdOfCardInPlay(player, gameFieldPosition)){
 			case 2: //Ausbrecher
 				addAbilityToQueue(new ResolvableAbility(2, player, gameFieldPosition));
 				break;
@@ -375,8 +423,7 @@ public class Game implements GameInterface {
 		}
 	}
 	
-	private void resolveAbilityWithAccepting(){
-		Player actor = currentAbility.getActor();
+	private void resolveAbilityWithAccepting(Player actor){
 		switch(currentAbility.getCardId()){
 			//TODO not needed yet
 			default:
@@ -445,6 +492,22 @@ public class Game implements GameInterface {
 		}
 	}
 	
+	private void resolveAbilityWithChosenCardInDiscard(Player actor, int discardIndex){
+		switch(currentAbility.getCardId()){
+			//TODO not needed yet
+			default:
+				advanceFromAbility();
+		}
+	}
+	
+	private void resolveAbilityWithChosenCardsInDiscard(Player actor, List<Integer> selections){
+		switch(currentAbility.getCardId()){
+			//TODO not needed yet
+			default:
+				advanceFromAbility();
+		}
+	}
+	
 	
 	// M E T H O D S (OTHERS)
 	public boolean notAllowedToDrawCards(Player player){
@@ -458,7 +521,7 @@ public class Game implements GameInterface {
 	
 	public boolean isThereAFaceUpUnnegatedOnSideOf(Player player, int cardId){
 		for (Integer position : player.getPositionsOfAllFaceUpBros()){
-			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+			if (getIdOfCardInPlay(player, position)==cardId && !isCardAbilityNegated(player, position))
 				return true;
 		}
 		return false;
@@ -467,7 +530,7 @@ public class Game implements GameInterface {
 	public int countFaceUpUnnegatedOnSideOfButNotAt(Player player, int cardId, int exceptPosition){
 		int result = 0;
 		for (Integer position : player.getPositionsOfAllFaceUpBros()){
-			if (position!=exceptPosition && player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+			if (position!=exceptPosition && getIdOfCardInPlay(player, position)==cardId && !isCardAbilityNegated(player, position))
 				result++;
 		}
 		return result;
@@ -481,7 +544,7 @@ public class Game implements GameInterface {
 	public int countFaceUpUnnegatedOnSideOf(Player player, int cardId){
 		int result = 0;
 		for (Integer position : player.getPositionsOfAllFaceUpBros()){
-			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+			if (getIdOfCardInPlay(player, position)==cardId && !isCardAbilityNegated(player, position))
 				result++;
 		}
 		return result;
@@ -490,14 +553,106 @@ public class Game implements GameInterface {
 	public List<Integer> getPositionsOfAllFaceUpUnnegatedOnSideOf(Player player, int cardId){
 		List<Integer> result = new ArrayList<>();
 		for (Integer position : player.getPositionsOfAllFaceUpBros()){
-			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+			if (getIdOfCardInPlay(player, position)==cardId && !isCardAbilityNegated(player, position))
 				result.add(position);
 		}
 		return result;
 	}
 	
 	public boolean isCardAbilityNegated(Player player, int xPosition){
-		return false; //TODO
+		//return false;
+		
+		//done:
+		// > Holzkopf neben Holzkopf DONE
+		// > Senkschlange ggüber von Senkschlange DONE
+		// > Haihammer ggüber von Senkschlange DONE
+		// > Haihammer im bereich von Haihammer DONE
+		
+		//TODO:
+		// > Haihammer annulliert Senkschlange, die Holzkopf neben Haihammer annulliert. -> Resultat: Haihammer & Senkschlange bleiben aktiv, Holzkopf bleibt annulliert
+		// > Verstummer
+		// > Verstummer ggüber Bro vom selben Element wie Verstummer (muss nur ein element teilen)
+		// > Verstummer ggüber Senkschlange / in range of Haihammer / neben Holzkopf
+		
+		
+		int cardId = getIdOfCardInPlay(player, xPosition);
+		
+		{ //Verstummer
+			int abilityId = 56; //Verstummer
+			//TODO
+		}
+		
+		{ //Holzkopf
+			int abilityId = 47; //Holzkopf
+			int toTheLeft = xPosition - 1;
+			int toTheRight = xPosition - 1;
+			if (cardId == abilityId){ //Holzkopf next to another Holzkopf
+				//do nothing
+			} else if (
+				(getIdOfCardInPlay(player, toTheLeft) == abilityId
+					&& player.isCardFaceUp(toTheLeft)
+					&& !isCardAbilityNegated(player, toTheLeft)) &&
+				(getIdOfCardInPlay(player, toTheRight) == abilityId
+					&& player.isCardFaceUp(toTheRight)
+					&& !isCardAbilityNegated(player, toTheRight))
+			){
+				return true;
+			}
+		}
+		
+		{ //Haihammer
+			int abilityId = 19; //Haihammer
+			int toTheLeft = xPosition - 1;
+			int toTheRight = xPosition - 1;
+			if (cardId == abilityId){ //Haihammer in range of another Haihammer
+				//do nothing
+			} else {
+				if (cardId == 20){ //Senkschlange opposite to Haihammer
+					//do nothing
+				} else if (getIdOfCardInPlay(player.getOpponent(), xPosition) == abilityId
+						&& player.getOpponent().isCardFaceUp(xPosition)
+						&& !isCardAbilityNegated(player.getOpponent(), xPosition)){
+							return true;
+				}
+				if (cardId==20 && getIdOfCardInPlay(player.getOpponent(), xPosition)==47 && player.getOpponent().isCardFaceUp(xPosition)){ //Senkschlange opposite to Holzkopf that's next to Haihammer TODO check this in AbilityTest019
+					//do nothing
+				} else { //check left and right to this xPosition for Haihammer on the opposite side of the field
+					if (getIdOfCardInPlay(player.getOpponent(), toTheLeft) == abilityId
+							&& player.getOpponent().isCardFaceUp(toTheLeft)
+							&& !isCardAbilityNegated(player.getOpponent(), toTheLeft))
+							return true;
+					if (getIdOfCardInPlay(player.getOpponent(), toTheRight) == abilityId
+							&& player.getOpponent().isCardFaceUp(toTheRight)
+							&& !isCardAbilityNegated(player.getOpponent(), toTheRight))
+							return true;
+				}
+			}
+		}
+		
+		{ //Senkschlange
+			int abilityId = 20; //Senkschlange
+			if (
+				cardId == abilityId //Senkschlange opposite to another Senkschlange
+				|| cardId == 19 //Haihammer opposite to Senkschlange
+			) {
+				//do nothing
+			} else if (
+				getIdOfCardInPlay(player.getOpponent(), xPosition) == abilityId
+				&& player.getOpponent().isCardFaceUp(xPosition)
+				&& !isCardAbilityNegated(player.getOpponent(), xPosition)
+			){
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	public int getIdOfCardInPlay(Player player, int xPosition){
+		//todo wärmeleiter
+		if (player.getCardInPlay(xPosition) == null)
+			return -1;
+		return player.getCardInPlay(xPosition).getId();
 	}
 	
 	public List<Integer> getPositionsOfFaceDownCards(int playerIndex){
@@ -540,13 +695,16 @@ public class Game implements GameInterface {
 			advanceToNextTurn();
 		else if (abilityQueue.size() == 1){
 			moveAbilityFromQueueToCurrent(0);
-		}
+		} else
+			askObserversToChooseAbility(getPlayerIndex(turnPlayer));
 	}
 	
 	private void moveAbilityFromQueueToCurrent(int abilityIndex){
 		currentAbility = abilityQueue.remove(abilityIndex);
 			if (currentAbility.isAutomatic())
 				resolveAutomaticAbility(currentAbility.getActor(), currentAbility.getGameFieldPosition());
+			else
+				askObserversToResolveAbility();
 	}
 	
     private void advanceToNextTurn(){
@@ -603,4 +761,36 @@ public class Game implements GameInterface {
         for (IObserver observer : observers)
             observer.update();
     }
+	
+	public void askObserversToChooseAbility(int playerIndex){
+		for (IObserver observer : observers)
+			observer.selectNextAbilityToResolve(playerIndex);
+	}
+	
+	public void askObserversToResolveAbility(){
+		int playerIndex = getPlayerIndex(currentAbility.getActor());
+		for (IObserver observer : observers){
+			if (currentAbility.canChooseMultiple()){
+				 if (currentAbility.canChooseFromOwnField() || currentAbility.canChooseFromOpponentField())
+					 observer.selectAnyPlayedCards(playerIndex);
+				 if (currentAbility.canChooseFromOwnDiscard())
+					 observer.selectDiscardedCards(playerIndex);
+			} else {
+				if (currentAbility.canChooseFromOwnField() && currentAbility.canChooseFromOpponentField())
+					observer.selectAnyPlayedCard(playerIndex);
+				else if (currentAbility.canChooseFromOwnField())
+					observer.selectMyPlayedCard(playerIndex);
+				else if (currentAbility.canChooseFromOpponentField())
+					observer.selectOpponentPlayedCard(playerIndex);
+				else if (currentAbility.canChooseFromOwnDiscard())
+					observer.selectDiscardedCard(playerIndex);
+				else if (currentAbility.canChooseFromOwnHand())
+					observer.selectMyHandCard(playerIndex);
+				else if (currentAbility.isAcceptable())
+					observer.selectAcceptAbility(playerIndex);
+			}
+		}
+	}
+	
+	
 }

@@ -113,8 +113,8 @@ public class Card {
         new Card(16, "Hitzkopf", 3, List.of(Element.FIRE), "", ""),				//ability done
         new Card(17, "Kohlkopf", 1, List.of(Element.FIRE), "", ""),				//ability done
         new Card(18, "Wasserläufer", 3, List.of(Element.WATER), "", ""),		//no ability, no test needed
-        new Card(19, "Haihammer", 1, List.of(Element.WATER), "", ""),
-        new Card(20, "Senkschlange", 2, List.of(Element.WATER), "", ""),
+        new Card(19, "Haihammer", 1, List.of(Element.WATER), "", ""),			//ability done
+        new Card(20, "Senkschlange", 2, List.of(Element.WATER), "", ""),		//ability done
         new Card(21, "Aquak", 0, List.of(Element.WATER), "", ""),
         new Card(22, "Seemannsgarnele", 1, List.of(Element.WATER), "", ""),
         new Card(23, "Nagellachs", 1, List.of(Element.WATER), "", ""),
@@ -141,7 +141,7 @@ public class Card {
         new Card(44, "Buddelwurf", 2, List.of(Element.EARTH), "", ""),
         new Card(45, "Extrablatt", 3, List.of(Element.EARTH), "", ""),
         new Card(46, "Felsenfest", 3, List.of(Element.EARTH), "", ""),
-        new Card(47, "Holzkopf", 3, List.of(Element.EARTH), "", ""),
+        new Card(47, "Holzkopf", 3, List.of(Element.EARTH), "", ""),			//ability done
         new Card(48, "Gärtnerzwerg", 3, List.of(Element.EARTH), "", ""),
         new Card(49, "Drahtesel", 3, List.of(Element.EARTH), "", ""),
         new Card(50, "Blätterdach", 2, List.of(Element.EARTH), "", ""),
@@ -150,7 +150,7 @@ public class Card {
         new Card(53, "Gittermastkranich", 0, List.of(Element.AIR), "", ""),
         new Card(54, "Fliegende Klatsche", 2, List.of(Element.AIR), "", ""),
         new Card(55, "Verbieter", 2, List.of(Element.AIR), "", ""),
-        new Card(56, "Verstummer", 2, List.of(Element.AIR), "", ""),
+        new Card(56, "Verstummer", 2, List.of(Element.AIR), "", ""),			//ability TODO
         new Card(57, "Verdünner", 2, List.of(Element.AIR), "", ""),
         new Card(58, "Fliegenpilz", 2, List.of(Element.AIR), "", ""),
         new Card(59, "Erzbengel", 3, List.of(Element.AIR), "", ""),

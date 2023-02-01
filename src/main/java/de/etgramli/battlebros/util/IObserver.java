@@ -28,8 +28,39 @@ public interface IObserver {
     void selectOpponentPlayedCard(final int playerIndex);
 
     /**
+     * Make a player choose a card in play. (on either side of the field)
+     * @param playerIndex Index of the player to choose a card.
+     */
+    void selectAnyPlayedCard(final int playerIndex);
+	
+	/**
+     * Make a player choose multiple cards (can also be zero or one) in play. (on either side of the field)
+     * @param playerIndex Index of the player to choose a card.
+     */
+    void selectAnyPlayedCards(final int playerIndex);
+
+    /**
      * Make a player choose a discarded card.
      * @param playerIndex Index of the player to choose a card.
      */
     void selectDiscardedCard(final int playerIndex);
+	
+	/**
+     * Make a player choose multiple discarded cards.
+     * @param playerIndex Index of the player to choose a card.
+     */
+    void selectDiscardedCards(final int playerIndex);
+	
+	/**
+     * Make a player choose the next ability to resolve.
+     * @param playerIndex Index of the player to choose a card.
+     */
+    void selectNextAbilityToResolve(final int playerIndex);
+	
+	/**
+     * Make a player accept the resolution of an ability. (The player could also cancel)
+     * @param playerIndex Index of the player to choose a card.
+     */
+    void selectAcceptAbility(final int playerIndex);
+	
 }

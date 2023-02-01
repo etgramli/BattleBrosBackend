@@ -164,7 +164,7 @@ public class Player {
 
 		Card card = gameZoneHand.removeCard(handIndex);
         gameField.addCard(card, gameFieldPosition);
-		game.activateComesIntoPlayAbility(this, card, gameFieldPosition);
+		game.activateComesIntoPlayAbility(this, gameFieldPosition);
         return true;
     }
 	
@@ -205,6 +205,10 @@ public class Player {
 	
 	public GameField getGameField(){
 		return gameField;
+	}
+	
+	public Game getGame(){
+		return game;
 	}
 
     public int getAmountOfCardsOnField(){
@@ -252,8 +256,7 @@ public class Player {
 		if (gameField.isCardFaceDown(position))
 			return 0;
 		
-		Card card = gameField.getCard(position);
-		int cardId = card.getId();
+		int cardId = game.getIdOfCardInPlay(this, position);
 		
 		int base = gameField.getCard(position).getValue();
         int modifier = 0;
@@ -264,7 +267,7 @@ public class Player {
 		{ //Vulklon
 			abilityId = 13; //Vulklon
 			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){
-				if (!(opponent.getCardOnFieldAt(position).getId()==abilityId && !game.isCardAbilityNegated(opponent, position))) //TODO check if there's no corner cases where a Vulklon still copies the powval of another Vulklon
+				if (!(game.getIdOfCardInPlay(opponent, position)==abilityId && !game.isCardAbilityNegated(opponent, position))) //TODO check if there's no corner cases where a Vulklon still copies the powval of another Vulklon
 					base = opponent.getValueOfCardOnFieldAt(position); //TODO check ability text, if this is right
 			}
 		}
@@ -286,13 +289,13 @@ public class Player {
 				int positonToTheLeft = position - 1;
 				if (gameField.isCardFaceUp(positonToTheLeft) 
 					&& !game.isCardAbilityNegated(this, positonToTheLeft)
-					&& gameField.getCard(positonToTheLeft).getId()==abilityId) //Kohlkopf
+					&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Kohlkopf
 					modifier += 2;
 				//check card to the right
 				int positionToTheRight = position + 1;
 				if (gameField.isCardFaceUp(positionToTheRight) 
 					&& !game.isCardAbilityNegated(this, positionToTheRight)
-					&& gameField.getCard(positionToTheRight).getId()==abilityId) //Kohlkopf
+					&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Kohlkopf
 					modifier += 2;
 			}
 		}
@@ -303,13 +306,13 @@ public class Player {
 			int positonToTheLeft = position - 1;
 			if (gameField.isCardFaceUp(positonToTheLeft) 
 				&& !game.isCardAbilityNegated(this, positonToTheLeft)
-				&& gameField.getCard(positonToTheLeft).getId()==abilityId) //Anfeuerer
+				&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Anfeuerer
 				modifier++;
 			//check card to the right
 			int positionToTheRight = position + 1;
 			if (gameField.isCardFaceUp(positionToTheRight) 
 				&& !game.isCardAbilityNegated(this, positionToTheRight)
-				&& gameField.getCard(positionToTheRight).getId()==abilityId) //Anfeuerer
+				&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Anfeuerer
 				modifier++;
 		}
 		

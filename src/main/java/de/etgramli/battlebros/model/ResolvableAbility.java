@@ -12,7 +12,7 @@ public class ResolvableAbility {
 	private boolean isAutomatic = false;
 	private int gameFieldPosition;
 	private int progress = 0; //counts how many steps are already finished (most abilities consist of just 1 step)
-	private boolean canChooseMultiple = false; //TODO make use of (Flammenwerfer)
+	private boolean canChooseMultiple = false;
 	
 	private boolean canChooseFromOwnHand = false;
 	private List<Integer> fromOwnHandAllowed;
@@ -25,9 +25,6 @@ public class ResolvableAbility {
 	
 	private boolean canChooseFromOwnDiscard = false;
 	private List<Integer> fromOwnDiscardAllowed;
-	
-	private boolean canChooseFromOpponentDiscard = false;
-	private List<Integer> fromOpponentDiscardAllowed;
 	
 	
 	
@@ -46,7 +43,8 @@ public class ResolvableAbility {
 			case 3: //Flammenwerfer
 				canChooseFromOwnField = true;
 				canChooseFromOpponentField = true;
-				//TODO check if there are restrictions on which bros can be selected
+				canChooseMultiple = true;
+				isOptional = true; //TODO check if cardText says so, if not: make it possible to select 0 cards in Game
 				break;
 			case 4: //Kanonenfutterer
 				isAutomatic = true;
@@ -102,10 +100,15 @@ public class ResolvableAbility {
 	
 	private boolean validOptionAvailable(){
 		if ((canChooseFromOwnHand && (fromOwnHandAllowed==null || !fromOwnHandAllowed.isEmpty()) && !actor.isHandEmpty())
-			|| (canChooseFromOwnField && (fromOwnFieldAllowed==null || !fromOwnFieldAllowed.isEmpty()) && !actor.isFieldEmpty())
-			|| (canChooseFromOpponentField && (fromOpponentFieldAllowed==null || !fromOpponentFieldAllowed.isEmpty()) && !actor.getOpponent().isFieldEmpty())
-			|| (canChooseFromOwnDiscard && (fromOwnDiscardAllowed==null || !fromOwnDiscardAllowed.isEmpty()) && !actor.isDiscardEmpty())
-			|| (canChooseFromOpponentDiscard && (fromOpponentDiscardAllowed==null || !fromOpponentDiscardAllowed.isEmpty()) && !actor.getOpponent().isDiscardEmpty()))
+			|| (!canChooseMultiple && canChooseFromOwnField && (fromOwnFieldAllowed==null || !fromOwnFieldAllowed.isEmpty()) && !actor.isFieldEmpty())
+			|| (!canChooseMultiple && canChooseFromOpponentField && (fromOpponentFieldAllowed==null || !fromOpponentFieldAllowed.isEmpty()) && !actor.getOpponent().isFieldEmpty())
+			|| (canChooseMultiple 
+				&& (!canChooseFromOwnField ||(canChooseFromOwnField && (fromOwnFieldAllowed==null || !fromOwnFieldAllowed.isEmpty()) && !actor.isFieldEmpty()))
+				&& (!canChooseFromOpponentField || (canChooseFromOpponentField && (fromOpponentFieldAllowed==null || !fromOpponentFieldAllowed.isEmpty()) && !actor.getOpponent().isFieldEmpty()))
+				)
+			|| (!canChooseMultiple && canChooseFromOwnDiscard && (fromOwnDiscardAllowed==null || !fromOwnDiscardAllowed.isEmpty()) && !actor.isDiscardEmpty())
+			|| (canChooseMultiple && canChooseFromOwnDiscard && (fromOwnDiscardAllowed==null || !fromOwnDiscardAllowed.isEmpty()) && !actor.isDiscardEmpty())
+		)
 			return true;
 		else
 			return false;
@@ -139,6 +142,10 @@ public class ResolvableAbility {
 		return isOptional;
 	}
 	
+	public boolean isAcceptable(){
+		return isAcceptable;
+	}
+	
 	public boolean isAutomatic(){
 		return isAutomatic;
 	}
@@ -162,5 +169,17 @@ public class ResolvableAbility {
 	}
 	public List<Integer> fromOpponentFieldAllowed(){
 		return fromOpponentFieldAllowed;
+	}
+	
+	public boolean canChooseFromOwnDiscard(){
+		return canChooseFromOwnDiscard;
+	}
+	
+	public List<Integer> fromOwnDiscardAllowed(){
+		return fromOwnDiscardAllowed;
+	}
+	
+	public boolean canChooseMultiple(){
+		return canChooseMultiple;
 	}
 }
