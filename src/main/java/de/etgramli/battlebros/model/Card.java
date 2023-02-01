@@ -95,24 +95,24 @@ public class Card {
     }
 
     private static final List<Card> cardCatalogue = List.of(
-        new Card(1, "Feuersalamander", 3, List.of(Element.FIRE), "", ""),		//ability done
-        new Card(2, "Ausbrecher", 0, List.of(Element.FIRE), "", ""),			//ability done
-        new Card(3, "Flammenwerfer", 0, List.of(Element.FIRE), "", ""),
-        new Card(4, "Kanonenfutterer", 2, List.of(Element.FIRE), "", ""),		//ability done
-        new Card(5, "Verascher", 2, List.of(Element.FIRE), "", ""),				//ability done
+        new Card(1, "Feuersalamander", 3, List.of(Element.FIRE), "", ""),		//no ability, no test needed
+        new Card(2, "Ausbrecher", 0, List.of(Element.FIRE), "", ""),			//ability done, test done
+        new Card(3, "Flammenwerfer", 0, List.of(Element.FIRE), "", ""),			//ability done
+        new Card(4, "Kanonenfutterer", 2, List.of(Element.FIRE), "", ""),		//ability done, test done
+        new Card(5, "Verascher", 2, List.of(Element.FIRE), "", ""),				//ability done, test done
         new Card(6, "Fönix", 3, List.of(Element.FIRE), "", ""),
-        new Card(7, "Potzblitz", 1, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(8, "Magmann", 2, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(9, "Lavaboy", 4, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(10, "Fackeldackel", 4, List.of(Element.FIRE), "", ""),
+        new Card(7, "Potzblitz", 1, List.of(Element.FIRE), "", ""),				//ability done, test done
+        new Card(8, "Magmann", 2, List.of(Element.FIRE), "", ""),				//ability done, test done
+        new Card(9, "Lavaboy", 4, List.of(Element.FIRE), "", ""),				//ability done, test done
+        new Card(10, "Fackeldackel", 4, List.of(Element.FIRE), "", ""),			//ability done
         new Card(11, "Abbrenngolem", 5, List.of(Element.FIRE), "", ""),			//ability done
-        new Card(12, "Heißer Feger", 0, List.of(Element.FIRE), "", ""),
-        new Card(13, "Vulklon", 0, List.of(Element.FIRE), "", ""),
+        new Card(12, "Heißer Feger", 0, List.of(Element.FIRE), "", ""),			//ability done
+        new Card(13, "Vulklon", 0, List.of(Element.FIRE), "", ""),				//ability done
         new Card(14, "Streichelholz", 2, List.of(Element.FIRE), "", ""),		//ability done
         new Card(15, "Anfeuerer", 2, List.of(Element.FIRE), "", ""),			//ability done
         new Card(16, "Hitzkopf", 3, List.of(Element.FIRE), "", ""),				//ability done
         new Card(17, "Kohlkopf", 1, List.of(Element.FIRE), "", ""),				//ability done
-        new Card(18, "Wasserläufer", 3, List.of(Element.WATER), "", ""),
+        new Card(18, "Wasserläufer", 3, List.of(Element.WATER), "", ""),		//no ability, no test needed
         new Card(19, "Haihammer", 1, List.of(Element.WATER), "", ""),
         new Card(20, "Senkschlange", 2, List.of(Element.WATER), "", ""),
         new Card(21, "Aquak", 0, List.of(Element.WATER), "", ""),
@@ -129,7 +129,7 @@ public class Card {
         new Card(32, "Toller Hecht", 1, List.of(Element.WATER), "", ""),
         new Card(33, "Walnuss", 2, List.of(Element.WATER), "", ""),
         new Card(34, "Schildfisch", 2, List.of(Element.WATER), "", ""),
-        new Card(35, "Erdwurm", 3, List.of(Element.EARTH), "", ""),
+        new Card(35, "Erdwurm", 3, List.of(Element.EARTH), "", ""),				//no ability, no test needed
         new Card(36, "Katerpult", 1, List.of(Element.EARTH), "", ""),
         new Card(37, "Rammbock", 2, List.of(Element.EARTH), "", ""),
         new Card(38, "Zombiene", 3, List.of(Element.EARTH), "", ""),
@@ -146,7 +146,7 @@ public class Card {
         new Card(49, "Drahtesel", 3, List.of(Element.EARTH), "", ""),
         new Card(50, "Blätterdach", 2, List.of(Element.EARTH), "", ""),
         new Card(51, "Baumkrone", 3, List.of(Element.EARTH), "", ""),
-        new Card(52, "Luftschlange", 3, List.of(Element.AIR), "", ""),
+        new Card(52, "Luftschlange", 3, List.of(Element.AIR), "", ""),			//no ability, no test needed
         new Card(53, "Gittermastkranich", 0, List.of(Element.AIR), "", ""),
         new Card(54, "Fliegende Klatsche", 2, List.of(Element.AIR), "", ""),
         new Card(55, "Verbieter", 2, List.of(Element.AIR), "", ""),
@@ -163,7 +163,7 @@ public class Card {
         new Card(66, "Feiges Huhn", 2, List.of(Element.AIR), "", ""),
         new Card(67, "Nebelbank", 2, List.of(Element.AIR), "", ""),
         new Card(68, "Wolkendecke", 3, List.of(Element.AIR), "", ""),
-        new Card(69, "Anitwicht", 3, List.of(), "", ""),
-        new Card(70, "Omniwicht", 3, List.of(Element.AIR, Element.WATER, Element.EARTH, Element.FIRE), "", "")
+        new Card(69, "Anitwicht", 3, List.of(), "", ""),						//no ability, no test needed
+        new Card(70, "Omniwicht", 3, List.of(Element.AIR, Element.WATER, Element.EARTH, Element.FIRE), "", "")	//no ability, no test needed
     );
 }

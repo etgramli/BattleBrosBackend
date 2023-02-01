@@ -134,9 +134,10 @@ public class AbilityTest002 {
 			Assertions.assertFalse(game.chooseCancel(firstPlayerIdx));
 			//todo make extensive
 		}
-		{ //first player plays their ausbrecher. and then cancels the ability
+		{ //first player plays their ausbrecher. and then tries to cancels the ability (it's not optional), then turns the own ausbrecher face down
 			assertTrue(game.playCard(firstPlayerIdx, 0, 0));
 			Assertions.assertFalse(game.chooseAccept(firstPlayerIdx));
+			Assertions.assertFalse(game.chooseCancel(firstPlayerIdx));
 			Assertions.assertFalse(game.pass(firstPlayerIdx));
 			Assertions.assertFalse(game.discardCard(firstPlayerIdx, 0));
 			Assertions.assertFalse(game.discardCard(firstPlayerIdx, 1));
@@ -166,7 +167,7 @@ public class AbilityTest002 {
 			assertFalse(game.chooseCancel(firstPlayerIdx));
 			assertTrue(game.chooseCardInPlay(firstPlayerIdx, firstPlayerIdx, 0));
 			
-			//check if ausbrecher is still face up
+			//check if ausbrecher is face down
 			assertFalse(game.getPositionsOfFaceDownCards(firstPlayerIdx).isEmpty());
 		}
     }

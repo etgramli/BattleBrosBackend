@@ -22,11 +22,10 @@ public class Deck {
     }
 
     public boolean addCard(Card card){
-        //if (cards.contains(card))
-        //    return false;
-        //cards.add(card);
-        //return true;
-		return cards.add(card);
+        if (cards.contains(card))
+			return false;
+        cards.add(card);
+        return true;
     }
 
     public boolean addCards(Collection<Card> cards){
@@ -38,19 +37,18 @@ public class Deck {
         return atLeastOneSuccessful;
     }
 
-    /*public boolean removeCard(int index){
+    public boolean removeCard(int index){
         if (index < 0 || index >= cards.size())
             return false;
         cards.remove(index);
         return true;
-    }*/
+    }
 
     public boolean removeCard(Card card){
-        /*if (!cards.contains(card))
+        if (!cards.contains(card))
             return false;
         cards.remove(card);
-        return true;*/
-		return cards.remove(card);
+        return true;
     }
 
     public List<Card> getCards(){

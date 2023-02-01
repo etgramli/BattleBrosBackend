@@ -34,7 +34,7 @@ public class Game implements GameInterface {
 		return turn;
 	}
 	
-    private Player getPlayer(int playerIndex){
+    public Player getPlayer(int playerIndex){
         if (playerIndex == 0)
             return player1;
         if (playerIndex == 1)
@@ -193,9 +193,8 @@ public class Game implements GameInterface {
 	public boolean chooseAbilityToResolve(int playerIndex, int abilityIndex){
 		if (currentlyResolvingAnAbility()
 			|| getPlayer(playerIndex) != turnPlayer
-			|| turnPlayer.hasPassed()
-			|| abilityQueue == null
-			|| abilityQueue.size() <= 1
+			//|| turnPlayer.hasPassed()
+			|| !abilitiesInQueue()
 			|| abilityIndex < 0
 			|| abilityIndex >= abilityQueue.size())
 			return false;
@@ -263,8 +262,7 @@ public class Game implements GameInterface {
 					return false;
 		}
 		
-		resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
-		return true;
+		return resolveAbilityWithChosenCardsInPlay(currentAbility.getActor(), selections);
 	}
 	
 	@Override
@@ -317,7 +315,7 @@ public class Game implements GameInterface {
 				addAbilityToQueue(new ResolvableAbility(2, player, gameFieldPosition));
 				break;
 			case 3: //Flammenwerfer
-				//todo
+				addAbilityToQueue(new ResolvableAbility(3, player, gameFieldPosition));
 				break;
 			case 4: //Kanonenfutterer
 				addAbilityToQueue(new ResolvableAbility(4, player, gameFieldPosition));
@@ -339,6 +337,12 @@ public class Game implements GameInterface {
 				break;
 		}
 		
+		if (player.getElementsOfCardAt(gameFieldPosition).contains(Element.WATER)){ //Fackeldackel
+			int abilityId = 10; //Fackeldackel
+			for (int i = 0; i < countFaceUpUnnegatedOnAnySide(abilityId); i++)
+				addAbilityToQueue(new ResolvableAbility(abilityId, player, gameFieldPosition));
+		}
+		
 		advanceFromAbility();
 	}
 	
@@ -354,6 +358,14 @@ public class Game implements GameInterface {
 				actor.drawCards(1);
 				advanceFromAbility();
 				break;
+			case 10: //Fackeldackel
+				int abilityId = 10; //Fackeldackel
+				for (int xPosition : getPositionsOfAllFaceUpUnnegatedOnSideOf(actor, abilityId))
+					actor.flipOwnCardFaceDown(xPosition);
+				for (int xPosition : getPositionsOfAllFaceUpUnnegatedOnSideOf(actor.getOpponent(), abilityId))
+					actor.flipOpponentCardFaceDown(xPosition);
+				advanceFromAbility();
+				break;
 			case 11: //Abbrenngolem
 				actor.flipOwnCardFaceDown(gameFieldPosition);
 				advanceFromAbility();
@@ -366,6 +378,7 @@ public class Game implements GameInterface {
 	private void resolveAbilityWithAccepting(){
 		Player actor = currentAbility.getActor();
 		switch(currentAbility.getCardId()){
+			//TODO not needed yet
 			default:
 				advanceFromAbility();
 		}
@@ -386,11 +399,35 @@ public class Game implements GameInterface {
 		}
 	}
 	
-	private void resolveAbilityWithChosenCardsInPlay(Player actor, List<Pair<Integer,Integer>> selections){
+	private boolean resolveAbilityWithChosenCardsInPlay(Player actor, List<Pair<Integer,Integer>> selections){
 		switch(currentAbility.getCardId()){
+			case 3: // Flammenwerfer
+				//check if total value of selected bros is 2 or less
+				int totalValue = 0;
+				for (Pair<Integer, Integer> selection : selections){
+					Player player = getPlayer(selection.getKey());
+					if (player == null)
+						continue;
+					totalValue += player.getValueOfCardOnFieldAt(selection.getValue());
+					if (totalValue > 2)
+						return false;
+				}
+				//turn selected cards face down
+				for (Pair<Integer, Integer> selection : selections){
+					Player player = getPlayer(selection.getKey());
+					if (player == null)
+						continue;
+					else if (player == actor)
+						actor.flipOwnCardFaceDown(selection.getValue());
+					else if (player == actor.getOpponent())
+						actor.flipOpponentCardFaceDown(selection.getValue());
+				}
+				advanceFromAbility();
+				return true;
 			default:
 				advanceFromAbility();
 		}
+		return false;
 	}
 	
 	private void resolveAbilityWithChosenCardInHand(Player actor, int handIndex){
@@ -415,8 +452,8 @@ public class Game implements GameInterface {
 	}
 	
 	private boolean isThereAFaceUpUnnegatedOnAnySide(int cardId){
-		return isThereAFaceUpUnnegatedOnSideOf(player1, cardId)
-			|| isThereAFaceUpUnnegatedOnSideOf(player2, cardId);
+		return (isThereAFaceUpUnnegatedOnSideOf(player1, cardId)
+			|| isThereAFaceUpUnnegatedOnSideOf(player2, cardId));
 	}
 	
 	public boolean isThereAFaceUpUnnegatedOnSideOf(Player player, int cardId){
@@ -425,6 +462,38 @@ public class Game implements GameInterface {
 				return true;
 		}
 		return false;
+	}
+	
+	public int countFaceUpUnnegatedOnSideOfButNotAt(Player player, int cardId, int exceptPosition){
+		int result = 0;
+		for (Integer position : player.getPositionsOfAllFaceUpBros()){
+			if (position!=exceptPosition && player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+				result++;
+		}
+		return result;
+	}
+	
+	public int countFaceUpUnnegatedOnAnySide(int cardId){
+		return (countFaceUpUnnegatedOnSideOf(player1, cardId)
+			  + countFaceUpUnnegatedOnSideOf(player2, cardId));
+	}
+	
+	public int countFaceUpUnnegatedOnSideOf(Player player, int cardId){
+		int result = 0;
+		for (Integer position : player.getPositionsOfAllFaceUpBros()){
+			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+				result++;
+		}
+		return result;
+	}
+	
+	public List<Integer> getPositionsOfAllFaceUpUnnegatedOnSideOf(Player player, int cardId){
+		List<Integer> result = new ArrayList<>();
+		for (Integer position : player.getPositionsOfAllFaceUpBros()){
+			if (player.getCardOnFieldAt(position).getId()==cardId && !isCardAbilityNegated(player, position))
+				result.add(position);
+		}
+		return result;
 	}
 	
 	public boolean isCardAbilityNegated(Player player, int xPosition){
@@ -436,7 +505,7 @@ public class Game implements GameInterface {
 	}
 
 	private boolean notAbleToPlayDiscardOrPass(int playerIndex){
-		return currentlyResolvingAnAbility() || !noAbilitiesInQueue() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
+		return currentlyResolvingAnAbility() || abilitiesInQueue() || getPlayer(playerIndex)!=turnPlayer || turnPlayer.hasPassed();
 	}
 	
 	private boolean notAbleToResolveAbility(int playerIndex){
@@ -456,8 +525,8 @@ public class Game implements GameInterface {
 		return noCurrentAbility() && abilityQueue!=null && abilityQueue.size()>=2;
 	}
 	
-	private boolean noAbilitiesInQueue(){
-		return abilityQueue==null || abilityQueue.isEmpty();
+	private boolean abilitiesInQueue(){
+		return (abilityQueue!=null && !abilityQueue.isEmpty());
 	}
 	
 	public void addAbilityToQueue(ResolvableAbility ability){

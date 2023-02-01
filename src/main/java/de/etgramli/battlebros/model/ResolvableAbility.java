@@ -8,7 +8,6 @@ public class ResolvableAbility {
 	private String abilityText = "";
 	private Player actor = null;
 	private boolean isOptional = false;
-
 	private boolean isAcceptable = false; //TODO
 	private boolean isAutomatic = false;
 	private int gameFieldPosition;
@@ -31,23 +30,25 @@ public class ResolvableAbility {
 	private List<Integer> fromOpponentDiscardAllowed;
 	
 	
+	
 	public ResolvableAbility(int cardId, Player activator, int gameFieldPosition){
 		this.cardId = cardId;
 		this.abilityText = "platzhalter fähigkeitstext"; //TODO get from Card class
 		this.gameFieldPosition = gameFieldPosition;
+		actor = activator;
 		switch (cardId){
 			case 2: //Ausbrecher
-				actor = activator;
 				canChooseFromOwnField = true;
 				fromOwnFieldAllowed = actor.getPositionsOfAllFaceUpBros();
 				canChooseFromOpponentField = true;
 				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBros();
 				break;
 			case 3: //Flammenwerfer
-				//TODO
+				canChooseFromOwnField = true;
+				canChooseFromOpponentField = true;
+				//TODO check if there are restrictions on which bros can be selected
 				break;
 			case 4: //Kanonenfutterer
-				actor = activator;
 				isAutomatic = true;
 				break;
 			case 5: //Verascher
@@ -69,22 +70,42 @@ public class ResolvableAbility {
 				actor = activator.getOpponent();
 				isAutomatic = true;
 				break;
-			case 11: //Abbrenngolem
-				actor = activator;
+			case 10: //Fackeldackel
 				isAutomatic = true;
 				break;
+			case 11: //Abbrenngolem
+				isAutomatic = true;
+				break;
+			default:
+				actor = null;
 		}
 		
-		if (!isAutomatic && !isOptional && !validOptionAvailable())
+		setOptionalIfNeeded();
+	}
+	
+	
+	public void advanceProgress(){
+		progress++;
+		switch (cardId){
+			//not needed yet (Here attributes can be changed from one step to the next)
+		}
+		setOptionalIfNeeded();
+	}
+	
+	
+	
+	
+	private void setOptionalIfNeeded(){
+		if (!isOptional && !isAutomatic && !validOptionAvailable())
 			isOptional = true;
 	}
 	
 	private boolean validOptionAvailable(){
-		if ((canChooseFromOwnHand && (fromOwnHandAllowed==null || !fromOwnHandAllowed.isEmpty()))
-			|| (canChooseFromOwnField && (fromOwnFieldAllowed==null || !fromOwnFieldAllowed.isEmpty()))
-			|| (canChooseFromOpponentField && (fromOpponentFieldAllowed==null || !fromOpponentFieldAllowed.isEmpty()))
-			|| (canChooseFromOwnDiscard && (fromOwnDiscardAllowed==null || !fromOwnDiscardAllowed.isEmpty()))
-			|| (canChooseFromOpponentDiscard && (fromOpponentDiscardAllowed==null || !fromOpponentDiscardAllowed.isEmpty())))
+		if ((canChooseFromOwnHand && (fromOwnHandAllowed==null || !fromOwnHandAllowed.isEmpty()) && !actor.isHandEmpty())
+			|| (canChooseFromOwnField && (fromOwnFieldAllowed==null || !fromOwnFieldAllowed.isEmpty()) && !actor.isFieldEmpty())
+			|| (canChooseFromOpponentField && (fromOpponentFieldAllowed==null || !fromOpponentFieldAllowed.isEmpty()) && !actor.getOpponent().isFieldEmpty())
+			|| (canChooseFromOwnDiscard && (fromOwnDiscardAllowed==null || !fromOwnDiscardAllowed.isEmpty()) && !actor.isDiscardEmpty())
+			|| (canChooseFromOpponentDiscard && (fromOpponentDiscardAllowed==null || !fromOpponentDiscardAllowed.isEmpty()) && !actor.getOpponent().isDiscardEmpty()))
 			return true;
 		else
 			return false;
@@ -92,14 +113,6 @@ public class ResolvableAbility {
 	
 	public int getProgress(){
 		return progress;
-	}
-	
-	public void advanceProgress(){
-		progress++;
-		switch (cardId){
-			//not needed yet (Here attributes can be changed from one step to the next)
-		}
-		
 	}
 	
 	public int getCardId(){

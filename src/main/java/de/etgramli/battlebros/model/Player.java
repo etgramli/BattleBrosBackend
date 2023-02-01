@@ -214,60 +214,117 @@ public class Player {
 	public int getAmountOfCardsInHand(){
 		return gameZoneHand.getAmountOfCards();
 	}
+	
+	public int getAmountOfCardsInDiscard(){
+		return gameZoneDiscard.getAmountOfCards();
+	}
+	
+	public int getAmountOfCardsInDeck(){
+		return gameZoneDeck.getAmountOfCards();
+	}
+	
+	public boolean isHandEmpty(){
+		return getAmountOfCardsInHand() == 0;
+	}
+	
+	public boolean isFieldEmpty(){
+		return getAmountOfCardsOnField() == 0;
+	}
+	
+	public boolean isDiscardEmpty(){
+		return getAmountOfCardsInDiscard() == 0;
+	}
+	
+	public boolean isDeckEmpty(){
+		return getAmountOfCardsInDeck() == 0;
+	}
 
     public Card getCardOnFieldAt(int position){
         return gameField.getCard(position);
     }
 	
+	public List<Element> getElementsOfCardAt(int xPosition){
+		//TODO element-changing abilities (Polywicht & Contrawicht)
+		return gameField.getCard(xPosition).getElements();
+	}
+	
 	public int getValueOfCardOnFieldAt(int position){
 		if (gameField.isCardFaceDown(position))
 			return 0;
 		
+		Card card = gameField.getCard(position);
+		int cardId = card.getId();
+		
 		int base = gameField.getCard(position).getValue();
         int modifier = 0;
+		int multiplier = 1;
 		
-		if (getElementsOfCardAt(position).contains(Element.FIRE)
-            && gameField.getCard(position).getId() != 16){ //if this bro is a fire bro, but isn't Hitzkopf TODO darf schon gebufft werden wenn es selbst hitzkopf ist, aber halt nur nicht von sich selbst, UND! es kann theoretisch mehr als 2 hitzköpfe geben, man muss auch kopien zählen können
-			if (game.isThereAFaceUpUnnegatedOnSideOf(this, 16)) //Hitzkopf
-                modifier++;
-			if (game.isThereAFaceUpUnnegatedOnSideOf(opponent, 16)) //Hitzkopf
-                modifier++;
+		int abilityId = -1;
+		
+		{ //Vulklon
+			abilityId = 13; //Vulklon
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){
+				if (!(opponent.getCardOnFieldAt(position).getId()==abilityId && !game.isCardAbilityNegated(opponent, position))) //TODO check if there's no corner cases where a Vulklon still copies the powval of another Vulklon
+					base = opponent.getValueOfCardOnFieldAt(position); //TODO check ability text, if this is right
+			}
+		}
+		
+		{ //Heißer Feger
+			abilityId = 12;
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)) //Heißer Feger
+				modifier += (2 * (getAmountOfAllFaceDownBros() + opponent.getAmountOfAllFaceDownBros()));
+		}
+		
+		{ // Hitzkopf & Kohlkopf
+			if (getElementsOfCardAt(position).contains(Element.FIRE)){
+				abilityId = 16; //Hitzkopf
+				modifier += game.countFaceUpUnnegatedOnSideOfButNotAt(this, abilityId, position); //Hitzkopf (my side of field)
+				modifier += game.countFaceUpUnnegatedOnSideOf(opponent, abilityId); //Hitzkopf (opponent's side of field)
+				
+				abilityId = 17; //Kohlkopf
+				//check card to the left
+				int positonToTheLeft = position - 1;
+				if (gameField.isCardFaceUp(positonToTheLeft) 
+					&& !game.isCardAbilityNegated(this, positonToTheLeft)
+					&& gameField.getCard(positonToTheLeft).getId()==abilityId) //Kohlkopf
+					modifier += 2;
+				//check card to the right
+				int positionToTheRight = position + 1;
+				if (gameField.isCardFaceUp(positionToTheRight) 
+					&& !game.isCardAbilityNegated(this, positionToTheRight)
+					&& gameField.getCard(positionToTheRight).getId()==abilityId) //Kohlkopf
+					modifier += 2;
+			}
+		}
+		
+		{ //Anfeuerer
+			abilityId = 15; //Anfeuerer
 			//check card to the left
 			int positonToTheLeft = position - 1;
 			if (gameField.isCardFaceUp(positonToTheLeft) 
 				&& !game.isCardAbilityNegated(this, positonToTheLeft)
-				&& gameField.getCard(positonToTheLeft).getId()==17) //Kohlkopf
-                modifier += 2;
+				&& gameField.getCard(positonToTheLeft).getId()==abilityId) //Anfeuerer
+				modifier++;
 			//check card to the right
 			int positionToTheRight = position + 1;
 			if (gameField.isCardFaceUp(positionToTheRight) 
 				&& !game.isCardAbilityNegated(this, positionToTheRight)
-				&& gameField.getCard(positionToTheRight).getId()==17) //Kohlkopf
-                modifier += 2;
+				&& gameField.getCard(positionToTheRight).getId()==abilityId) //Anfeuerer
+				modifier++;
 		}
 		
-		//check card to the left
-		int positonToTheLeft = position - 1;
-        if (gameField.isCardFaceUp(positonToTheLeft) 
-			&& !game.isCardAbilityNegated(this, positonToTheLeft)
-			&& gameField.getCard(positonToTheLeft).getId()==15) //Anfeuerer
-            modifier++;
-
-		//check card to the right
-		int positionToTheRight = position + 1;
-        if (gameField.isCardFaceUp(positionToTheRight) 
-			&& !game.isCardAbilityNegated(this, positionToTheRight)
-			&& gameField.getCard(positionToTheRight).getId()==15) //Anfeuerer
-            modifier++;
+		{ //Streichelholz
+			abilityId = 14; //Streichelholz
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Streichelholz
+				multiplier = 2;
+			}
+		}
 		
-		//TODO check opposite card
-
-		if (modifier <= 0)
+		int result = base + (modifier * multiplier);
+		if (result <= 0)
 			return 0;
-		if (gameField.getCard(position).getId()==14 && !game.isCardAbilityNegated(this, position)){ //Streichelholz
-            modifier *= 2;
-		}
-		return base + modifier;
+		else
+			return result;
 	}
 
     public boolean isCardFaceUp(int xPosition){
@@ -322,8 +379,7 @@ public class Player {
 		return gameField.getAllFaceDownPositions();
 	}
 	
-	public List<Element> getElementsOfCardAt(int xPosition){
-		//TODO element changing abilities
-		return gameField.getCard(xPosition).getElements();
+	private int getAmountOfAllFaceDownBros(){
+		return gameField.getAllFaceDownPositions().size();
 	}
 }

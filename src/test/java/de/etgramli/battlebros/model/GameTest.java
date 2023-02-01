@@ -1,5 +1,9 @@
 package de.etgramli.battlebros.model;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +115,7 @@ class GameTest {
 	}
 
 	static void printGameActionInstructions(){
-		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|chooseAbility|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,fieldIdx or Y/N|chooseHand:handIdx|chooseAbility:abilityIdx)");
+		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|chooseAbility|chooseMany|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,fieldIdx or Y/N|chooseHand:handIdx|chooseAbility:abilityIdx|chooseMany:playerIdx,fieldIdx,repeat)");
 	}
 	
 	static boolean doGameAction() {
@@ -124,9 +128,6 @@ class GameTest {
 		}
 
 		String[] inputParts = inputs.split(",");
-
-		if (inputParts.length < 2 || inputParts.length > 4)
-			return false;
 
 		int actorIdx;
 		String input = inputParts[0].trim().toLowerCase();
@@ -178,6 +179,18 @@ class GameTest {
 				return false;
 			int abilityIdx = Integer.parseInt(inputParts[2].trim());
 			return game.chooseAbilityToResolve(actorIdx, abilityIdx - 1);
+		} else if (input.equals("choosemany")){
+			if (inputParts.length < 2 || inputParts.length%2 != 0)
+				return false;
+			List<Pair<Integer,Integer>> selections = new ArrayList<>();
+			int i = 2;
+			while (i < inputParts.length){
+				int playerIdx = Integer.parseInt(inputParts[i].trim());
+				int fieldIdx = Integer.parseInt(inputParts[i+1].trim());
+				selections.add(new ImmutablePair<>(playerIdx-1, fieldIdx));
+				i += 2;
+			}
+			return game.chooseCardsInPlay(actorIdx, selections);
 		}
 		return false;
 	}
