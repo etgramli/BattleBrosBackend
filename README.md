@@ -46,6 +46,8 @@ This is an implementation of the game logic of the awesome game Battle Bros.
   - translate card images
   - maybe: more languages, e.g. french
 - Prettification
+  - images of cards your opponent plays load slow -> preload all cards in background or something
+  - automatically resize cards/gamefield etc. to browser size
   - show changed power values and negated abilities on cards in play (red number over printed power value / red X over ability box)
   - highlight zones on the gamefield, where cards can be played
   - highlight zones where it is forbidden to play cards
@@ -53,9 +55,9 @@ This is an implementation of the game logic of the awesome game Battle Bros.
   - highlight cards that are allowed to be selected (when you're resolving an ability which requires you to choose a card)
   - make it possible to sort your hand
   - highlight field and other information of the player, who currently has to take a game action
-  - use icons for showing amount of cards/viewing cards in: discard, deck, life zone, opponents hand
+  - use icons for showing amount of cards/viewing cards in: discard, deck, life zone, opponent's hand
   - use animations for: playing cards, discarding cards, flipping cards face up/down, drawing cards, sorting hand, passing, ending the battle, ending the game
-  - use sfx for the actions listed above as well as receiving messages
+  - use sfx for the actions listed above as well as receiving chat messages
   - add a light and a dark theme for the whole website
 
 ## Card Unlocking System
@@ -88,7 +90,7 @@ Cards can only be placed to empty positions, that directly connect to an already
 
 ### Game modes
 - Constructed decks (Each player plays with a deck they built with cards from their own collection)
-- Draft (4 cards are reveiled, player A chooses one them for their deck, then player B chooses two of the remaining cards, then player A gets the last card. Repeat until both players have a full deck.)
+- Draft (4 cards are reveiled, player A chooses one of them for their deck, then player B chooses two of the remaining cards, then player A gets the last card. Repeat until both players have a full deck.)
 
 ### Specific rulings
 Here are specific rules that occur rarely, but then are very important.

@@ -115,7 +115,7 @@ class GameTest {
 	}
 
 	static void printGameActionInstructions(){
-		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|chooseAbility|chooseMany|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,fieldIdx or Y/N|chooseHand:handIdx|chooseAbility:abilityIdx|chooseMany:playerIdx,fieldIdx,repeat)");
+		System.out.println("Player(p1|p2), Action(play|discard|pass|choose|chooseHand|chooseDiscard|chooseMany|chooseAbility|exit), Param(play:handIdx,fieldIdx|discard:handIdx|pass:none|choose:playerIdx,fieldIdx or Y/N|chooseHand:handIdx|chooseDiscard:discardIdx|chooseMany:playerIdx,fieldIdx,repeat|chooseAbility:abilityIdx)");
 	}
 	
 	static boolean doGameAction() {
@@ -174,6 +174,11 @@ class GameTest {
 				return false;
 			int handIdx = Integer.parseInt(inputParts[2].trim());
 			return game.chooseCardInHand(actorIdx, handIdx - 1);
+		} else if (input.equals("choosediscard")) {
+			if (inputParts.length != 3)
+				return false;
+			int discardIdx = Integer.parseInt(inputParts[2].trim());
+			return game.chooseCardInHand(actorIdx, discardIdx - 1);
 		} else if (input.equals("chooseability")) {
 			if (inputParts.length != 3)
 				return false;
@@ -196,7 +201,7 @@ class GameTest {
 	}
 
     static void drawGameState(Player player1, Player player2) {
-		System.out.println("\n\n______ Zug=" + game.getTurnNumber() + " AmZug=" + game.getTurnPlayer().getName() + " ______");
+		System.out.println("\n\n______ Zug=" + game.getTurnNumber() + " AmZug=" + game.getTurnPlayer().getName() + " (p" + (game.getPlayerIndex(game.getTurnPlayer())+1) + ") ______");
 		if (game.currentlyResolvingAnAbility())
 			System.out.println("!!! Es wird gerade folgende Fähigkeit verrechnet: " + Card.getCard(game.getCurrentlyResolvingAbility().getCardId()).getName() + ": \"" + game.getCurrentlyResolvingAbility().getAbilityText() + "\"");
 		

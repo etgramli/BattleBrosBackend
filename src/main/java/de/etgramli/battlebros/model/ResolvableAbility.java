@@ -74,6 +74,12 @@ public class ResolvableAbility {
 			case 11: //Abbrenngolem
 				isAutomatic = true;
 				break;
+			case 21: //Aquak
+				isAutomatic = true;
+				break;
+			case 22: //Seemannsgarnele
+				isAutomatic = true;
+				break;
 			default:
 				actor = null;
 		}

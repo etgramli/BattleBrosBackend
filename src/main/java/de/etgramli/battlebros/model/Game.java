@@ -3,10 +3,7 @@ package de.etgramli.battlebros.model;
 import de.etgramli.battlebros.util.IObserver;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Game implements GameInterface {
 
@@ -42,7 +39,7 @@ public class Game implements GameInterface {
         return null;
     }
 	
-	private int getPlayerIndex(Player player){
+	public int getPlayerIndex(Player player){
 		if (player == player1)
 			return 0;
 		else if (player == player2)
@@ -358,30 +355,37 @@ public class Game implements GameInterface {
 			return;
 		}
 		
-		switch (getIdOfCardInPlay(player, gameFieldPosition)){
+		int cardId = getIdOfCardInPlay(player, gameFieldPosition);
+		switch (cardId){
 			case 2: //Ausbrecher
-				addAbilityToQueue(new ResolvableAbility(2, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 			case 3: //Flammenwerfer
-				addAbilityToQueue(new ResolvableAbility(3, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 			case 4: //Kanonenfutterer
-				addAbilityToQueue(new ResolvableAbility(4, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 			case 5: //Verascher
-				addAbilityToQueue(new ResolvableAbility(5, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 				
 			//todo don't implement Fönix here, but instead in Unterweltfährmann's ability
 			
 			case 7: //Potzblitz
-				addAbilityToQueue(new ResolvableAbility(7, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 			case 9: //Lavaboy
-				addAbilityToQueue(new ResolvableAbility(9, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 			case 11: //Abbrenngolem
-				addAbilityToQueue(new ResolvableAbility(11, player, gameFieldPosition));
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
+				break;
+			case 21: //Aquak
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
+				break;
+			case 22: //Seemannsgarnele
+				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
 		}
 		
@@ -416,6 +420,15 @@ public class Game implements GameInterface {
 				break;
 			case 11: //Abbrenngolem
 				actor.flipOwnCardFaceDown(gameFieldPosition);
+				advanceFromAbility();
+				break;
+			case 21: //Aquak
+				actor.drawCards(1);
+				advanceFromAbility();
+				break;
+			case 22: //Seemannsgarnele
+				actor.drawCards(1);
+				actor.getOpponent().drawCards(1);
 				advanceFromAbility();
 				break;
 			default:
@@ -513,7 +526,7 @@ public class Game implements GameInterface {
 	public boolean notAllowedToDrawCards(Player player){
 		return isThereAFaceUpUnnegatedOnSideOf(player.getOpponent(), 8); //Magmann
 	}
-	
+
 	private boolean isThereAFaceUpUnnegatedOnAnySide(int cardId){
 		return (isThereAFaceUpUnnegatedOnSideOf(player1, cardId)
 			|| isThereAFaceUpUnnegatedOnSideOf(player2, cardId));
@@ -522,6 +535,22 @@ public class Game implements GameInterface {
 	public boolean isThereAFaceUpUnnegatedOnSideOf(Player player, int cardId){
 		for (Integer position : player.getPositionsOfAllFaceUpBros()){
 			if (getIdOfCardInPlay(player, position)==cardId && !isCardAbilityNegated(player, position))
+				return true;
+		}
+		return false;
+	}
+	
+	public boolean isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnAnySide(int cardId, List<Element> elements, List<Integer> oppositeCardIds){
+		return (isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnSideOf(player1, cardId, elements, oppositeCardIds)
+			|| isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnSideOf(player2, cardId, elements, oppositeCardIds));
+	}
+	
+	public boolean isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnSideOf(Player player, int cardId, List<Element> elements, List<Integer> oppositeCardIds){
+		for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player, cardId)){
+			if (
+				!oppositeCardIds.contains(getIdOfCardInPlay(player.getOpponent(), position)) // is NOT opposite to either of oppositeCardIds
+				&& !Collections.disjoint(player.getOpponent().getElementsOfCardAt(position), elements) // IS opposite to any of elements
+			)
 				return true;
 		}
 		return false;
@@ -567,34 +596,73 @@ public class Game implements GameInterface {
 		// > Senkschlange ggüber von Senkschlange DONE
 		// > Haihammer ggüber von Senkschlange DONE
 		// > Haihammer im bereich von Haihammer DONE
-		
-		//TODO:
 		// > Haihammer annulliert Senkschlange, die Holzkopf neben Haihammer annulliert. -> Resultat: Haihammer & Senkschlange bleiben aktiv, Holzkopf bleibt annulliert
 		// > Verstummer
 		// > Verstummer ggüber Bro vom selben Element wie Verstummer (muss nur ein element teilen)
-		// > Verstummer ggüber Senkschlange / in range of Haihammer / neben Holzkopf
+		// > Verstummer ggüber Senkschlange / Haihammer
+		// > Verstummer gegenüber von Senkschlange / Haihammer
+		// > Verstummer neben Holzkopf while their element is being negated by verstummer
+		// > Verstummer neben Holzkopf while their element is being negated by verstummer
+		
 		
 		
 		int cardId = getIdOfCardInPlay(player, xPosition);
 		
-		{ //Verstummer
+		/*{ //Verstummer
 			int abilityId = 56; //Verstummer
-			//TODO
-		}
+			
+			if (isThereAFaceUpUnnegatedOnAnySide(abilityId)) {
+				List<Element> elementsAffectedByVerstummer = new ArrayList<>();
+				for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player, abilityId)){
+					if (player.getOpponent().isCardFaceUp(position)){
+						for (Element element : player.getOpponent().getElementsOfCardAt(position)){
+							if (!elementsAffectedByVerstummer.contains(element)){
+								elementsAffectedByVerstummer.add(element);
+							}
+						}
+					}
+				}
+				for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player.getOpponent(), abilityId)){
+					if (player.isCardFaceUp(position)){
+						for (Element element : player.getElementsOfCardAt(position)){
+							if (!elementsAffectedByVerstummer.contains(element)){
+								elementsAffectedByVerstummer.add(element);
+							}
+						}
+					}
+				}
+				
+				if (
+					(cardId==abilityId) //Verstummer can't be negated by a Verstummer
+					|| ((cardId==19||cardId==20) && !isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnAnySide(abilityId, player.getElementsOfCardAt(xPosition), List.of(19, 20))) //Haihammer o. Senkschlange opposite to Verstummer won't be negated (unless another verstummer negates all water)
+				){
+					//do nothing
+				} else if (!Collections.disjoint(player.getElementsOfCardAt(xPosition), elementsAffectedByVerstummer)){
+						return true;
+				}
+			}
+		}*/
 		
 		{ //Holzkopf
 			int abilityId = 47; //Holzkopf
 			int toTheLeft = xPosition - 1;
-			int toTheRight = xPosition - 1;
+			int toTheRight = xPosition + 1;
 			if (cardId == abilityId){ //Holzkopf next to another Holzkopf
 				//do nothing
 			} else if (
-				(getIdOfCardInPlay(player, toTheLeft) == abilityId
+				(
+					getIdOfCardInPlay(player, toTheLeft) == abilityId
 					&& player.isCardFaceUp(toTheLeft)
-					&& !isCardAbilityNegated(player, toTheLeft)) &&
-				(getIdOfCardInPlay(player, toTheRight) == abilityId
+					&& !isCardAbilityNegated(player, toTheLeft)
+					//&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheLeft))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
+				)
+				||
+				(
+					getIdOfCardInPlay(player, toTheRight) == abilityId
 					&& player.isCardFaceUp(toTheRight)
-					&& !isCardAbilityNegated(player, toTheRight))
+					&& !isCardAbilityNegated(player, toTheRight)
+					//&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheRight))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
+				)
 			){
 				return true;
 			}
@@ -603,11 +671,11 @@ public class Game implements GameInterface {
 		{ //Haihammer
 			int abilityId = 19; //Haihammer
 			int toTheLeft = xPosition - 1;
-			int toTheRight = xPosition - 1;
+			int toTheRight = xPosition + 1;
 			if (cardId == abilityId){ //Haihammer in range of another Haihammer
 				//do nothing
 			} else {
-				if (cardId == 20){ //Senkschlange opposite to Haihammer
+				if (cardId == 20 || cardId == 56){ //Senkschlange or Verstummer opposite to Haihammer
 					//do nothing
 				} else if (getIdOfCardInPlay(player.getOpponent(), xPosition) == abilityId
 						&& player.getOpponent().isCardFaceUp(xPosition)
@@ -615,15 +683,18 @@ public class Game implements GameInterface {
 							return true;
 				}
 				if (cardId==20 && getIdOfCardInPlay(player.getOpponent(), xPosition)==47 && player.getOpponent().isCardFaceUp(xPosition)){ //Senkschlange opposite to Holzkopf that's next to Haihammer TODO check this in AbilityTest019
+
 					//do nothing
 				} else { //check left and right to this xPosition for Haihammer on the opposite side of the field
 					if (getIdOfCardInPlay(player.getOpponent(), toTheLeft) == abilityId
 							&& player.getOpponent().isCardFaceUp(toTheLeft)
-							&& !isCardAbilityNegated(player.getOpponent(), toTheLeft))
+							&& !isCardAbilityNegated(player.getOpponent(), toTheLeft)
+							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheLeft)))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
 							return true;
 					if (getIdOfCardInPlay(player.getOpponent(), toTheRight) == abilityId
 							&& player.getOpponent().isCardFaceUp(toTheRight)
-							&& !isCardAbilityNegated(player.getOpponent(), toTheRight))
+							&& !isCardAbilityNegated(player.getOpponent(), toTheRight)
+							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheRight)))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
 							return true;
 				}
 			}
@@ -634,6 +705,7 @@ public class Game implements GameInterface {
 			if (
 				cardId == abilityId //Senkschlange opposite to another Senkschlange
 				|| cardId == 19 //Haihammer opposite to Senkschlange
+				|| cardId == 56 //Verstummer opposite to Senkschlange
 			) {
 				//do nothing
 			} else if (
