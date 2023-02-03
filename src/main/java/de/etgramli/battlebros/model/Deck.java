@@ -13,8 +13,10 @@ public class Deck {
         assert DECKS.values().stream().allMatch(Deck::checkIfLegal);
     }
 
+    private static final int LEGAL_DECK_SIZE = 20;
+
     //private final Set<Card> cards = new HashSet<>();
-    private List<Card> cards = new ArrayList<>();
+    private final List<Card> cards = new ArrayList<>();
 
     public Deck(){}
     public Deck(Collection<Card> cards){
@@ -60,10 +62,7 @@ public class Deck {
      * not contain duplicates.
      * @return True if size is 20 and not contain duplicates.
      */
-    public boolean checkIfLegal(){
-        // ToDo: Hallo Herr Game-Designer. Muss hier auch auf Dupletten geprüft werden? Oder darf man eine Karte auch mehrfach im Deck haben?!?
-        // Und man könnte diese Methode im Konstruktor aufrufen und ggf eine IllegalArgumentException werfen
-		
+    public boolean checkIfLegal() {
 		// Ja hoi, dupletten sind verboten, das muss hier gecheckt werden. Dafür gibts doch bestimmt eine java collections methode oder so, oder?
 		// Im Konstruktor aufrufen ist evtl blöd, weil ich fände es schöner wenn man im deckeditor auch nicht-legale decks bauen darf, aber bei denen
 		// dann einfach ein dicker roter textlabel darauf aufmerksam macht, dass das deck nicht legal ist.
@@ -73,6 +72,8 @@ public class Deck {
 		// EDIT2: Man kann noch ein Attribut für den Decknamen hinzufügen, aber darum können wir uns ja kümmern wenn wir den deckbuilder machen
 		//        Cool wären auch noch so tags mit denen im deckbuilder dann einzelne karten versehen sind, sodass man easy nach karten filtern kann
 		//        tags wie zB: "abwerfen", "aufdecken", "karten ziehen", "feuer-fähigkeit", "verbot-fähigkeit", etc.
-        return cards.size()==20 && new HashSet(cards).size()==20;
+        final boolean hasCorrectNumberOfCards = cards.size() == LEGAL_DECK_SIZE;
+        final boolean containsDuplicates = cards.size() > new HashSet<>(cards).size();
+        return hasCorrectNumberOfCards && !containsDuplicates;
     }
 }

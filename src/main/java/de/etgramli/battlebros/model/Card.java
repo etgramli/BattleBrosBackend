@@ -86,7 +86,7 @@ public class Card {
     @Override
     public int hashCode() {
         int result = id;
-        result = 31 * result + name.hashCode(); //TODO Sollte bei den Zeilen hier nicht stehen "result += ..." anstatt nur "result = ..."?
+        result = 31 * result + name.hashCode(); // Normal pattern that multiplies previous field hash code with prime number and adds new field hash code
         result = 31 * result + value;
         result = 31 * result + elements.hashCode();
         result = 31 * result + (abilityText != null ? abilityText.hashCode() : 0);
