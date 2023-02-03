@@ -357,35 +357,33 @@ public class Game implements GameInterface {
 		
 		int cardId = getIdOfCardInPlay(player, gameFieldPosition);
 		switch (cardId){
-			case 2: //Ausbrecher
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
+			case 2: //Ausbrecher;
 			case 3: //Flammenwerfer
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
 			case 4: //Kanonenfutterer
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
 			case 5: //Verascher
+			case 7: //Potzblitz
+			case 9: //Lavaboy
+			case 11: //Abbrenngolem
+			case 21: //Aquak
+			case 22: //Seemannsgarnele
+			case 34: //Schildfisch
+			case 41: //Geröllakämpfer
 				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
-				
+				break;	
+			
 			//todo don't implement Fönix here, but instead in Unterweltfährmann's ability
 			
-			case 7: //Potzblitz
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
+			case 32: //Toller Hecht
+				int toTheLeft = gameFieldPosition - 1;
+				int toTheRight = gameFieldPosition + 1;
+				if (
+					(player.isCardFaceUp(toTheLeft) && player.getElementsOfCardAt(toTheLeft).contains(Element.WATER))
+					|| (player.isCardFaceUp(toTheRight) && player.getElementsOfCardAt(toTheRight).contains(Element.WATER))
+				)
+					addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
-			case 9: //Lavaboy
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
-			case 11: //Abbrenngolem
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
-			case 21: //Aquak
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
-				break;
-			case 22: //Seemannsgarnele
-				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
+			
+			default:
 				break;
 		}
 		
@@ -407,6 +405,8 @@ public class Game implements GameInterface {
 				advanceFromAbility();
 				break;
 			case 9: //Lavaboy
+			case 21: //Aquak
+			case 32: //Toller Hecht
 				actor.drawCards(1);
 				advanceFromAbility();
 				break;
@@ -422,15 +422,20 @@ public class Game implements GameInterface {
 				actor.flipOwnCardFaceDown(gameFieldPosition);
 				advanceFromAbility();
 				break;
-			case 21: //Aquak
-				actor.drawCards(1);
-				advanceFromAbility();
-				break;
 			case 22: //Seemannsgarnele
 				actor.drawCards(1);
 				actor.getOpponent().drawCards(1);
 				advanceFromAbility();
 				break;
+			case 34: //Schildfisch
+				actor.flipOwnCardFaceUp(gameFieldPosition - 1);
+				actor.flipOwnCardFaceUp(gameFieldPosition + 1);
+				advanceFromAbility();
+				break;
+			case 41: //Geröllakämpfer
+				actor.discardOwnCardFromField(gameFieldPosition);
+				break;
+			
 			default:
 				advanceFromAbility();
 		}
@@ -799,6 +804,13 @@ public class Game implements GameInterface {
     }
 
     private void endTheBattle(){
+		
+		{ // Nagellachs
+			int abilityId = 23; //Nagellachs
+			player1.drawCards(countFaceUpUnnegatedOnSideOf(player1, abilityId));
+			player2.drawCards(countFaceUpUnnegatedOnSideOf(player2, abilityId));
+		}
+		
 		Player loser;
 		if (getNonTurnPlayer().getTotalValue() >= turnPlayer.getTotalValue()){
 			loser = turnPlayer;

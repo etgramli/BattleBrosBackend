@@ -86,7 +86,7 @@ public class Card {
     @Override
     public int hashCode() {
         int result = id;
-        result = 31 * result + name.hashCode(); //TODO Sollte bei den Zeilen hier nicht stehen "result += ..." anstatt nur "result = ..."?
+        result = 31 * result + name.hashCode();
         result = 31 * result + value;
         result = 31 * result + elements.hashCode();
         result = 31 * result + (abilityText != null ? abilityText.hashCode() : 0);
@@ -117,27 +117,27 @@ public class Card {
         new Card(20, "Senkschlange", 2, List.of(Element.WATER), "", ""),		//ability done, some tests done
         new Card(21, "Aquak", 0, List.of(Element.WATER), "", ""),				//ability done
         new Card(22, "Seemannsgarnele", 1, List.of(Element.WATER), "", ""),		//ability done
-        new Card(23, "Nagellachs", 1, List.of(Element.WATER), "", ""),
+        new Card(23, "Nagellachs", 1, List.of(Element.WATER), "", ""),			//ability done
         new Card(24, "Orakel von Delfin", 2, List.of(Element.WATER), "", ""),
         new Card(25, "Unterweltfährmann", 0, List.of(Element.WATER), "", ""),
-        new Card(26, "U.B.O.", 4, List.of(Element.WATER), "", ""),
-        new Card(27, "Welsbrocken", 5, List.of(Element.WATER), "", ""),
+        new Card(26, "U.B.O.", 4, List.of(Element.WATER), "", ""),				//ability done
+        new Card(27, "Welsbrocken", 5, List.of(Element.WATER), "", ""),			//ability done
         new Card(28, "Fesslerkraken", 1, List.of(Element.WATER), "", ""),
         new Card(29, "Flebbe und Ut", 2, List.of(Element.WATER), "", ""),
         new Card(30, "Meeresfrüchte", 1, List.of(Element.WATER), "", ""),
         new Card(31, "Heilqualle", 1, List.of(Element.WATER), "", ""),
-        new Card(32, "Toller Hecht", 1, List.of(Element.WATER), "", ""),
+        new Card(32, "Toller Hecht", 1, List.of(Element.WATER), "", ""),		//ability done
         new Card(33, "Walnuss", 2, List.of(Element.WATER), "", ""),
-        new Card(34, "Schildfisch", 2, List.of(Element.WATER), "", ""),
+        new Card(34, "Schildfisch", 2, List.of(Element.WATER), "", ""),			//ability done
         new Card(35, "Erdwurm", 3, List.of(Element.EARTH), "", ""),				//no ability, no test needed
         new Card(36, "Katerpult", 1, List.of(Element.EARTH), "", ""),
         new Card(37, "Rammbock", 2, List.of(Element.EARTH), "", ""),
         new Card(38, "Zombiene", 3, List.of(Element.EARTH), "", ""),
         new Card(39, "Fleischwolf", 3, List.of(Element.EARTH), "", ""),
-        new Card(40, "Wucherer", 5, List.of(Element.EARTH), "", ""),
-        new Card(41, "Geröllakämpfer", 6, List.of(Element.EARTH), "", ""),
+        new Card(40, "Wucherer", 5, List.of(Element.EARTH), "", ""),			//ability done
+        new Card(41, "Geröllakämpfer", 6, List.of(Element.EARTH), "", ""),		//ability done
         new Card(42, "Goldgolem", 5, List.of(Element.EARTH), "", ""),
-        new Card(43, "Blumenstrauß", 0, List.of(Element.EARTH), "", ""),
+        new Card(43, "Blumenstrauß", 0, List.of(Element.EARTH), "", ""),		//ability done
         new Card(44, "Buddelwurf", 2, List.of(Element.EARTH), "", ""),
         new Card(45, "Extrablatt", 3, List.of(Element.EARTH), "", ""),
         new Card(46, "Felsenfest", 3, List.of(Element.EARTH), "", ""),
@@ -149,17 +149,18 @@ public class Card {
         new Card(52, "Luftschlange", 3, List.of(Element.AIR), "", ""),			//no ability, no test needed
         new Card(53, "Gittermastkranich", 0, List.of(Element.AIR), "", ""),
         new Card(54, "Fliegende Klatsche", 2, List.of(Element.AIR), "", ""),
-        new Card(55, "Verbieter", 2, List.of(Element.AIR), "", ""),
-        new Card(56, "Verstummer", 2, List.of(Element.AIR), "", ""),			//ability TOOD (not working)
-        new Card(58, "Fliegenpilz", 2, List.of(Element.AIR), "", ""),
+        new Card(55, "Verbieter", 2, List.of(Element.AIR), "", ""),				//abilty done
+        new Card(56, "Verstummer", 2, List.of(Element.AIR), "", ""),			//ability TODO (not working)
+		//TODO missing, check if IDs are correct
+        new Card(58, "Fliegenpilz", 2, List.of(Element.AIR), "", ""),			//ability done
         new Card(59, "Erzbengel", 3, List.of(Element.AIR), "", ""),
         new Card(60, "Schaurige Wolke", 2, List.of(Element.AIR), "", ""),
         new Card(61, "Dämond", 4, List.of(Element.AIR), "", ""),
-        new Card(62, "Wolkenkratzer", 4, List.of(Element.AIR), "", ""),
-        new Card(63, "Schluckspecht", 0, List.of(Element.AIR), "", ""),
-        new Card(64, "Luftikuss", 0, List.of(Element.AIR), "", ""),
+        new Card(62, "Wolkenkratzer", 4, List.of(Element.AIR), "", ""),			//ability done
+        new Card(63, "Schluckspecht", 0, List.of(Element.AIR), "", ""),			//ability done
+        new Card(64, "Luftikuss", 0, List.of(Element.AIR), "", ""),				//ability done
         new Card(65, "Wirbelkind", 2, List.of(Element.AIR), "", ""),
-        new Card(66, "Feiges Huhn", 2, List.of(Element.AIR), "", ""),
+        new Card(66, "Feiges Huhn", 2, List.of(Element.AIR), "", ""),			//ability done
         new Card(67, "Nebelbank", 2, List.of(Element.AIR), "", ""),
         new Card(68, "Wolkendecke", 3, List.of(Element.AIR), "", ""),
         new Card(69, "Anitwicht", 3, List.of(), "", ""),						//no ability, no test needed

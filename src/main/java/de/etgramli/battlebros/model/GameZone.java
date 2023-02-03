@@ -18,6 +18,15 @@ public class GameZone {
     public int getAmountOfCards(){
         return cards.size();
     }
+	
+	public int getAmountOfCardsWithElement(Element element){
+		int result = 0;
+		for (Card card : cards){
+			if (card.getElements().contains(element))
+				result++;
+		}
+		return result;
+	}
 
     public void shuffle(){
         Collections.shuffle(cards);

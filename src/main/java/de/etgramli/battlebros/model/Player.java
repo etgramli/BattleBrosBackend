@@ -1,6 +1,7 @@
 package de.etgramli.battlebros.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -159,9 +160,9 @@ public class Player {
 	}
 
     public boolean playCard(int handIndex, int gameFieldPosition){
-        if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards() || !isCardPlayableAt(gameFieldPosition))
-            return false;
-
+        if (handIndex<0 || handIndex>=gameZoneHand.getAmountOfCards() || !isCardPlayableAt(gameZoneHand.getCard(handIndex), gameFieldPosition))
+			return false;
+		
 		Card card = gameZoneHand.removeCard(handIndex);
         gameField.addCard(card, gameFieldPosition);
 		game.activateComesIntoPlayAbility(this, gameFieldPosition);
@@ -174,6 +175,34 @@ public class Player {
 		
 		Card card = gameZoneHand.removeCard(handIndex);
 		gameZoneDiscard.addCard(card);
+		return true;
+	}
+	
+	public boolean discardOwnCardFromField(int gameFieldPosition){
+		return discardCardFromField(true, gameFieldPosition);
+	}
+	
+	public boolean discardOpponentCardFromField(int gameFieldPosition){
+		return discardCardFromField(false, gameFieldPosition);
+	}
+	
+	private boolean discardCardFromField(boolean mine, int gameFieldPosition){
+		//TODO check if discarding, affecting different players cards, etc is allowed:
+		//if (game.notAllowedToDiscardCardFromField(this, mine, gameField))
+		//	return false;
+	
+		GameField field;
+		GameZone discard;
+		if (mine){
+			field = gameField;
+			discard = gameZoneDiscard;
+		} else {
+			field = opponent.getGameField();
+			discard = opponent.getGameZoneDiscard();
+		}
+		
+		Card card = field.removeCard(gameFieldPosition);
+		discard.addCard(card);
 		return true;
 	}
 	
@@ -207,6 +236,10 @@ public class Player {
 		return gameField;
 	}
 	
+	public GameZone getGameZoneDiscard(){
+		return gameZoneDiscard;
+	}
+	
 	public Game getGame(){
 		return game;
 	}
@@ -221,6 +254,10 @@ public class Player {
 	
 	public int getAmountOfCardsInDiscard(){
 		return gameZoneDiscard.getAmountOfCards();
+	}
+	
+	private int countCardsInDiscardWithElement(Element element){
+		return gameZoneDiscard.getAmountOfCardsWithElement(element);
 	}
 	
 	public int getAmountOfCardsInDeck(){
@@ -257,12 +294,11 @@ public class Player {
 			return 0;
 		
 		int cardId = game.getIdOfCardInPlay(this, position);
+		int abilityId = -1;
 		
 		int base = gameField.getCard(position).getValue();
         int modifier = 0;
 		int multiplier = 1;
-		
-		int abilityId = -1;
 		
 		{ //Vulklon
 			abilityId = 13; //Vulklon
@@ -272,10 +308,39 @@ public class Player {
 			}
 		}
 		
+		{ //Welsbrocken
+			abilityId = 27; //Welsbrocken
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position))
+				modifier -= 3;
+		}
+		
 		{ //Heißer Feger
-			abilityId = 12;
+			abilityId = 12; //Heißer Feger
 			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)) //Heißer Feger
 				modifier += (2 * (getAmountOfAllFaceDownBros() + opponent.getAmountOfAllFaceDownBros()));
+		}
+		
+		{ //Blumenstrauß
+			abilityId = 43; //Blumenstrauß
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Blumenstrauß
+				int amountOfFaceUpBrosOtherThanThis = getAmountOfAllFaceUpBros() - 1;
+				if (amountOfFaceUpBrosOtherThanThis > 0)
+					modifier += amountOfFaceUpBrosOtherThanThis;
+			}
+		}
+		
+		{ //Schluckspecht
+			abilityId = 63; //Schluckspecht
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Schluckspecht
+				modifier += getAmountOfCardsInHand();
+			}
+		}
+		
+		{ //Luftikuss
+			abilityId = 64; //Luftikuss
+			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Luftikuss
+				modifier += countCardsInDiscardWithElement(Element.AIR);
+			}
 		}
 		
 		{ // Hitzkopf & Kohlkopf
@@ -314,6 +379,30 @@ public class Player {
 				&& !game.isCardAbilityNegated(this, positionToTheRight)
 				&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Anfeuerer
 				modifier++;
+		}
+		
+		{ //Wucherer
+			abilityId = 40; //Wucherer
+			//check card to the left
+			int positonToTheLeft = position - 1;
+			if (gameField.isCardFaceUp(positonToTheLeft) 
+				&& !game.isCardAbilityNegated(this, positonToTheLeft)
+				&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Wucherer
+				modifier -= 2;
+			//check card to the right
+			int positionToTheRight = position + 1;
+			if (gameField.isCardFaceUp(positionToTheRight) 
+				&& !game.isCardAbilityNegated(this, positionToTheRight)
+				&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Wucherer
+				modifier -= 2;
+		}
+		
+		{ //Feiges Huhn
+			abilityId = 66; //Feiges Huhn
+			if (opponent.isCardFaceUp(position)
+				&& !game.isCardAbilityNegated(opponent, position)
+				&& game.getIdOfCardInPlay(opponent, position) == abilityId) //Feiges Huhn
+				modifier -= 2;
 		}
 		
 		{ //Streichelholz
@@ -360,7 +449,7 @@ public class Player {
         return gameField.getAllCards();
     }
 
-    private boolean isCardPlayableAt(int gameFieldPosition){
+    private boolean isCardPlayableAt(Card card, int gameFieldPosition){
         if (getCardOnFieldAt(gameFieldPosition) != null)
             return false;
 
@@ -371,6 +460,54 @@ public class Player {
                 && getCardOnFieldAt(gameFieldPosition+1)==null) {
             return false;
         }
+		
+		int abilityId = -1;
+		
+		{ //U.B.O.
+			abilityId = 26; //U.B.O.
+			if (card.getId() == abilityId && getTotalValue() >= opponent.getTotalValue()) // U.B.O.
+				return false;
+		}
+		
+		{ //Verbieter
+			abilityId = 55; //Verbieter
+			List<Element> forbiddenElements = new ArrayList<>();
+			for (int i=0; i<=1 ;i++){
+				Player player = game.getPlayer(i);
+				List<Integer> positions = game.getPositionsOfAllFaceUpUnnegatedOnSideOf(player, abilityId); //Verbieter
+				for (Integer position : positions){
+					if (player.getOpponent().isCardFaceUp(position)){
+						for (Element element : player.getOpponent().getElementsOfCardAt(position)){
+							if (!forbiddenElements.contains(element))
+								forbiddenElements.add(element);
+						}
+					}
+				}
+			}
+			if (!Collections.disjoint(forbiddenElements, card.getElements()))
+				return false;
+		}
+		
+		{ //Fliegenpilz
+			abilityId = 58; //Fliegenpilz
+			if (game.getIdOfCardInPlay(opponent, gameFieldPosition) == abilityId
+					&& !game.isCardAbilityNegated(opponent, gameFieldPosition)){ //Fliegenpilz
+				return false;
+			}
+		}
+		
+		{ //Wolkenkratzer
+			abilityId = 62; //Wolkenkratzer
+			int positonToTheLeft = gameFieldPosition - 1;
+			int positonToTheRight = gameFieldPosition + 1;
+			if (
+				(game.getIdOfCardInPlay(this, positonToTheLeft) == abilityId
+					&& !game.isCardAbilityNegated(this, positonToTheLeft)) //Wolkenkratzer
+				|| (game.getIdOfCardInPlay(this, positonToTheRight) == abilityId
+					&& !game.isCardAbilityNegated(this, positonToTheRight)) //Wolkenkratzer	
+			){ return false; }
+		}
+		
         return true;
     }
 	
@@ -384,5 +521,9 @@ public class Player {
 	
 	private int getAmountOfAllFaceDownBros(){
 		return gameField.getAllFaceDownPositions().size();
+	}
+	
+	private int  getAmountOfAllFaceUpBros(){
+		return gameField.getAllFaceUpPositions().size();
 	}
 }

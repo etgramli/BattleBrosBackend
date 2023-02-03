@@ -80,6 +80,16 @@ public class ResolvableAbility {
 			case 22: //Seemannsgarnele
 				isAutomatic = true;
 				break;
+			case 32: //Toller Hecht
+				isAutomatic = true;
+				break;
+			case 34: //Schildfisch
+				isAutomatic = true;
+				break;
+			case 41: //Geröllakämpfer
+				isAutomatic = true;
+				break;
+				
 			default:
 				actor = null;
 		}
