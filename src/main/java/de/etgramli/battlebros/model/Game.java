@@ -611,7 +611,7 @@ public class Game implements GameInterface {
 		/*{ //Verstummer
 			int abilityId = 56; //Verstummer
 			
-			if (isThereAFaceUpUnnegatedOnAnySide(abilityId)) {
+			if (cardId!=abilityId && isThereAFaceUpUnnegatedOnAnySide(abilityId)) {
 				List<Element> elementsAffectedByVerstummer = new ArrayList<>();
 				for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player, abilityId)){
 					if (player.getOpponent().isCardFaceUp(position)){
@@ -631,10 +631,9 @@ public class Game implements GameInterface {
 						}
 					}
 				}
-				
+
 				if (
-					(cardId==abilityId) //Verstummer can't be negated by a Verstummer
-					|| ((cardId==19||cardId==20) && !isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnAnySide(abilityId, player.getElementsOfCardAt(xPosition), List.of(19, 20))) //Haihammer o. Senkschlange opposite to Verstummer won't be negated (unless another verstummer negates all water)
+					(cardId==19||cardId==20) && !isThereAFaceUpUnnegatedOppositeToTheseElemensThatsNotOppositeToTheseFaceUpUnnegatedOnAnySide(abilityId, player.getElementsOfCardAt(xPosition), List.of(19, 20)) //Haihammer o. Senkschlange opposite to Verstummer won't be negated (unless another verstummer negates all water)
 				){
 					//do nothing
 				} else if (!Collections.disjoint(player.getElementsOfCardAt(xPosition), elementsAffectedByVerstummer)){
@@ -654,14 +653,12 @@ public class Game implements GameInterface {
 					getIdOfCardInPlay(player, toTheLeft) == abilityId
 					&& player.isCardFaceUp(toTheLeft)
 					&& !isCardAbilityNegated(player, toTheLeft)
-					//&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheLeft))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
-				)
-				||
-				(
+					&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheLeft))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
+				) || (
 					getIdOfCardInPlay(player, toTheRight) == abilityId
 					&& player.isCardFaceUp(toTheRight)
 					&& !isCardAbilityNegated(player, toTheRight)
-					//&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheRight))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
+					&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getElementsOfCardAt(toTheRight))) //Verstummer, that's in next to Holzkopf, but negates an element of that Holzkopf!!!
 				)
 			){
 				return true;
@@ -680,21 +677,23 @@ public class Game implements GameInterface {
 				} else if (getIdOfCardInPlay(player.getOpponent(), xPosition) == abilityId
 						&& player.getOpponent().isCardFaceUp(xPosition)
 						&& !isCardAbilityNegated(player.getOpponent(), xPosition)){
-							return true;
+					return true;
 				}
-				if (cardId==20 && getIdOfCardInPlay(player.getOpponent(), xPosition)==47 && player.getOpponent().isCardFaceUp(xPosition)){ //Senkschlange opposite to Holzkopf that's next to Haihammer TODO check this in AbilityTest019
 
+				if (cardId==20 && getIdOfCardInPlay(player.getOpponent(), xPosition)==47 && player.getOpponent().isCardFaceUp(xPosition)){ //Senkschlange opposite to Holzkopf that's next to Haihammer TODO check this in AbilityTest019
 					//do nothing
 				} else { //check left and right to this xPosition for Haihammer on the opposite side of the field
 					if (getIdOfCardInPlay(player.getOpponent(), toTheLeft) == abilityId
 							&& player.getOpponent().isCardFaceUp(toTheLeft)
 							&& !isCardAbilityNegated(player.getOpponent(), toTheLeft)
-							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheLeft)))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
+							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheLeft))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
+					)
 							return true;
 					if (getIdOfCardInPlay(player.getOpponent(), toTheRight) == abilityId
 							&& player.getOpponent().isCardFaceUp(toTheRight)
 							&& !isCardAbilityNegated(player.getOpponent(), toTheRight)
-							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheRight)))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
+							&& !(cardId==56 && player.getOpponent().isCardFaceUp(xPosition) && !Collections.disjoint(player.getOpponent().getElementsOfCardAt(xPosition), player.getOpponent().getElementsOfCardAt(toTheRight))) //Verstummer, that's in range of Haihammer, but negates an element of that Haihammer!!!
+					)
 							return true;
 				}
 			}

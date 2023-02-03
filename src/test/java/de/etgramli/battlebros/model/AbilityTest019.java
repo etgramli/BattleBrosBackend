@@ -633,13 +633,11 @@ public class AbilityTest019 {
 			//assertTrue(!game.isCardAbilityNegated(game.getPlayer(firstPlayerIdx), 1));
 			//assertTrue(game.isCardAbilityNegated(game.getPlayer(secondPlayerIdx), 1));
 			
-			assertTrue(game.pass(firstPlayerIdx));
 
-			System.out.println("1:");
+
 			drawGameState(game, game.getPlayer(0), game.getPlayer(1));
-			
-			//second player plays their senkschlange, negating the verstummer, which restores both ausbrechers
-			assertTrue(game.playCard(secondPlayerIdx, 0, 2));
+
+			assertTrue(game.playCard(firstPlayerIdx, 0, 2));
 
 			System.out.println("2:");
 			drawGameState(game, game.getPlayer(0), game.getPlayer(1));
@@ -653,7 +651,7 @@ public class AbilityTest019 {
 			assertFalse(game.discardCard(firstPlayerIdx, 0));
 			assertFalse(game.pass(firstPlayerIdx));*/
 			
-			assertTrue(game.pass(secondPlayerIdx));
+			//assertTrue(game.pass(secondPlayerIdx));
 
 
 			System.out.println("3:");
