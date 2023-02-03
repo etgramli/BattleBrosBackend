@@ -9,7 +9,7 @@ import de.etgramli.battlebros.util.IObserver;
 import de.etgramli.battlebros.view.messages.JoinGameMessage;
 import de.etgramli.battlebros.view.messages.PlaceCardMessage;
 import de.etgramli.battlebros.view.messages.select.SelectCardMessage;
-import de.etgramli.battlebros.view.messages.select.SelectType;
+import de.etgramli.battlebros.view.messages.select.SelectCardType;
 import de.etgramli.battlebros.view.messages.select.UserSelectedCardMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +29,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.etgramli.battlebros.view.messages.select.SelectType.SELECT_DISCARDED_CARD;
+import static de.etgramli.battlebros.view.messages.select.SelectCardType.SELECT_ANY_PLAYED_CARDS;
+import static de.etgramli.battlebros.view.messages.select.SelectCardType.SELECT_DISCARDED_CARD;
 
 
 @Controller
@@ -153,7 +154,7 @@ public class GameController {
             game.addObserver(this);
 
             try {
-                Thread.sleep(100);  // Give frontend time to subscribe to all URLS (when switching to game component)
+                Thread.sleep(200);  // Give frontend time to subscribe to all URLS (when switching to game component)
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -230,7 +231,7 @@ public class GameController {
             updatePlayersPassed();
         }
 
-        private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectType type) {
+        private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectCardType type) {
             final SelectCardMessage selectMyHandMessage = new SelectCardMessage(type);
             final String playerUuid = playerPrincipals[playerIndex].getName();
 
@@ -241,27 +242,27 @@ public class GameController {
 
         @Override
         public void selectMyHandCard(final int playerIndex) {
-            sendCardSelectMessage(playerIndex, SelectType.SELECT_MY_HAND_CARD);
+            sendCardSelectMessage(playerIndex, SelectCardType.SELECT_MY_HAND_CARD);
         }
 
         @Override
         public void selectMyPlayedCard(final int playerIndex) {
-            sendCardSelectMessage(playerIndex, SelectType.SELECT_MY_PLAYED_CARD);
+            sendCardSelectMessage(playerIndex, SelectCardType.SELECT_MY_PLAYED_CARD);
         }
 
         @Override
         public void selectOpponentPlayedCard(final int playerIndex) {
-            sendCardSelectMessage(playerIndex, SelectType.SELECT_OPPONENT_PLAYED_CARD);
+            sendCardSelectMessage(playerIndex, SelectCardType.SELECT_OPPONENT_PLAYED_CARD);
         }
 
         @Override
         public void selectAnyPlayedCard(int playerIndex) {
-
+            sendCardSelectMessage(playerIndex, SelectCardType.SELECT_ANY_PLAYED_CARD);
         }
 
         @Override
         public void selectAnyPlayedCards(int playerIndex) {
-
+            sendCardSelectMessage(playerIndex, SELECT_ANY_PLAYED_CARDS);
         }
 
         @Override
@@ -271,17 +272,17 @@ public class GameController {
 
         @Override
         public void selectDiscardedCards(int playerIndex) {
-
+            // ToDo
         }
 
         @Override
         public void selectNextAbilityToResolve(int playerIndex) {
-
+            // ToDo
         }
 
         @Override
         public void selectAcceptAbility(int playerIndex) {
-
+            // ToDo
         }
 
         public void pass(@NonNull final Principal principal) {
@@ -302,11 +303,14 @@ public class GameController {
 
         public void selectCard(@NonNull final UserSelectedCardMessage message) {
             final int playerIndex = message.playerIndex();
+            final int otherPlayerIndex = game.getOtherPlayerNum(playerIndex);
             final int cardIndex = message.selectedCardIndex();
             final boolean success = switch (message.type()) {
                 case SELECT_MY_HAND_CARD -> game.chooseCardInHand(playerIndex, cardIndex);
                 case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.playerIndex(), cardIndex);
-                case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, game.getOtherPlayerNum(playerIndex), cardIndex);
+                case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, otherPlayerIndex, cardIndex);
+                case SELECT_ANY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.opponentCard() ? otherPlayerIndex : playerIndex, cardIndex);
+                case SELECT_ANY_PLAYED_CARDS -> false; // ToDo
                 case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, message.selectedCardIndex());
             };
             logger.info("Player %d selected card (%s) with index %s (success: %b)"
