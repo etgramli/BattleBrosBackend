@@ -120,6 +120,15 @@ public class GameController {
         playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
     }
 
+    @MessageMapping("/chooseCancel")
+    @SendToUser
+    public boolean chooseCancel(@NonNull final SimpMessageHeaderAccessor sha) {
+        if (sha.getUser() == null) {
+            logger.error("No username provided!");
+            return false;
+        }
+        return playerUuidToGame.get(sha.getUser().getName()).chooseCancel(sha.getUser());
+    }
 
     private class GameInstance implements IObserver {
         private GameInterface game;
@@ -237,7 +246,7 @@ public class GameController {
 
             template.convertAndSendToUser(playerUuid, URL_SELECT_CARD, selectMyHandMessage);
 
-            logger.info("Player %s has to select card of type %s".formatted(playerUuid, type));
+            logger.info("Player %s has to select card of selectCardType %s".formatted(playerUuid, type));
         }
 
         @Override
@@ -285,6 +294,15 @@ public class GameController {
             // ToDo
         }
 
+        public boolean chooseCancel(@NonNull final Principal principal) {
+            final String callingPlayerUuid = principal.getName();
+
+            final boolean success = game.chooseCancel(indexOfPlayer(callingPlayerUuid));
+
+            logger.info("Player with UUID %s tried to cancel action (success %b)".formatted(callingPlayerUuid, success));
+            return success;
+        }
+
         public void pass(@NonNull final Principal principal) {
             final String callingPlayerUuid = principal.getName();
 
@@ -302,10 +320,11 @@ public class GameController {
         }
 
         public void selectCard(@NonNull final UserSelectedCardMessage message) {
+            // ToDo refactor with test for principal's UUID
             final int playerIndex = message.playerIndex();
             final int otherPlayerIndex = game.getOtherPlayerNum(playerIndex);
             final int cardIndex = message.selectedCardIndex();
-            final boolean success = switch (message.type()) {
+            final boolean success = switch (message.selectCardType()) {
                 case SELECT_MY_HAND_CARD -> game.chooseCardInHand(playerIndex, cardIndex);
                 case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.playerIndex(), cardIndex);
                 case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, otherPlayerIndex, cardIndex);
@@ -314,7 +333,7 @@ public class GameController {
                 case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, message.selectedCardIndex());
             };
             logger.info("Player %d selected card (%s) with index %s (success: %b)"
-                    .formatted(playerIndex, message.type(), message.selectedCardIndex(), success));
+                    .formatted(playerIndex, message.selectCardType(), message.selectedCardIndex(), success));
         }
 
         private int indexOfPlayer(@NonNull final String principalUuid) {
