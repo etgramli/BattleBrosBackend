@@ -112,13 +112,14 @@ An overview on the URLs used to send/receive messages to create and update game 
 The server listens to the following URLs for messages from the web client to the described actions. All of them trigger
 at least one response on the URL(s) mentioned in "User-Topics".
 
-| Incoming URL | Description                          |
-|--------------|--------------------------------------|
-| /hostgame    | Create new game                      |
-| /joingame    | Join an existing game                |
-| /placecard   | Place card and triggers board update |
-| /pass        | Pass round - next player's turn      |
-| /showgames   | Manually reload games list           |
+| Incoming URL | Description                             |
+|--------------|-----------------------------------------|
+| /hostgame    | Create new game                         |
+| /joingame    | Join an existing game                   |
+| /placecard   | Place card and triggers board update    |
+| /pass        | Pass round - next player's turn         |
+| /showgames   | Manually reload games list              |
+| /selectcard  | Select a card in hand/in play/discarded |
 
 ### User-Topics
 All the following urls must be subscribed in the client with a preceding "/user" to get automatic updates.
