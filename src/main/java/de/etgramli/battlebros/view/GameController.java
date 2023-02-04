@@ -29,8 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static de.etgramli.battlebros.view.messages.select.SelectCardType.SELECT_ANY_PLAYED_CARDS;
-import static de.etgramli.battlebros.view.messages.select.SelectCardType.SELECT_DISCARDED_CARD;
+import static de.etgramli.battlebros.view.messages.select.SelectCardType.*;
 
 
 @Controller
@@ -331,9 +330,13 @@ public class GameController {
                 case SELECT_ANY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.opponentCard() ? otherPlayerIndex : playerIndex, cardIndex);
                 case SELECT_ANY_PLAYED_CARDS -> false; // ToDo
                 case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, message.selectedCardIndex());
+                case SELECT_SUCCESS -> throw new IllegalArgumentException("Did not expect message of type: " + message.selectCardType());
             };
             logger.info("Player %d selected card (%s) with index %s (success: %b)"
                     .formatted(playerIndex, message.selectCardType(), message.selectedCardIndex(), success));
+            if (success) {
+                template.convertAndSendToUser(playerPrincipals[playerIndex].getName(), URL_SELECT_CARD, new SelectCardMessage(SELECT_SUCCESS));
+            }
         }
 
         private int indexOfPlayer(@NonNull final String principalUuid) {
