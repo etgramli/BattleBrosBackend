@@ -454,7 +454,8 @@ public class Player {
             return false;
 
         if (getAmountOfCardsOnField()==0 && opponent.getAmountOfCardsOnField()==0) {
-            return gameFieldPosition == 0;
+			if (gameFieldPosition != 0)
+				return false;
         } else if (opponent.getCardOnFieldAt(gameFieldPosition)==null
                 && getCardOnFieldAt(gameFieldPosition-1)==null
                 && getCardOnFieldAt(gameFieldPosition+1)==null) {
