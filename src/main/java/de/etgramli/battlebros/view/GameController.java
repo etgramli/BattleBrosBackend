@@ -116,6 +116,7 @@ public class GameController {
             logger.error("No username provided!");
             return;
         }
+        logger.info("Received select card message: " + message);
         playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
     }
 
@@ -280,7 +281,7 @@ public class GameController {
 
         @Override
         public void selectDiscardedCards(int playerIndex) {
-            // ToDo
+            sendCardSelectMessage(playerIndex, SELECT_DISCARDED_CARDS);
         }
 
         @Override
@@ -312,6 +313,7 @@ public class GameController {
 
         public void placeCard(@NonNull final Principal principal, final int handIndex, final int boardIndex) {
             final String callingPlayerUuid = principal.getName();
+
             final boolean success = game.playCard(indexOfPlayer(callingPlayerUuid), handIndex, boardIndex);
 
             logger.info("Player with UUID %s tried to place hand card %s at board position %d (success: %b)"
@@ -322,18 +324,19 @@ public class GameController {
             // ToDo refactor with test for principal's UUID
             final int playerIndex = message.playerIndex();
             final int otherPlayerIndex = game.getOtherPlayerNum(playerIndex);
-            final int cardIndex = message.selectedCardIndex();
+            final int cardIndex = message.indices().get(0).getValue();
             final boolean success = switch (message.selectCardType()) {
                 case SELECT_MY_HAND_CARD -> game.chooseCardInHand(playerIndex, cardIndex);
                 case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.playerIndex(), cardIndex);
                 case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, otherPlayerIndex, cardIndex);
-                case SELECT_ANY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.opponentCard() ? otherPlayerIndex : playerIndex, cardIndex);
-                case SELECT_ANY_PLAYED_CARDS -> false; // ToDo
-                case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, message.selectedCardIndex());
+                case SELECT_ANY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.getFirstPlayerRow(), cardIndex);
+                case SELECT_ANY_PLAYED_CARDS -> game.chooseCardsInPlay(playerIndex, message.getIndices());
+                case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, cardIndex);
+                case SELECT_DISCARDED_CARDS -> false; // ToDo
                 case SELECT_SUCCESS -> throw new IllegalArgumentException("Did not expect message of type: " + message.selectCardType());
             };
             logger.info("Player %d selected card (%s) with index %s (success: %b)"
-                    .formatted(playerIndex, message.selectCardType(), message.selectedCardIndex(), success));
+                    .formatted(playerIndex, message.selectCardType(), cardIndex, success));
             if (success) {
                 template.convertAndSendToUser(playerPrincipals[playerIndex].getName(), URL_SELECT_CARD, new SelectCardMessage(SELECT_SUCCESS));
             }
