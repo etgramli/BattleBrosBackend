@@ -15,9 +15,13 @@ import static de.etgramli.battlebros.util.CollectionUtil.listFromMap;
 public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
 
     @NonNull
-    private static TreeMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards) {
-        return playedCards.entrySet().stream().collect(
-                Collectors.toMap(Map.Entry::getKey, e -> CardDTO.from(e.getValue()), (a, b) -> b, TreeMap::new));
+    private static TreeMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards,
+                                                          @NonNull final Collection<Integer> faceDownPositions) {
+        return playedCards.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> CardDTO.from(e.getValue(), !faceDownPositions.contains(e.getKey())),
+                (a, b) -> b,
+                TreeMap::new));
     }
 
     @NonNull
@@ -25,12 +29,8 @@ public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
                          @NonNull final Map<Integer, Card> playerTwoCards,
                          @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
                          @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
-        final TreeMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards);
-        final TreeMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards);
-
-        // Overwrite with zero value DTO so that the UI shows the back side (image index 0) if card is face down
-        playerOneFaceDownCardIndices.forEach(index -> playerOneBoard.put(index, CardDTO.getFaceDown()));
-        playerTwoFaceDownCardIndices.forEach(index -> playerTwoBoard.put(index, CardDTO.getFaceDown()));
+        final TreeMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards, playerOneFaceDownCardIndices);
+        final TreeMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards, playerTwoFaceDownCardIndices);
 
         // Fill empty spaces with null values, so that the UI can draw nothing in middle cells
         playerOneBoard.keySet().forEach(i -> playerTwoBoard.putIfAbsent(i, null));

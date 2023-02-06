@@ -8,16 +8,15 @@ import org.springframework.lang.NonNull;
  * Info important to the client:
  * - Id: to determine the card image
  */
-public record CardDTO(int id) {
+public record CardDTO(int id, boolean isFaceUp) {
 
     @NonNull
     public static CardDTO from(@NonNull final Card card) {
-        return new CardDTO(card.getId());
+        return new CardDTO(card.getId(), true);
     }
 
-    public static CardDTO getFaceDown() {
-        return CARD_FACE_DOWN;
+    @NonNull
+    static CardDTO from(@NonNull final Card card, final boolean isFaceUp) {
+        return new CardDTO(card.getId(), isFaceUp);
     }
-
-    private static final CardDTO CARD_FACE_DOWN = new CardDTO(0);
 }

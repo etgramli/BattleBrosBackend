@@ -8,7 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BoardDTOTest {
 
@@ -16,8 +19,10 @@ class BoardDTOTest {
     void getBoard_emptyPlayerBoards() {
         final Map<Integer, Card> playedCards = Collections.emptyMap();
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCards, playedCards,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(playedCards,
+                                        playedCards,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -32,8 +37,10 @@ class BoardDTOTest {
         final Map<Integer, Card> playedCardsOne = Collections.emptyMap();
         final Map<Integer, Card> playedCardsTwo = Map.of(0, Card.getCard(1), 1, Card.getCard(2), 2, Card.getCard(3));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCardsOne, playedCardsTwo,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(playedCardsOne,
+                                        playedCardsTwo,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -46,8 +53,10 @@ class BoardDTOTest {
     void getBoard_samePlayerBoards() {
         final Map<Integer, Card> playedCards = Map.of(0, Card.getCard(1), 1, Card.getCard(2), 2, Card.getCard(3));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(playedCards, playedCards,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(playedCards,
+                                        playedCards,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -64,8 +73,10 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(-1, Card.getCard(1), 0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(otherPlayedCards,
+                                        thisPlayedCards,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -83,8 +94,10 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2), 1, Card.getCard(4));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(otherPlayedCards,
+                                        thisPlayedCards,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -102,8 +115,10 @@ class BoardDTOTest {
         final Map<Integer, Card> otherPlayedCards = Map.of(-1, Card.getCard(1), 0, Card.getCard(5));
         final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2), 1, Card.getCard(7));
 
-        final List<List<Map.Entry<Integer, CardDTO>>> board = BoardDTO.from(otherPlayedCards, thisPlayedCards,
-                Collections.emptyList(), Collections.emptyList()).board();
+        final var board = BoardDTO.from(otherPlayedCards,
+                                        thisPlayedCards,
+                                        Collections.emptyList(),
+                                        Collections.emptyList()).board();
 
         assertEquals(2, board.size());
         final List<Map.Entry<Integer, CardDTO>> p0row = board.get(0);
@@ -114,5 +129,34 @@ class BoardDTOTest {
 
         assertEquals(p0row.get(0).getKey(), p1row.get(0).getKey());
         assertEquals(p0row.get(p0row.size() - 1).getKey(), p1row.get(p1row.size() - 1).getKey());
+    }
+
+    @Test
+    void getBoardOneCardFaceDown() {
+        final Map<Integer, Card> otherPlayedCards = Map.of(-1, Card.getCard(1), 0, Card.getCard(5));
+        final Map<Integer, Card> thisPlayedCards = Map.of(0, Card.getCard(2), 1, Card.getCard(7));
+        final List<Integer> otherPlayedCardsFaceDown = List.of(0);
+        final List<Integer> thisPlayedCardsFaceDown = Collections.emptyList();
+
+        final var board = BoardDTO.from(otherPlayedCards,
+                                        thisPlayedCards,
+                                        otherPlayedCardsFaceDown,
+                                        thisPlayedCardsFaceDown).board();
+
+        assertEquals(2, board.size());
+        final List<Map.Entry<Integer, CardDTO>> otherCards = board.get(0);
+        assertEquals(3, otherCards.size());
+        final List<Map.Entry<Integer, CardDTO>> thisCards = board.get(1);
+        assertEquals(3, thisCards.size());
+
+        assertTrue(otherCards.get(0).getValue().isFaceUp());
+        final CardDTO faceDownCard = otherCards.get(1).getValue();
+        assertFalse(faceDownCard.isFaceUp());                               // Only this one has to be face down
+        assertEquals(otherPlayedCards.get(0).getId(), faceDownCard.id());   // CardDTO still has ID
+        assertNull(otherCards.get(2).getValue());                           // No card at this position
+
+        assertNull(thisCards.get(0).getValue());                            // No card at this position
+        assertTrue(thisCards.get(1).getValue().isFaceUp());
+        assertTrue(thisCards.get(2).getValue().isFaceUp());
     }
 }
