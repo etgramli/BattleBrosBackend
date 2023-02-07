@@ -32,6 +32,7 @@ This is an implementation of the game logic of the awesome game Battle Bros.
   - maybe: save replays which can be viewed at any time (replay contains information of players, every taken game action, and every sent chat message)
   - maybe: toggleable soundtrack (unique songs for main page/lobby, deckbuilding/profile, game)
   - maybe: daily challenges (play with a deck containing at least 15 cards of this element, play with a deck containing these 3 cards, play a game and pass on your first turn)
+  - original Battle-Bros game (with hand drawn images)
 - Single Player content
   - play against AI (maybe fighting game style story mode with dialogue between games)
   - solve puzzles
