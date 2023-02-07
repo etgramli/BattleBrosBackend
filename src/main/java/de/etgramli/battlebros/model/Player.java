@@ -105,6 +105,10 @@ public class Player {
             gameZoneDiscard.addCard(gameField.removeCard(position));
         }
     }
+	
+	public boolean swapPositionsOfTwoCardsOnField(int xPosition1, int xPosition2){
+		return gameField.swapCardsAt(xPosition1, xPosition2);
+	}
 
     public int drawCards(int amount){ //returns the amount of cards actually drawn
 		if (game.notAllowedToDrawCards(this))
@@ -178,34 +182,6 @@ public class Player {
 		return true;
 	}
 	
-	public boolean discardOwnCardFromField(int gameFieldPosition){
-		return discardCardFromField(true, gameFieldPosition);
-	}
-	
-	public boolean discardOpponentCardFromField(int gameFieldPosition){
-		return discardCardFromField(false, gameFieldPosition);
-	}
-	
-	private boolean discardCardFromField(boolean mine, int gameFieldPosition){
-		//TODO check if discarding, affecting different players cards, etc is allowed:
-		//if (game.notAllowedToDiscardCardFromField(this, mine, gameField))
-		//	return false;
-	
-		GameField field;
-		GameZone discard;
-		if (mine){
-			field = gameField;
-			discard = gameZoneDiscard;
-		} else {
-			field = opponent.getGameField();
-			discard = opponent.getGameZoneDiscard();
-		}
-		
-		Card card = field.removeCard(gameFieldPosition);
-		discard.addCard(card);
-		return true;
-	}
-	
 	public boolean flipOwnCardFaceUp(int gameFieldPosition){
 		return flipCard(true, true, gameFieldPosition);
 	}
@@ -222,14 +198,90 @@ public class Player {
 		//TODO check if flipping, affecting different players cards, etc is allowed:
 		//if (game.notAllowedToFlipCard(this, mine, gameField, faceUp))
 		//	return false;
-		
 		GameField field;
 		if (mine)
 			field = gameField;
 		else
 			field = opponent.getGameField();
-		
 		return field.turnCard(faceUp, gameFieldPosition);
+	}
+	
+	public boolean discardOwnCardFromField(int gameFieldPosition){
+		return discardCardFromField(true, gameFieldPosition);
+	}
+	
+	public boolean discardOpponentCardFromField(int gameFieldPosition){
+		return discardCardFromField(false, gameFieldPosition);
+	}
+	
+	private boolean discardCardFromField(boolean mine, int gameFieldPosition){
+		//TODO check if discarding, affecting different players cards, etc is allowed:
+		//if (game.notAllowedToDiscardCardFromField(this, mine, gameField))
+		//	return false;
+		GameField field;
+		GameZone discard;
+		if (mine){
+			field = gameField;
+			discard = gameZoneDiscard;
+		} else {
+			field = opponent.getGameField();
+			discard = opponent.getGameZoneDiscard();
+		}
+		Card card = field.removeCard(gameFieldPosition);
+		discard.addCard(card);
+		return true;
+	}
+	
+	public boolean returnOwnCardFromFieldToHand(int gameFieldPosition){
+		return returnCardFromFieldToHand(true, gameFieldPosition);
+	}
+	
+	public boolean returnOpponentCardFromFieldToHand(int gameFieldPosition){
+		return returnCardFromFieldToHand(false, gameFieldPosition);
+	}
+	
+	private boolean returnCardFromFieldToHand(boolean mine, int gameFieldPosition){
+		//TODO check if flipping, affecting different players cards, etc is allowed:
+		//if (game.notAllowedToReturnCardToHand(this, mine, gameField))
+		//	return false;
+		GameField field;
+		GameZone hand;
+		if (mine){
+			field = gameField;
+			hand = gameZoneHand;
+		} else {
+			field = opponent.getGameField();
+			hand = opponent.getGameZoneHand();
+		}
+		Card card = field.removeCard(gameFieldPosition);
+		hand.addCard(card);
+		return true;
+	}
+	
+	public boolean returnOwnCardFromFieldToTopOfDeck(int gameFieldPosition){
+		return returnCardFromFieldToTopOfDeck(true, gameFieldPosition);
+	}
+	
+	public boolean returnOpponentCardFromFieldToTopOfDeck(int gameFieldPosition){
+		return returnCardFromFieldToTopOfDeck(false, gameFieldPosition);
+	}
+	
+	private boolean returnCardFromFieldToTopOfDeck(boolean mine, int gameFieldPosition){
+		//TODO check if flipping, affecting different players cards, etc is allowed:
+		//if (game.notAllowedToReturnCardToTopOfDeck(this, mine, gameField))
+		//	return false;
+		GameField field;
+		GameZone deck;
+		if (mine){
+			field = gameField;
+			deck = gameZoneDeck;
+		} else {
+			field = opponent.getGameField();
+			deck = opponent.getGameZoneDeck();
+		}
+		Card card = field.removeCard(gameFieldPosition);
+		deck.addCardToTop(card);
+		return true;
 	}
 	
 	public GameField getGameField(){
@@ -238,6 +290,14 @@ public class Player {
 	
 	public GameZone getGameZoneDiscard(){
 		return gameZoneDiscard;
+	}
+	
+	public GameZone getGameZoneHand(){
+		return gameZoneHand;
+	}
+	
+	public GameZone getGameZoneDeck(){
+		return gameZoneDeck;
 	}
 	
 	public Game getGame(){
@@ -352,15 +412,11 @@ public class Player {
 				abilityId = 17; //Kohlkopf
 				//check card to the left
 				int positonToTheLeft = position - 1;
-				if (gameField.isCardFaceUp(positonToTheLeft) 
-					&& !game.isCardAbilityNegated(this, positonToTheLeft)
-					&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Kohlkopf
+				if (getIdIfFaceUpUnnegated(positonToTheLeft) == abilityId) //Kohlkopf
 					modifier += 2;
 				//check card to the right
 				int positionToTheRight = position + 1;
-				if (gameField.isCardFaceUp(positionToTheRight) 
-					&& !game.isCardAbilityNegated(this, positionToTheRight)
-					&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Kohlkopf
+				if (getIdIfFaceUpUnnegated(positionToTheRight) == abilityId) //Kohlkopf
 					modifier += 2;
 			}
 		}
@@ -368,47 +424,45 @@ public class Player {
 		{ //Anfeuerer
 			abilityId = 15; //Anfeuerer
 			//check card to the left
-			int positonToTheLeft = position - 1;
-			if (gameField.isCardFaceUp(positonToTheLeft) 
-				&& !game.isCardAbilityNegated(this, positonToTheLeft)
-				&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Anfeuerer
+			int positonToTheLeft = position-1;
+			if (getIdIfFaceUpUnnegated(positonToTheLeft) == abilityId) //Anfeuerer
 				modifier++;
 			//check card to the right
-			int positionToTheRight = position + 1;
-			if (gameField.isCardFaceUp(positionToTheRight) 
-				&& !game.isCardAbilityNegated(this, positionToTheRight)
-				&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Anfeuerer
+			int positionToTheRight = position+1;
+			if (getIdIfFaceUpUnnegated(positionToTheRight) == abilityId) //Anfeuerer
 				modifier++;
 		}
 		
 		{ //Wucherer
 			abilityId = 40; //Wucherer
 			//check card to the left
-			int positonToTheLeft = position - 1;
-			if (gameField.isCardFaceUp(positonToTheLeft) 
-				&& !game.isCardAbilityNegated(this, positonToTheLeft)
-				&& game.getIdOfCardInPlay(this, positonToTheLeft)==abilityId) //Wucherer
+			int positonToTheLeft = position-1;
+			if (getIdIfFaceUpUnnegated(positonToTheLeft) == abilityId) //Wucherer
 				modifier -= 2;
 			//check card to the right
-			int positionToTheRight = position + 1;
-			if (gameField.isCardFaceUp(positionToTheRight) 
-				&& !game.isCardAbilityNegated(this, positionToTheRight)
-				&& game.getIdOfCardInPlay(this, positionToTheRight)==abilityId) //Wucherer
+			int positionToTheRight = position+1;
+			if (getIdIfFaceUpUnnegated(positionToTheRight) == abilityId) //Wucherer
 				modifier -= 2;
 		}
 		
 		{ //Feiges Huhn
 			abilityId = 66; //Feiges Huhn
-			if (opponent.isCardFaceUp(position)
-				&& !game.isCardAbilityNegated(opponent, position)
-				&& game.getIdOfCardInPlay(opponent, position) == abilityId) //Feiges Huhn
+			if (opponent.getIdIfFaceUpUnnegated(position) == abilityId) //Feiges Huhn
 				modifier -= 2;
 		}
 		
 		{ //Streichelholz
 			abilityId = 14; //Streichelholz
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Streichelholz
+			if (getIdIfFaceUpUnnegated(position)==abilityId){ //Streichelholz
 				multiplier = 2;
+			}
+		}
+		
+		{ //Fesslerkraken
+			abilityId = 28; //Fesslerkraken
+			if (opponent.getIdIfFaceUpUnnegated(position) == abilityId){ //Fesslerkraken
+				base = 0;
+				modifier = 0;
 			}
 		}
 		
@@ -464,9 +518,21 @@ public class Player {
 		
 		int abilityId = -1;
 		
+		{ //Goldgolem
+			abilityId = 42; //Goldgolem
+			if (game.isThereAFaceUpUnnegatedOnSideOf(this, abilityId)) //Goldgolem
+				return false;
+		}
+		
 		{ //U.B.O.
 			abilityId = 26; //U.B.O.
 			if (card.getId() == abilityId && getTotalValue() >= opponent.getTotalValue()) // U.B.O.
+				return false;
+		}
+		
+		{ //Dämond
+			abilityId = 61; //Dämond
+			if (card.getId() == abilityId && gameField.getAmountOfCards() != 0) // Dämond
 				return false;
 		}
 		
@@ -491,26 +557,28 @@ public class Player {
 		
 		{ //Fliegenpilz
 			abilityId = 58; //Fliegenpilz
-			if (game.getIdOfCardInPlay(opponent, gameFieldPosition) == abilityId
-					&& !game.isCardAbilityNegated(opponent, gameFieldPosition)){ //Fliegenpilz
+			if (opponent.getIdIfFaceUpUnnegated(gameFieldPosition) == abilityId)
 				return false;
-			}
 		}
 		
 		{ //Wolkenkratzer
 			abilityId = 62; //Wolkenkratzer
-			int positonToTheLeft = gameFieldPosition - 1;
-			int positonToTheRight = gameFieldPosition + 1;
-			if (
-				(game.getIdOfCardInPlay(this, positonToTheLeft) == abilityId
-					&& !game.isCardAbilityNegated(this, positonToTheLeft)) //Wolkenkratzer
-				|| (game.getIdOfCardInPlay(this, positonToTheRight) == abilityId
-					&& !game.isCardAbilityNegated(this, positonToTheRight)) //Wolkenkratzer	
-			){ return false; }
+			int positionToTheLeft = gameFieldPosition - 1;
+			int positionToTheRight = gameFieldPosition + 1;
+			if (getIdIfFaceUpUnnegated(positionToTheLeft) == abilityId
+				|| getIdIfFaceUpUnnegated(positionToTheRight) == abilityId)
+				return false;
 		}
 		
         return true;
     }
+	
+	public int getIdIfFaceUpUnnegated(int xPosition){
+		if (isCardFaceUp(xPosition) && !game.isCardAbilityNegated(this, xPosition))
+			return game.getIdOfCardInPlay(this, xPosition);
+		else
+			return -1;
+	}
 	
 	public List<Integer> getPositionsOfAllFaceUpBros(){
 		return gameField.getAllFaceUpPositions();
@@ -518,6 +586,10 @@ public class Player {
 	
 	public List<Integer> getPositionsOfAllFaceDownBros(){
 		return gameField.getAllFaceDownPositions();
+	}
+	
+	public List<Integer> getPositionsOfAllBrosExceptOnPosition(int exceptPosition){
+		return gameField.getAllTakenPositionsExcept(exceptPosition);
 	}
 	
 	private int getAmountOfAllFaceDownBros(){

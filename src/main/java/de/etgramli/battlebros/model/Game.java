@@ -243,7 +243,7 @@ public class Game implements GameInterface {
 	
 	@Override
 	public boolean chooseCardsInPlay(int playerIndex, List<Pair<Integer,Integer>> selections){
-		if (notAbleToResolveAbility(playerIndex) || selections.isEmpty() || !currentAbility.canChooseMultiple())
+		if (notAbleToResolveAbility(playerIndex) || selections==null || selections.isEmpty() || !currentAbility.canChooseMultiple())
 			return false;
 		
 		for (Pair<Integer,Integer> entry : selections){
@@ -296,6 +296,7 @@ public class Game implements GameInterface {
 	@Override
 	public boolean chooseCardsInDiscard(int playerIndex, List<Integer> selections){
 		if (notAbleToResolveAbility(playerIndex)
+			|| selections==null
 			|| selections.isEmpty()
 			|| !currentAbility.canChooseMultiple()
 			|| !currentAbility.canChooseFromOwnDiscard()
@@ -303,7 +304,9 @@ public class Game implements GameInterface {
 			return false;
 		
 		for (Integer selection : selections){
-			if (currentAbility.fromOwnDiscardAllowed()!=null && !currentAbility.fromOwnDiscardAllowed().contains(selection))
+			if ((currentAbility.fromOwnDiscardAllowed()!=null && !currentAbility.fromOwnDiscardAllowed().contains(selection))
+					|| selection < 0
+					|| selection >= getPlayer(playerIndex).getAmountOfCardsInDiscard())
 				return false;
 		}
 		
@@ -326,6 +329,28 @@ public class Game implements GameInterface {
 		notifyObservers();
 		return true;
 	}
+	
+	@Override
+	public boolean chooseCardsInHand(int playerIndex, List<Integer> selections){
+		if (notAbleToResolveAbility(playerIndex)
+			|| selections==null
+			|| selections.isEmpty()
+			|| !currentAbility.canChooseMultiple()
+			|| !currentAbility.canChooseFromOwnHand()
+		)
+			return false;
+		
+		for (Integer selection : selections){
+			if ((currentAbility.fromOwnHandAllowed()!=null && !currentAbility.fromOwnHandAllowed().contains(selection))
+					|| selection < 0
+					|| selection >= getPlayer(playerIndex).getAmountOfCardsInHand())
+				return false;
+		}
+		
+		resolveAbilityWithChosenCardsInHand(currentAbility.getActor(), selections);
+		notifyObservers();
+		return true;
+	}
 
     @Override
     public boolean chooseAccept(int playerIndex) {
@@ -339,7 +364,7 @@ public class Game implements GameInterface {
 
 	@Override
 	public boolean chooseCancel(int playerIndex){
-		if (notAbleToResolveAbility(playerIndex) || !currentAbility.isOptional())
+		if (notAbleToResolveAbility(playerIndex) || (!currentAbility.isOptional() && !currentAbility.isAcceptable()))
 			return false;
 
 		advanceFromAbility();
@@ -366,8 +391,15 @@ public class Game implements GameInterface {
 			case 11: //Abbrenngolem
 			case 21: //Aquak
 			case 22: //Seemannsgarnele
+			case 31: //Heilqualle
 			case 34: //Schildfisch
+			case 36: //Katerpult
+			case 37: //Rammbock
+			case 39: //Fleischwolf
 			case 41: //Geröllakämpfer
+			case 53: //Gittermastkranich
+			case 54: //Fliegende Klatsche
+			case 65: //Wirbelkind
 				addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;	
 			
@@ -410,6 +442,7 @@ public class Game implements GameInterface {
 				actor.drawCards(1);
 				advanceFromAbility();
 				break;
+				
 			case 10: //Fackeldackel
 				int abilityId = 10; //Fackeldackel
 				for (int xPosition : getPositionsOfAllFaceUpUnnegatedOnSideOf(actor, abilityId))
@@ -418,20 +451,24 @@ public class Game implements GameInterface {
 					actor.flipOpponentCardFaceDown(xPosition);
 				advanceFromAbility();
 				break;
+				
 			case 11: //Abbrenngolem
 				actor.flipOwnCardFaceDown(gameFieldPosition);
 				advanceFromAbility();
 				break;
+				
 			case 22: //Seemannsgarnele
 				actor.drawCards(1);
 				actor.getOpponent().drawCards(1);
 				advanceFromAbility();
 				break;
+				
 			case 34: //Schildfisch
 				actor.flipOwnCardFaceUp(gameFieldPosition - 1);
 				actor.flipOwnCardFaceUp(gameFieldPosition + 1);
 				advanceFromAbility();
 				break;
+				
 			case 41: //Geröllakämpfer
 				actor.discardOwnCardFromField(gameFieldPosition);
 				break;
@@ -443,7 +480,11 @@ public class Game implements GameInterface {
 	
 	private void resolveAbilityWithAccepting(Player actor){
 		switch(currentAbility.getCardId()){
-			//TODO not needed yet
+			case 54: //Fliegende Klatsche
+				actor.returnOpponentCardFromFieldToTopOfDeck(currentAbility.getGameFieldPosition());
+				advanceFromAbility();
+				break;
+				
 			default:
 				advanceFromAbility();
 		}
@@ -459,6 +500,32 @@ public class Game implements GameInterface {
 					actor.flipOpponentCardFaceDown(xPosition);
 				advanceFromAbility();
 				break;
+				
+			case 31: //Heilqualle
+				if (targetingOwnRow)
+					actor.flipOwnCardFaceUp(xPosition);
+				else
+					actor.flipOpponentCardFaceUp(xPosition);
+				advanceFromAbility();
+			
+			case 36: //Katerpult
+			case 37: //Rammbock
+			case 39: //Fleischwolf
+				if (targetingOwnRow)
+					actor.discardOwnCardFromField(xPosition);
+				else
+					actor.discardOpponentCardFromField(xPosition);
+				advanceFromAbility();
+				break;
+			
+			case 53: //Gittermastkranich
+				if (targetingOwnRow)
+					actor.returnOwnCardFromFieldToHand(xPosition);
+				else
+					actor.returnOpponentCardFromFieldToHand(xPosition);
+				advanceFromAbility();
+				break;
+				
 			default:
 				advanceFromAbility();
 		}
@@ -489,6 +556,23 @@ public class Game implements GameInterface {
 				}
 				advanceFromAbility();
 				return true;
+				
+			case 65: //Wirbelkind
+				//check if exactly 2 bros are selected, and these bros are different positions on the same side
+				if (selections.size() != 2)
+					return false;
+				int rowIndex1 = selections.get(0).getKey();
+				int rowIndex2 = selections.get(1).getKey();
+				int xPosition1 = selections.get(0).getValue();
+				int xPosition2 = selections.get(1).getValue();
+				if (rowIndex1 != rowIndex2 || xPosition1 == xPosition2)
+					return false;
+				//swap places for these two bros
+				if (!getPlayer(rowIndex1).swapPositionsOfTwoCardsOnField(xPosition1, xPosition2))
+					return false;
+				advanceFromAbility();
+				return true;
+				
 			default:
 				advanceFromAbility();
 		}
@@ -505,6 +589,15 @@ public class Game implements GameInterface {
 				else
 					advanceFromAbility();
 				break;
+				
+			default:
+				advanceFromAbility();
+		}
+	}
+	
+	private void resolveAbilityWithChosenCardsInHand(Player actor, List<Integer> selections){
+		switch(currentAbility.getCardId()){
+			//TODO not needed yet
 			default:
 				advanceFromAbility();
 		}

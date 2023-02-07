@@ -30,6 +30,15 @@ public class GameField {
         return result;
     }
 	
+	public List<Integer> getAllTakenPositionsExcept(int exceptPosition){
+		List<Integer> result = new ArrayList<>();
+        for (Map.Entry<Integer, Card> entry : cards.entrySet()){
+			if (entry.getKey() != exceptPosition)
+				result.add(entry.getKey());
+		}
+        return result;
+	}
+	
 	public List<Integer> getAllFaceUpPositions(){
 		return getAllPositionsFacing(true);
     }
@@ -91,4 +100,23 @@ public class GameField {
 		cardFacings.remove(position);
         return cards.remove(position);
     }
+	
+	public boolean swapCardsAt(int xPosition1, int xPosition2){
+		if (getCard(xPosition1)==null || getCard(xPosition2)==null)
+			return false;
+		
+		Card card1 = cards.remove(xPosition1);
+		boolean facing1 = cardFacings.remove(xPosition1);
+		
+		Card card2 = cards.remove(xPosition2);
+		boolean facing2 = cardFacings.remove(xPosition2);
+
+		addCard(card1, xPosition2);
+		turnCard(facing1, xPosition2);
+		
+		addCard(card2, xPosition1);
+		turnCard(facing2, xPosition1);
+		
+		return true;
+	}
 }

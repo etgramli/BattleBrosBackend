@@ -35,7 +35,10 @@ public class GameZone {
     public void addCard(Card card){
         cards.add(card);
     }
-
+	
+	public void addCardToTop(Card card){
+		cards.add(0, card);
+	}
 
     public void addCards(List<Card> cards){
         this.cards.addAll(cards);

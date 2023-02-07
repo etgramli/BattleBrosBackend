@@ -66,6 +66,8 @@ public interface GameInterface extends IObservable {
 	boolean chooseCardsInDiscard(int playerIndex, List<Integer> selections);
 	
 	boolean chooseCardInHand(int playerIndex, int handIndex);
+	
+	boolean chooseCardsInHand(int playerIndex, List<Integer> selections);
 		
     boolean chooseAccept(int playerIndex);
     boolean chooseCancel(int playerIndex);

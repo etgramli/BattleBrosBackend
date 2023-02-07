@@ -1,5 +1,6 @@
 package de.etgramli.battlebros.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ResolvableAbility {
@@ -40,15 +41,18 @@ public class ResolvableAbility {
 				canChooseFromOpponentField = true;
 				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBros();
 				break;
+				
 			case 3: //Flammenwerfer
 				canChooseFromOwnField = true;
 				canChooseFromOpponentField = true;
 				canChooseMultiple = true;
-				isOptional = true; //TODO check if cardText says so, if not: make it possible to select 0 cards in Game
+				isOptional = true; //TODO check if this is optional (pretty sure it is tho 8-) )
 				break;
+				
 			case 4: //Kanonenfutterer
 				isAutomatic = true;
 				break;
+				
 			case 5: //Verascher
 				actor = activator.getOpponent();
 				int highestValue = actor.getHighestValueOnField();
@@ -60,34 +64,95 @@ public class ResolvableAbility {
 				canChooseFromOpponentField = true;
 				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBrosWithValue(highestValue);
 				break;
+				
 			case 7: //Potzblitz
 				actor = activator.getOpponent();
 				canChooseFromOwnHand = true;
 				break;
+				
 			case 9: //Lavaboy
 				actor = activator.getOpponent();
 				isAutomatic = true;
 				break;
+				
 			case 10: //Fackeldackel
 				isAutomatic = true;
 				break;
+				
 			case 11: //Abbrenngolem
 				isAutomatic = true;
 				break;
+				
 			case 21: //Aquak
 				isAutomatic = true;
 				break;
+				
 			case 22: //Seemannsgarnele
 				isAutomatic = true;
 				break;
+				
+			case 31: //Heilqualle
+				canChooseFromOwnField = true; //todo check ob evtl man nur facedown bros wählen darf
+				canChooseFromOpponentField = true; //todo check ob evtl man nur facedown bros wählen darf
+				break;
+				
 			case 32: //Toller Hecht
 				isAutomatic = true;
 				break;
+				
 			case 34: //Schildfisch
 				isAutomatic = true;
 				break;
+			
+			case 36: //Katerpult
+				canChooseFromOpponentField = true;
+				fromOpponentFieldAllowed = new ArrayList<>();
+				for (int i=gameFieldPosition-1; i<=gameFieldPosition+1; i++){
+					if (actor.getOpponent().getCardOnFieldAt(i) != null)
+						fromOpponentFieldAllowed.add(i);
+				}
+				//todo check ob diese ffähigkeit optional ist
+				break;
+			
+			case 37: //Rammbock
+				canChooseFromOwnField = true;
+				fromOwnFieldAllowed = new ArrayList<>();
+				if (actor.getCardOnFieldAt(gameFieldPosition-1) != null)
+					fromOwnFieldAllowed.add(gameFieldPosition-1);
+				if (actor.getCardOnFieldAt(gameFieldPosition+1) != null)
+					fromOwnFieldAllowed.add(gameFieldPosition+1);
+				canChooseFromOpponentField = true;
+				fromOpponentFieldAllowed = new ArrayList<>();
+				if (actor.getOpponent().getCardOnFieldAt(gameFieldPosition) != null)
+					fromOpponentFieldAllowed.add(gameFieldPosition);
+				isOptional = true; //todo sichergehen dass wirklich optional ist
+				break;
+				
+			case 39: //Fleischwolf
+				canChooseFromOwnField = true;
+				isOptional = true;
+				break;
+				
 			case 41: //Geröllakämpfer
 				isAutomatic = true;
+				break;
+				
+			case 53: //Gittermastkranich
+				canChooseFromOwnField = true;
+				fromOwnFieldAllowed = actor.getPositionsOfAllBrosExceptOnPosition(gameFieldPosition);
+				canChooseFromOpponentField = true;
+				//todo check ob optional
+				break;
+				
+			case 65: //Wirbelkind
+				canChooseFromOwnField = true;
+				canChooseFromOpponentField = true;
+				canChooseMultiple = true;
+				isOptional = true; //TODO check if this is optional
+				break;
+				
+			case 54: //Fliegende Klatsche
+				isAcceptable = true; //todo pretty sure this is right but better check
 				break;
 				
 			default:
