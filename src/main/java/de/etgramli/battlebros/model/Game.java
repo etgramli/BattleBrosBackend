@@ -585,10 +585,12 @@ public class Game implements GameInterface {
 			case 7: //Potzblitz
 				actor.discardCard(handIndex);
 				if (actor.getAmountOfCardsInHand() > actor.getOpponent().getAmountOfCardsInHand()
-					&& currentAbility.getProgress() == 0)
+					&& currentAbility.getProgress() == 0) {
 					currentAbility.advanceProgress();
-				else
+					askObserversToResolveAbility();
+				} else {
 					advanceFromAbility();
+				}
 				break;
 				
 			default:
