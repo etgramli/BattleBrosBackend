@@ -507,6 +507,7 @@ public class Game implements GameInterface {
 				else
 					actor.flipOpponentCardFaceUp(xPosition);
 				advanceFromAbility();
+				break;
 			
 			case 36: //Katerpult
 			case 37: //Rammbock
