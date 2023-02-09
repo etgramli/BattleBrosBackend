@@ -90,14 +90,29 @@ public class ResolvableAbility {
 			case 22: //Seemannsgarnele
 				isAutomatic = true;
 				break;
+			
+			case 30: //Meeresfrüchte
+				canChooseFromOwnDiscard = true;
+				canChooseMultiple = true;
+				isOptional = true; //TODO check
+				break;
 				
 			case 31: //Heilqualle
 				canChooseFromOwnField = true; //todo check ob evtl man nur facedown bros wählen darf
 				canChooseFromOpponentField = true; //todo check ob evtl man nur facedown bros wählen darf
+				//TODO könnte optional sein (who knows?)
 				break;
 				
 			case 32: //Toller Hecht
 				isAutomatic = true;
+				break;
+			
+			case 33: //Walnuss
+				canChooseFromOwnField = true;
+				fromOwnFieldAllowed = actor.getPositionsOfAllBrosWithElement(Element.WATER);
+				canChooseFromOpponentField = true;
+				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllBrosWithElement(Element.WATER);
+				isOptional = true; //TODO CHECK (auch checken ob fromXYZallowed hier stimmt
 				break;
 				
 			case 34: //Schildfisch
@@ -134,6 +149,10 @@ public class ResolvableAbility {
 				break;
 				
 			case 41: //Geröllakämpfer
+				isAutomatic = true;
+				break;
+			
+			case 49: //Drahtesel
 				isAutomatic = true;
 				break;
 				

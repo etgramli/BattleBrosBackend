@@ -118,16 +118,16 @@ public class Card {
         new Card(21, "Aquak", 0, List.of(Element.WATER), "", ""),				//ability done
         new Card(22, "Seemannsgarnele", 1, List.of(Element.WATER), "", ""),		//ability done
         new Card(23, "Nagellachs", 1, List.of(Element.WATER), "", ""),			//ability done
-        new Card(24, "Orakel von Delfin", 2, List.of(Element.WATER), "", ""),
-        new Card(25, "Unterweltfährmann", 0, List.of(Element.WATER), "", ""),
+        new Card(24, "Orakel von Delfin", 2, List.of(Element.WATER), "", ""),	//	TODO 1:zeige nur dem actor die oberste karte(evtl einfach ziehen), 2:wähle oben oder unten
+        new Card(25, "Unterweltfährmann", 0, List.of(Element.WATER), "", ""),	//	TODO 1:wähle karte in abwurf, 2:falls nötig wähle leere position
         new Card(26, "U.B.O.", 4, List.of(Element.WATER), "", ""),				//ability done
         new Card(27, "Welsbrocken", 5, List.of(Element.WATER), "", ""),			//ability done
         new Card(28, "Fesslerkraken", 1, List.of(Element.WATER), "", ""),		//ability done
-        new Card(29, "Flebbe und Ut", 2, List.of(Element.WATER), "", ""),
-        new Card(30, "Meeresfrüchte", 1, List.of(Element.WATER), "", ""),
+        new Card(29, "Flebbe und Ut", 2, List.of(Element.WATER), "", ""),		//	TODO wähle links oder rechts
+        new Card(30, "Meeresfrüchte", 1, List.of(Element.WATER), "", ""),		//ability done
         new Card(31, "Heilqualle", 1, List.of(Element.WATER), "", ""),			//ability done
         new Card(32, "Toller Hecht", 1, List.of(Element.WATER), "", ""),		//ability done
-        new Card(33, "Walnuss", 2, List.of(Element.WATER), "", ""),
+        new Card(33, "Walnuss", 2, List.of(Element.WATER), "", ""),				//ability done
         new Card(34, "Schildfisch", 2, List.of(Element.WATER), "", ""),			//ability done
         new Card(35, "Erdwurm", 3, List.of(Element.EARTH), "", ""),				//no ability, no test needed
         new Card(36, "Katerpult", 1, List.of(Element.EARTH), "", ""),			//ability done
@@ -140,10 +140,10 @@ public class Card {
         new Card(43, "Blumenstrauß", 0, List.of(Element.EARTH), "", ""),		//ability done
         new Card(44, "Buddelwurf", 2, List.of(Element.EARTH), "", ""),
         new Card(45, "Extrablatt", 3, List.of(Element.EARTH), "", ""),
-        new Card(46, "Felsenfest", 3, List.of(Element.EARTH), "", ""),
+        new Card(46, "Felsenfest", 3, List.of(Element.EARTH), "", ""),			//ability done
         new Card(47, "Holzkopf", 3, List.of(Element.EARTH), "", ""),			//ability done, some tests done
-        new Card(48, "Gärtnerzwerg", 3, List.of(Element.EARTH), "", ""),
-        new Card(49, "Drahtesel", 3, List.of(Element.EARTH), "", ""),
+        new Card(48, "Gärtnerzwerg", 3, List.of(Element.EARTH), "", ""),		//	TODO 1:zeige beiden spielern die karte, 2:wähle evtl links oder rechts
+        new Card(49, "Drahtesel", 3, List.of(Element.EARTH), "", ""),			//ability done
         new Card(50, "Blätterdach", 2, List.of(Element.EARTH), "", ""),
         new Card(51, "Baumkrone", 3, List.of(Element.EARTH), "", ""),
         new Card(52, "Luftschlange", 3, List.of(Element.AIR), "", ""),			//no ability, no test needed

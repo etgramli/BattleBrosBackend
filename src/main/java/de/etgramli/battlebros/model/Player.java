@@ -109,6 +109,21 @@ public class Player {
 	public boolean swapPositionsOfTwoCardsOnField(int xPosition1, int xPosition2){
 		return gameField.swapCardsAt(xPosition1, xPosition2);
 	}
+	
+	public boolean shuffleFromDiscardToDeck(List<Integer> selections){
+		if (selections==null || selections.size()==0 || selections.size()>2)
+			return false;
+		//TODO check for erzbengel etc
+		if (selections.size() == 2 && selections.get(0) < selections.get(1)){
+			int temp = selections.get(0);
+			selections.set(0, selections.get(1));
+			selections.set(1, temp);
+		}
+		for (Integer selection : selections)
+			gameZoneDeck.addCard(gameZoneDiscard.removeCard(selection));
+		gameZoneDeck.shuffle();
+		return true;
+	}
 
     public int drawCards(int amount){ //returns the amount of cards actually drawn
 		if (game.notAllowedToDrawCards(this))
@@ -345,7 +360,7 @@ public class Player {
     }
 	
 	public List<Element> getElementsOfCardAt(int xPosition){
-		//TODO element-changing abilities (Polywicht & Contrawicht)
+		//TODO element-changing abilities (Polywicht & Contrawicht) -> aber auch nur bei offenen bros anwenden!
 		return gameField.getCard(xPosition).getElements();
 	}
 	
@@ -360,9 +375,15 @@ public class Player {
         int modifier = 0;
 		int multiplier = 1;
 		
+		{ //Felsenfest
+			abilityId = 46; //Felsenfest
+			if (abilityId == getIdIfFaceUpUnnegated(position))
+				return base;
+		}
+		
 		{ //Vulklon
 			abilityId = 13; //Vulklon
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){
+			if (abilityId == getIdIfFaceUpUnnegated(position)){
 				if (!(game.getIdOfCardInPlay(opponent, position)==abilityId && !game.isCardAbilityNegated(opponent, position))) //TODO check if there's no corner cases where a Vulklon still copies the powval of another Vulklon
 					base = opponent.getValueOfCardOnFieldAt(position); //TODO check ability text, if this is right
 			}
@@ -370,19 +391,19 @@ public class Player {
 		
 		{ //Welsbrocken
 			abilityId = 27; //Welsbrocken
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position))
+			if (abilityId == getIdIfFaceUpUnnegated(position)) //Welsebrocken
 				modifier -= 3;
 		}
 		
 		{ //Heißer Feger
 			abilityId = 12; //Heißer Feger
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)) //Heißer Feger
+			if (abilityId == getIdIfFaceUpUnnegated(position)) //Heißer Feger
 				modifier += (2 * (getAmountOfAllFaceDownBros() + opponent.getAmountOfAllFaceDownBros()));
 		}
 		
 		{ //Blumenstrauß
 			abilityId = 43; //Blumenstrauß
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Blumenstrauß
+			if (abilityId == getIdIfFaceUpUnnegated(position)){ //Blumenstrauß
 				int amountOfFaceUpBrosOtherThanThis = getAmountOfAllFaceUpBros() - 1;
 				if (amountOfFaceUpBrosOtherThanThis > 0)
 					modifier += amountOfFaceUpBrosOtherThanThis;
@@ -391,14 +412,14 @@ public class Player {
 		
 		{ //Schluckspecht
 			abilityId = 63; //Schluckspecht
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Schluckspecht
+			if (abilityId == getIdIfFaceUpUnnegated(position)){ //Schluckspecht
 				modifier += getAmountOfCardsInHand();
 			}
 		}
 		
 		{ //Luftikuss
 			abilityId = 64; //Luftikuss
-			if (cardId==abilityId && !game.isCardAbilityNegated(this, position)){ //Luftikuss
+			if (abilityId == getIdIfFaceUpUnnegated(position)){ //Luftikuss
 				modifier += countCardsInDiscardWithElement(Element.AIR);
 			}
 		}
@@ -479,9 +500,9 @@ public class Player {
 	
 	public int getHighestValueOnField(){
 		int result = 0;
-		for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
-			if (gameField.isCardFaceUp(entry.getKey())){
-				int value = getValueOfCardOnFieldAt(entry.getKey());
+		for (Integer position : gameField.getAllTakenPositions()){
+			if (gameField.isCardFaceUp(position)){
+				int value = getValueOfCardOnFieldAt(position);
 				if (value > result)
 					result = value;
 			}
@@ -491,12 +512,20 @@ public class Player {
 	
 	public List<Integer> getPositionsOfAllFaceUpBrosWithValue(int value){
 		List<Integer> result = new ArrayList<>();
-        for (Map.Entry<Integer, Card> entry : gameField.getAllCards().entrySet()){
-			int key = entry.getKey();
-            if (gameField.isCardFaceUp(key) && getValueOfCardOnFieldAt(key) == value)
-				result.add(key);
+        for (Integer position : gameField.getAllTakenPositions()){
+            if (gameField.isCardFaceUp(position) && getValueOfCardOnFieldAt(position) == value)
+				result.add(position);
 		}
         return result;
+	}
+	
+	public List<Integer> getPositionsOfAllBrosWithElement(Element element){
+		List<Integer> result = new ArrayList<>();
+		for (Integer position : gameField.getAllTakenPositions()){
+			if (getElementsOfCardAt(position).contains(element))
+				result.add(position);
+		}
+		return result;
 	}
 
     public Map<Integer, Card> getCardsOnField(){

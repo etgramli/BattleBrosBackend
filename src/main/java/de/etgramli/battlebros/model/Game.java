@@ -17,6 +17,7 @@ public class Game implements GameInterface {
     private final Player player1; //index is 0
     private final Player player2; //index is 1
     private Player turnPlayer;
+	private boolean getAnExtraTurn = false;
 
 
 	// C O N S T R U C T O R S
@@ -243,7 +244,7 @@ public class Game implements GameInterface {
 	
 	@Override
 	public boolean chooseCardsInPlay(int playerIndex, List<Pair<Integer,Integer>> selections){
-		if (notAbleToResolveAbility(playerIndex) || selections==null || selections.isEmpty() || !currentAbility.canChooseMultiple())
+		if (notAbleToResolveAbility(playerIndex) || selections==null || selections.isEmpty() || !currentAbility.canChooseMultiple() || selections.size() != new HashSet<>(selections).size())
 			return false;
 		
 		for (Pair<Integer,Integer> entry : selections){
@@ -300,6 +301,7 @@ public class Game implements GameInterface {
 			|| selections.isEmpty()
 			|| !currentAbility.canChooseMultiple()
 			|| !currentAbility.canChooseFromOwnDiscard()
+			|| selections.size() != new HashSet<>(selections).size()
 		)
 			return false;
 		
@@ -310,9 +312,10 @@ public class Game implements GameInterface {
 				return false;
 		}
 		
-		resolveAbilityWithChosenCardsInDiscard(currentAbility.getActor(), selections);
-		notifyObservers();
-		return true;
+		boolean result = resolveAbilityWithChosenCardsInDiscard(currentAbility.getActor(), selections);
+		if (result)
+			notifyObservers();
+		return result;
 	}
 	
 	@Override
@@ -337,6 +340,7 @@ public class Game implements GameInterface {
 			|| selections.isEmpty()
 			|| !currentAbility.canChooseMultiple()
 			|| !currentAbility.canChooseFromOwnHand()
+			|| selections.size() != new HashSet<>(selections).size()
 		)
 			return false;
 		
@@ -347,9 +351,10 @@ public class Game implements GameInterface {
 				return false;
 		}
 		
-		resolveAbilityWithChosenCardsInHand(currentAbility.getActor(), selections);
-		notifyObservers();
-		return true;
+		boolean result = resolveAbilityWithChosenCardsInHand(currentAbility.getActor(), selections);
+		if (result)
+			notifyObservers();
+		return result;
 	}
 
     @Override
@@ -391,7 +396,9 @@ public class Game implements GameInterface {
 			case 11: //Abbrenngolem
 			case 21: //Aquak
 			case 22: //Seemannsgarnele
+			case 30: //Meeresfrüchte
 			case 31: //Heilqualle
+			case 33: //Walnuss
 			case 34: //Schildfisch
 			case 36: //Katerpult
 			case 37: //Rammbock
@@ -414,6 +421,7 @@ public class Game implements GameInterface {
 				)
 					addAbilityToQueue(new ResolvableAbility(cardId, player, gameFieldPosition));
 				break;
+				
 			
 			default:
 				break;
@@ -421,8 +429,21 @@ public class Game implements GameInterface {
 		
 		if (player.getElementsOfCardAt(gameFieldPosition).contains(Element.WATER)){ //Fackeldackel
 			int abilityId = 10; //Fackeldackel
-			for (int i = 0; i < countFaceUpUnnegatedOnAnySide(abilityId); i++)
+			for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player, abilityId))
+				addAbilityToQueue(new ResolvableAbility(abilityId, player, position));
+			for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player.getOpponent(), abilityId))
+				addAbilityToQueue(new ResolvableAbility(abilityId, player.getOpponent(), position));
+		}
+		
+		{ //Drahtesel
+			int abilityId = 49; //Drahtesel
+			int toTheLeft = gameFieldPosition - 1;
+			int toTheRight = gameFieldPosition + 1;
+			if (player.getIdIfFaceUpUnnegated(toTheLeft) == abilityId)
 				addAbilityToQueue(new ResolvableAbility(abilityId, player, gameFieldPosition));
+			if (player.getIdIfFaceUpUnnegated(toTheRight) == abilityId)
+				addAbilityToQueue(new ResolvableAbility(abilityId, player, gameFieldPosition));
+					
 		}
 		
 		advanceFromAbility();
@@ -445,10 +466,12 @@ public class Game implements GameInterface {
 				
 			case 10: //Fackeldackel
 				int abilityId = 10; //Fackeldackel
-				for (int xPosition : getPositionsOfAllFaceUpUnnegatedOnSideOf(actor, abilityId))
-					actor.flipOwnCardFaceDown(xPosition);
-				for (int xPosition : getPositionsOfAllFaceUpUnnegatedOnSideOf(actor.getOpponent(), abilityId))
-					actor.flipOpponentCardFaceDown(xPosition);
+				Player target = actor;
+				actor = turnPlayer;
+				if (actor == target)
+					actor.flipOwnCardFaceDown(gameFieldPosition);
+				else
+					actor.flipOpponentCardFaceDown(gameFieldPosition);
 				advanceFromAbility();
 				break;
 				
@@ -471,6 +494,10 @@ public class Game implements GameInterface {
 				
 			case 41: //Geröllakämpfer
 				actor.discardOwnCardFromField(gameFieldPosition);
+				break;
+			
+			case 49: //Drahtesel
+				getAnExtraTurn = true;
 				break;
 			
 			default:
@@ -502,6 +529,7 @@ public class Game implements GameInterface {
 				break;
 				
 			case 31: //Heilqualle
+			case 33: //Walnuss
 				if (targetingOwnRow)
 					actor.flipOwnCardFaceUp(xPosition);
 				else
@@ -569,6 +597,7 @@ public class Game implements GameInterface {
 				if (rowIndex1 != rowIndex2 || xPosition1 == xPosition2)
 					return false;
 				//swap places for these two bros
+				//TODO check for extrablatt oder so
 				if (!getPlayer(rowIndex1).swapPositionsOfTwoCardsOnField(xPosition1, xPosition2))
 					return false;
 				advanceFromAbility();
@@ -598,12 +627,13 @@ public class Game implements GameInterface {
 		}
 	}
 	
-	private void resolveAbilityWithChosenCardsInHand(Player actor, List<Integer> selections){
+	private boolean resolveAbilityWithChosenCardsInHand(Player actor, List<Integer> selections){
 		switch(currentAbility.getCardId()){
 			//TODO not needed yet
 			default:
 				advanceFromAbility();
 		}
+		return false;
 	}
 	
 	private void resolveAbilityWithChosenCardInDiscard(Player actor, int discardIndex){
@@ -614,12 +644,19 @@ public class Game implements GameInterface {
 		}
 	}
 	
-	private void resolveAbilityWithChosenCardsInDiscard(Player actor, List<Integer> selections){
+	private boolean resolveAbilityWithChosenCardsInDiscard(Player actor, List<Integer> selections){
 		switch(currentAbility.getCardId()){
-			//TODO not needed yet
+			case 30: //Meeresfrüchte
+				if (selections.size() > 2)
+					return false;
+				actor.shuffleFromDiscardToDeck(selections);
+				advanceFromAbility();
+				return true;
+				
 			default:
 				advanceFromAbility();
 		}
+		return false;
 	}
 	
 	
@@ -873,15 +910,14 @@ public class Game implements GameInterface {
 	
 	private void moveAbilityFromQueueToCurrent(int abilityIndex){
 		currentAbility = abilityQueue.remove(abilityIndex);
-			if (currentAbility.isAutomatic())
-				resolveAutomaticAbility(currentAbility.getActor(), currentAbility.getGameFieldPosition());
-			else
-				askObserversToResolveAbility();
+		if (currentAbility.isAutomatic())
+			resolveAutomaticAbility(currentAbility.getActor(), currentAbility.getGameFieldPosition());
+		else
+			askObserversToResolveAbility();
 	}
 	
     private void advanceToNextTurn(){
         turn++;
-
 		if (!getNonTurnPlayer().hasPassed())
 			changeTurnPlayer();
 
@@ -889,7 +925,11 @@ public class Game implements GameInterface {
     }
 
     private void changeTurnPlayer(){
-        turnPlayer = getNonTurnPlayer();
+		if (getAnExtraTurn) {
+			getAnExtraTurn = false;
+			return;
+		}
+		turnPlayer = getNonTurnPlayer();
     }
 
     private void advanceToNextBattle(){
@@ -900,7 +940,7 @@ public class Game implements GameInterface {
     }
 
     private void endTheBattle(){
-		
+		getAnExtraTurn = false;		
 		{ // Nagellachs
 			int abilityId = 23; //Nagellachs
 			player1.drawCards(countFaceUpUnnegatedOnSideOf(player1, abilityId));
