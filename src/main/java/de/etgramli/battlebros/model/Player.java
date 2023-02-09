@@ -86,7 +86,7 @@ public class Player {
         if (doShuffle)
 			shuffleDeck();
         addLifeCards(3);
-        drawCards(6);
+		drawCardsIgnoringAbilities(6);
         hasPassed = false;
 	}
 
@@ -97,7 +97,7 @@ public class Player {
     public void cleanUpForNewBattle(){
         hasPassed = false;
         removeAllCardsFromField();
-        drawCards(3);
+        drawCardsIgnoringAbilities(3);
     }
 
     public void removeAllCardsFromField(){
@@ -128,21 +128,22 @@ public class Player {
     public int drawCards(int amount){ //returns the amount of cards actually drawn
 		if (game.notAllowedToDrawCards(this))
 			return 0;
-	
-        int cardsDrawn = 0;
-        for (int i=0; i< amount; i++) {
-            if (drawACard())
-                cardsDrawn++;
-            else
-                break;
-        }
-        return cardsDrawn;
+		else
+        	return drawCardsIgnoringAbilities(amount);
     }
 
-    private boolean drawACard(){
-		if (game.notAllowedToDrawCards(this))
-			return false;
-		
+	public int drawCardsIgnoringAbilities(int amount){ //returns the amount of cards actually drawn
+		int cardsDrawn = 0;
+		for (int i=0; i< amount; i++) {
+			if (drawACard())
+				cardsDrawn++;
+			else
+				break;
+		}
+		return cardsDrawn;
+	}
+
+    private boolean drawACard(){ //doesn't check for Magmann etc -> only use for game rule based drawing, not for ability based drawing!
         if (gameZoneDeck.getAmountOfCards() <= 0)
             return false;
         gameZoneHand.addCard(gameZoneDeck.removeCard(0));
