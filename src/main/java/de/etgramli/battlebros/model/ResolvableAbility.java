@@ -44,9 +44,11 @@ public class ResolvableAbility {
 				
 			case 3: //Flammenwerfer
 				canChooseFromOwnField = true;
+				fromOwnFieldAllowed = actor.getPositionsOfAllFaceUpBros();
 				canChooseFromOpponentField = true;
+				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceUpBros();
 				canChooseMultiple = true;
-				isOptional = true; //TODO check if this is optional (pretty sure it is tho 8-) )
+				isOptional = true;
 				break;
 				
 			case 4: //Kanonenfutterer
