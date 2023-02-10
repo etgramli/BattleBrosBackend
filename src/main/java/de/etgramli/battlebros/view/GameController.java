@@ -116,7 +116,7 @@ public class GameController {
             logger.error("No username provided!");
             return;
         }
-        logger.info("Received select card message: " + message);
+        logger.info("User %s selected card: %s".formatted(sha.getUser().getName(), message));
         playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
     }
 
@@ -127,7 +127,9 @@ public class GameController {
             logger.error("No username provided!");
             return false;
         }
-        return playerUuidToGame.get(sha.getUser().getName()).chooseCancel(sha.getUser());
+        final boolean success = playerUuidToGame.get(sha.getUser().getName()).chooseCancel(sha.getUser());
+        logger.info("User %s canceled action: (success: %b)".formatted(sha.getUser().getName(), success));
+        return success;
     }
 
     private class GameInstance implements IObserver {
