@@ -746,10 +746,14 @@ public class Game implements GameInterface {
 		
 		int cardId = getIdOfCardInPlay(player, xPosition);
 		
-		/*{ //Verstummer
+		{ //Verstummer
 			int abilityId = 56; //Verstummer
 			
-			if (cardId!=abilityId && isThereAFaceUpUnnegatedOnAnySide(abilityId)) {
+			if (
+					cardId!=47&& //TODO this line is just a quick fix! cards with this id COULD be negated!
+					cardId!=19&& //TODO this line is just a quick fix! cards with this id COULD be negated!
+					cardId!=20&& //TODO this line is just a quick fix! cards with this id COULD be negated!
+					cardId!=abilityId && isThereAFaceUpUnnegatedOnAnySide(abilityId)) {
 				List<Element> elementsAffectedByVerstummer = new ArrayList<>();
 				for (Integer position : getPositionsOfAllFaceUpUnnegatedOnSideOf(player, abilityId)){
 					if (player.getOpponent().isCardFaceUp(position)){
@@ -778,7 +782,7 @@ public class Game implements GameInterface {
 						return true;
 				}
 			}
-		}*/
+		}
 		
 		{ //Holzkopf
 			int abilityId = 47; //Holzkopf
