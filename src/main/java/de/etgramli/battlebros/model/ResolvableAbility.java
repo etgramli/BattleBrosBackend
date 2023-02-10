@@ -96,13 +96,13 @@ public class ResolvableAbility {
 			case 30: //Meeresfrüchte
 				canChooseFromOwnDiscard = true;
 				canChooseMultiple = true;
-				isOptional = true; //TODO check
+				isOptional = true;
 				break;
 				
 			case 31: //Heilqualle
-				canChooseFromOwnField = true; //todo check ob evtl man nur facedown bros wählen darf
-				canChooseFromOpponentField = true; //todo check ob evtl man nur facedown bros wählen darf
-				//TODO könnte optional sein (who knows?)
+				canChooseFromOwnField = true;
+				canChooseFromOpponentField = true;
+				isOptional = true;
 				break;
 				
 			case 32: //Toller Hecht
@@ -111,9 +111,9 @@ public class ResolvableAbility {
 			
 			case 33: //Walnuss
 				canChooseFromOwnField = true;
-				fromOwnFieldAllowed = actor.getPositionsOfAllBrosWithElement(Element.WATER);
+				fromOwnFieldAllowed = actor.getPositionsOfAllFaceDownBrosWithElement(Element.WATER);
 				canChooseFromOpponentField = true;
-				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllBrosWithElement(Element.WATER);
+				fromOpponentFieldAllowed = actor.getOpponent().getPositionsOfAllFaceDownBrosWithElement(Element.WATER);
 				isOptional = true; //TODO CHECK (auch checken ob fromXYZallowed hier stimmt
 				break;
 				
@@ -128,7 +128,7 @@ public class ResolvableAbility {
 					if (actor.getOpponent().getCardOnFieldAt(i) != null)
 						fromOpponentFieldAllowed.add(i);
 				}
-				//todo check ob diese ffähigkeit optional ist
+				isOptional = true;
 				break;
 			
 			case 37: //Rammbock
@@ -142,7 +142,7 @@ public class ResolvableAbility {
 				fromOpponentFieldAllowed = new ArrayList<>();
 				if (actor.getOpponent().getCardOnFieldAt(gameFieldPosition) != null)
 					fromOpponentFieldAllowed.add(gameFieldPosition);
-				isOptional = true; //todo sichergehen dass wirklich optional ist
+				isOptional = true;
 				break;
 				
 			case 39: //Fleischwolf
@@ -162,18 +162,17 @@ public class ResolvableAbility {
 				canChooseFromOwnField = true;
 				fromOwnFieldAllowed = actor.getPositionsOfAllBrosExceptOnPosition(gameFieldPosition);
 				canChooseFromOpponentField = true;
-				//todo check ob optional
 				break;
 				
 			case 65: //Wirbelkind
 				canChooseFromOwnField = true;
 				canChooseFromOpponentField = true;
 				canChooseMultiple = true;
-				isOptional = true; //TODO check if this is optional
+				isOptional = true;
 				break;
 				
 			case 54: //Fliegende Klatsche
-				isAcceptable = true; //todo pretty sure this is right but better check
+				isAcceptable = true;
 				break;
 				
 			default:

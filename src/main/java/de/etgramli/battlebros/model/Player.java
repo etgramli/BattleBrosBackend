@@ -386,7 +386,7 @@ public class Player {
 			abilityId = 13; //Vulklon
 			if (abilityId == getIdIfFaceUpUnnegated(position)){
 				if (!(game.getIdOfCardInPlay(opponent, position)==abilityId && !game.isCardAbilityNegated(opponent, position))) //TODO check if there's no corner cases where a Vulklon still copies the powval of another Vulklon
-					base = opponent.getValueOfCardOnFieldAt(position); //TODO check ability text, if this is right
+					base = opponent.getValueOfCardOnFieldAt(position);
 			}
 		}
 		
@@ -523,6 +523,15 @@ public class Player {
 	public List<Integer> getPositionsOfAllBrosWithElement(Element element){
 		List<Integer> result = new ArrayList<>();
 		for (Integer position : gameField.getAllTakenPositions()){
+			if (getElementsOfCardAt(position).contains(element))
+				result.add(position);
+		}
+		return result;
+	}
+
+	public List<Integer> getPositionsOfAllFaceDownBrosWithElement(Element element){
+		List<Integer> result = new ArrayList<>();
+		for (Integer position : gameField.getAllFaceDownPositions()){
 			if (getElementsOfCardAt(position).contains(element))
 				result.add(position);
 		}
