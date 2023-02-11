@@ -242,11 +242,17 @@ public class GameController {
             updatePlayersPassed();
         }
 
+        private boolean sentCardSelectMessage = false;
+
         private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectCardType type) {
+            if (sentCardSelectMessage) {
+                throw new UnsupportedOperationException("Already sent message to select card, but no successful answer came!");
+            }
             final SelectCardMessage selectMyHandMessage = new SelectCardMessage(type);
             final String playerUuid = playerPrincipals[playerIndex].getName();
 
             template.convertAndSendToUser(playerUuid, URL_SELECT_CARD, selectMyHandMessage);
+            sentCardSelectMessage = true;
 
             logger.info("Player %s has to select card of selectCardType %s".formatted(playerUuid, type));
         }
@@ -300,6 +306,9 @@ public class GameController {
             final String callingPlayerUuid = principal.getName();
 
             final boolean success = game.chooseCancel(indexOfPlayer(callingPlayerUuid));
+            if (success) {
+                sentCardSelectMessage = false;
+            }
 
             logger.info("Player with UUID %s tried to cancel action (success %b)".formatted(callingPlayerUuid, success));
             return success;
@@ -341,6 +350,7 @@ public class GameController {
                     .formatted(playerIndex, message.selectCardType(), cardIndex, success));
             if (success) {
                 template.convertAndSendToUser(playerPrincipals[playerIndex].getName(), URL_SELECT_CARD, new SelectCardMessage(SELECT_SUCCESS));
+                sentCardSelectMessage = false;
             }
         }
 
