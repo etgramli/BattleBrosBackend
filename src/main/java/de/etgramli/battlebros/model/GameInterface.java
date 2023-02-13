@@ -28,8 +28,8 @@ public interface GameInterface extends IObservable {
 
     int getTotalValue(int playerIndex);
 
-	List<ResolvableAbility> getAbilityQueue();
-	ResolvableAbility getCurrentlyResolvingAbility();
+	List<ResolvableAbility> getAbilityQueue();  // ToDo: Change return value to List<String>, add argument player index
+	ResolvableAbility getCurrentlyResolvingAbility();   // ToDo: Change return value to String, add argument player index
 
     int getAmountOfLifeCards(int playerIndex);
 

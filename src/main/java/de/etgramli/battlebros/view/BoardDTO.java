@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -15,8 +16,8 @@ import static de.etgramli.battlebros.util.CollectionUtil.listFromMap;
 public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
 
     @NonNull
-    private static TreeMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards,
-                                                          @NonNull final Collection<Integer> faceDownPositions) {
+    private static SortedMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards,
+                                                            @NonNull final Collection<Integer> faceDownPositions) {
         return playedCards.entrySet().stream().collect(Collectors.toMap(
                 Map.Entry::getKey,
                 e -> CardDTO.from(e.getValue(), !faceDownPositions.contains(e.getKey())),
@@ -29,8 +30,8 @@ public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
                          @NonNull final Map<Integer, Card> playerTwoCards,
                          @NonNull final Collection<Integer> playerOneFaceDownCardIndices,
                          @NonNull final Collection<Integer> playerTwoFaceDownCardIndices) {
-        final TreeMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards, playerOneFaceDownCardIndices);
-        final TreeMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards, playerTwoFaceDownCardIndices);
+        final SortedMap<Integer, CardDTO> playerOneBoard = toCardDtoMap(playerOneCards, playerOneFaceDownCardIndices);
+        final SortedMap<Integer, CardDTO> playerTwoBoard = toCardDtoMap(playerTwoCards, playerTwoFaceDownCardIndices);
 
         // Fill empty spaces with null values, so that the UI can draw nothing in middle cells
         playerOneBoard.keySet().forEach(i -> playerTwoBoard.putIfAbsent(i, null));
