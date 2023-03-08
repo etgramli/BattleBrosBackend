@@ -3,7 +3,6 @@ package de.etgramli.battlebros.util;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.lang.NonNull;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
@@ -21,13 +20,13 @@ public final class CollectionUtil {
     /**
      * Creates a list of Map.Entry baked from a Map. The entries are copied from the map.
      * @param map The map to be converted to list. Must not be null.
-     * @return A list, not null.
+     * @return An immutable list, not null.
      * @param <K> Type of the keys.
      * @param <V> Type of the values.
      */
     @NonNull
     public static <K, V> List<Map.Entry<K, V>> listFromMap(@NonNull final Map<K, V> map) {
-        return map.entrySet().stream().map(Pair::of).collect(Collectors.toCollection(() -> new ArrayList<>(map.size())));
+        return map.entrySet().stream().map(Pair::of).collect(Collectors.toList());
     }
 
     /**
