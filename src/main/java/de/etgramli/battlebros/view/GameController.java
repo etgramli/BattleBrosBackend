@@ -7,6 +7,7 @@ import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
 import de.etgramli.battlebros.util.IObserver;
 import de.etgramli.battlebros.view.messages.JoinGameMessage;
+import de.etgramli.battlebros.view.messages.select.MessageWithId;
 import de.etgramli.battlebros.view.messages.PlaceCardMessage;
 import de.etgramli.battlebros.view.messages.select.SelectCardMessage;
 import de.etgramli.battlebros.view.messages.select.SelectCardType;
@@ -26,8 +27,10 @@ import org.springframework.stereotype.Controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.etgramli.battlebros.view.messages.select.SelectCardType.*;
 
@@ -36,13 +39,13 @@ import static de.etgramli.battlebros.view.messages.select.SelectCardType.*;
 public class GameController {
     private static final Logger logger = LoggerFactory.getLogger(GameController.class);
 
-    private static final String URL_PLAYER_NAMES = "/topic/names";
-    private static final String URL_PLAYER_HANDS = "/topic/hand";
-    private static final String URL_GAME_BOARD = "/topic/board";
-    private static final String URL_PLAYER_STRENGTH = "/topic/strength";
-    private static final String URL_LIFE_CARDS = "/topic/lifecards";
-    private static final String URL_ACTIVE_PLAYER = "/topic/activeplayer";
-    private static final String URL_SHOW_GAMES_LIST = "/topic/showgames";
+    public static final String URL_PLAYER_NAMES = "/topic/names";
+    public static final String URL_PLAYER_HANDS = "/topic/hand";
+    public static final String URL_GAME_BOARD = "/topic/board";
+    public static final String URL_PLAYER_STRENGTH = "/topic/strength";
+    public static final String URL_LIFE_CARDS = "/topic/lifecards";
+    public static final String URL_ACTIVE_PLAYER = "/topic/activeplayer";
+    public static final String URL_SHOW_GAMES_LIST = "/topic/showgames";
     public static final String URL_JOIN_GAME = "/topic/joingame";
     public static final String URL_PLAYERS_PASSED = "/topic/passed";
     public static final String URL_SELECT_CARD = "/topic/selectcard";
@@ -75,7 +78,6 @@ public class GameController {
     }
 
     @MessageMapping("/joingame")
-    @SendToUser(URL_JOIN_GAME)
     public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final JoinGameMessage message) {
         if (sha.getUser() == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
@@ -116,8 +118,8 @@ public class GameController {
             logger.error("No username provided!");
             return;
         }
-        logger.info("User %s selected card: %s".formatted(sha.getUser().getName(), message));
-        playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
+        final boolean success = playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
+        logger.info("User %s selected card: %s (success: %b)".formatted(sha.getUser().getName(), message, success));
     }
 
     @MessageMapping("/chooseCancel")
@@ -132,10 +134,12 @@ public class GameController {
         return success;
     }
 
-    private class GameInstance implements IObserver {
+    class GameInstance implements IObserver {   // ToDo: Refactor to package-private class
         private GameInterface game;
         private final Principal[] playerPrincipals = new Principal[2];
         private final String playerOneName;
+
+        private final List<MessageWithId> messagesToBeSent = new LinkedList<>();
 
         public GameInstance(@NonNull final String playerName, @NonNull final Principal principal) {
             if (StringUtils.isAnyBlank(playerName, principal.getName())) {
@@ -160,7 +164,7 @@ public class GameController {
             playerUuidToGame.put(playerPrincipals[1].getName(), this);
 
             game = new Game(new Player(playerOneName, Deck.DECKS.get("Feurio!")),
-                            new Player(playerName, Deck.DECKS.get("The River is flowing")));
+                    new Player(playerName, Deck.DECKS.get("The River is flowing")));
             logger.info("Game instance created: " + getName());
             game.addObserver(this);
 
@@ -242,19 +246,14 @@ public class GameController {
             updatePlayersPassed();
         }
 
-        private boolean sentCardSelectMessage = false;
-
         private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectCardType type) {
-            if (sentCardSelectMessage) {
-                throw new UnsupportedOperationException("Already sent message to select card, but no successful answer came!");
-            }
-            final SelectCardMessage selectMyHandMessage = new SelectCardMessage(type);
+            final SelectCardMessage selectCardMessage = new SelectCardMessage(type);
             final String playerUuid = playerPrincipals[playerIndex].getName();
 
-            template.convertAndSendToUser(playerUuid, URL_SELECT_CARD, selectMyHandMessage);
-            sentCardSelectMessage = true;
+            template.convertAndSendToUser(playerUuid, URL_SELECT_CARD, selectCardMessage);
 
             logger.info("Player %s has to select card of selectCardType %s".formatted(playerUuid, type));
+            messagesToBeSent.add(selectCardMessage);
         }
 
         @Override
@@ -288,17 +287,17 @@ public class GameController {
         }
 
         @Override
-        public void selectDiscardedCards(int playerIndex) {
+        public void selectDiscardedCards(final int playerIndex) {
             sendCardSelectMessage(playerIndex, SELECT_DISCARDED_CARDS);
         }
 
         @Override
-        public void selectNextAbilityToResolve(int playerIndex) {
+        public void selectNextAbilityToResolve(final int playerIndex) {
             // ToDo
         }
 
         @Override
-        public void selectAcceptAbility(int playerIndex) {
+        public void selectAcceptAbility(final int playerIndex) {
             // ToDo
         }
 
@@ -306,9 +305,6 @@ public class GameController {
             final String callingPlayerUuid = principal.getName();
 
             final boolean success = game.chooseCancel(indexOfPlayer(callingPlayerUuid));
-            if (success) {
-                sentCardSelectMessage = false;
-            }
 
             logger.info("Player with UUID %s tried to cancel action (success %b)".formatted(callingPlayerUuid, success));
             return success;
@@ -331,27 +327,40 @@ public class GameController {
                     .formatted(callingPlayerUuid, handIndex, boardIndex, success));
         }
 
-        public void selectCard(@NonNull final UserSelectedCardMessage message) {
+        public boolean selectCard(@NonNull final UserSelectedCardMessage message) {
             // ToDo refactor with test for principal's UUID
-            final int playerIndex = message.playerIndex();
+            final int playerIndex = message.getPlayerIndex();
             final int otherPlayerIndex = game.getOtherPlayerNum(playerIndex);
-            final int cardIndex = message.indices().get(0).getValue();
-            final boolean success = switch (message.selectCardType()) {
+            if (message.getIndices().isEmpty()) {
+                logger.info("Resending card select message because no indices present!");
+                sendCardSelectMessage(playerIndex, message.getSelectCardType());
+            }
+            final int cardIndex = message.getIndices().get(0).getValue();
+            final boolean success = switch (message.getSelectCardType()) {
                 case SELECT_MY_HAND_CARD -> game.chooseCardInHand(playerIndex, cardIndex);
-                case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.playerIndex(), cardIndex);
+                case SELECT_MY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, playerIndex, cardIndex);
                 case SELECT_OPPONENT_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, otherPlayerIndex, cardIndex);
-                case SELECT_ANY_PLAYED_CARD -> game.chooseCardInPlay(playerIndex, message.getFirstPlayerRow(), cardIndex);
+                case SELECT_ANY_PLAYED_CARD ->
+                        game.chooseCardInPlay(playerIndex, message.getFirstPlayerRow(), cardIndex);
                 case SELECT_ANY_PLAYED_CARDS -> game.chooseCardsInPlay(playerIndex, message.getIndices());
                 case SELECT_DISCARDED_CARD -> game.chooseCardInDiscard(playerIndex, cardIndex);
                 case SELECT_DISCARDED_CARDS -> false; // ToDo
-                case SELECT_SUCCESS -> throw new IllegalArgumentException("Did not expect message of type: " + message.selectCardType());
+                case SELECT_SUCCESS ->
+                        throw new IllegalArgumentException("Did not expect message of type: " + message.getSelectCardType());
             };
             logger.info("Player %d selected card (%s) with index %s (success: %b)"
-                    .formatted(playerIndex, message.selectCardType(), cardIndex, success));
+                    .formatted(playerIndex, message.getSelectCardType(), cardIndex, success));
             if (success) {
                 template.convertAndSendToUser(playerPrincipals[playerIndex].getName(), URL_SELECT_CARD, new SelectCardMessage(SELECT_SUCCESS));
-                sentCardSelectMessage = false;
+                messagesToBeSent.removeIf(messageWithId -> messageWithId.getId().equals(message.getId()));
+                if (!messagesToBeSent.isEmpty()) {
+                    logger.error("Some messages were lost: " + messagesToBeSent.stream().map(MessageWithId::getId).collect(Collectors.joining(", ")));
+                }
+            } else {
+                logger.info("Resending card select message due to unsuccessful action before!");
+                sendCardSelectMessage(playerIndex, message.getSelectCardType());
             }
+            return success;
         }
 
         private int indexOfPlayer(@NonNull final String principalUuid) {

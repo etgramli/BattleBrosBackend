@@ -1,7 +1,10 @@
 package de.etgramli.battlebros.view.messages.select;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.lang.NonNull;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,12 +12,50 @@ import java.util.stream.Collectors;
 /**
  * Message expected as a response to SelectCardMessage.
  */
-public record UserSelectedCardMessage(int playerIndex, // ToDo: remove
-                                      SelectCardType selectCardType,
-                                      List<Map.Entry<Integer,Integer>> indices) {
+public class UserSelectedCardMessage extends MessageWithId {
+    private final int playerIndex; // ToDo: remove
+    private final SelectCardType selectCardType;
+    private final List<Map.Entry<Integer,Integer>> indices;
+
+    public UserSelectedCardMessage(final int playerIndex,
+                                   @NonNull final SelectCardType selectCardType,
+                                   @NonNull final Collection<Map.Entry<Integer, Integer>> indices) {
+        this.playerIndex = playerIndex;
+        this.selectCardType = selectCardType;
+        this.indices = List.copyOf(indices);
+    }
+
+    public UserSelectedCardMessage(@NonNull final MessageWithId messageWithId,
+                            final int playerIndex,
+                            @NonNull final SelectCardType selectCardType,
+                            @NonNull final Collection<Map.Entry<Integer, Integer>> indices) {
+        super(messageWithId.getId());
+        this.playerIndex = playerIndex;
+        this.selectCardType = selectCardType;
+        this.indices = List.copyOf(indices);
+    }
+
+    @JsonCreator
+    public UserSelectedCardMessage(@NonNull final String id,
+                                   final int playerIndex,
+                                   @NonNull final SelectCardType selectCardType,
+                                   @NonNull final Collection<Map.Entry<Integer, Integer>> indices) {
+        super(id);
+        this.playerIndex = playerIndex;
+        this.selectCardType = selectCardType;
+        this.indices = List.copyOf(indices);
+    }
 
     public List<Pair<Integer, Integer>> getIndices() {
         return indices.stream().map(Pair::of).collect(Collectors.toList());
+    }
+
+    public SelectCardType getSelectCardType() {
+        return selectCardType;
+    }
+
+    public int getPlayerIndex() {
+        return playerIndex;
     }
 
     public int getFirstPlayerRow() {
@@ -38,5 +79,25 @@ public record UserSelectedCardMessage(int playerIndex, // ToDo: remove
             case SELECT_ANY_PLAYED_CARDS, SELECT_DISCARDED_CARDS -> true;
             case SELECT_SUCCESS -> false;
         };
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserSelectedCardMessage that = (UserSelectedCardMessage) o;
+
+        if (playerIndex != that.playerIndex) return false;
+        if (selectCardType != that.selectCardType) return false;
+        return indices.equals(that.indices);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = playerIndex;
+        result = 31 * result + selectCardType.hashCode();
+        result = 31 * result + indices.hashCode();
+        return result;
     }
 }

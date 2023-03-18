@@ -25,18 +25,18 @@ import java.util.UUID;
 public class GameWebsocketController implements WebSocketMessageBrokerConfigurer {
 
     private static final Logger logger = LoggerFactory.getLogger(GameWebsocketController.class);
+    public static final String APPLICATION_PREFIX = "/app";
+    public static final String USER_PREFIX = "/user";
+    public static final String BROKER_PREFIX = "/topic";
 
     @Override
     public void configureMessageBroker(@NonNull MessageBrokerRegistry registry) {
-        final String brokerUrl = "/topic";
-        final String applicationPrefix = "/app";
-        final String userPrefix = "/user";  // User-specific queues get prepended by this prefix
-        registry.enableSimpleBroker(brokerUrl);
-        registry.setApplicationDestinationPrefixes(applicationPrefix);
-        registry.setUserDestinationPrefix(userPrefix);
+        registry.enableSimpleBroker(BROKER_PREFIX);
+        registry.setApplicationDestinationPrefixes(APPLICATION_PREFIX);
+        registry.setUserDestinationPrefix(USER_PREFIX);
         logger.info(String.format(
                 "Websocket controller configured to use broker url \"%s\" and application prefix \"%s\" and user destination prefix: \"%s\"",
-                brokerUrl, applicationPrefix, userPrefix));
+                BROKER_PREFIX, APPLICATION_PREFIX, USER_PREFIX));
     }
 
     @Override
@@ -51,9 +51,9 @@ public class GameWebsocketController implements WebSocketMessageBrokerConfigurer
     private static class CustomHandshakeHandler extends DefaultHandshakeHandler {
         @NonNull
         @Override
-        protected Principal determineUser(ServerHttpRequest request,
-                                          WebSocketHandler webSocketHandler,
-                                          Map<String, Object> attributes) {
+        protected Principal determineUser(@NonNull final ServerHttpRequest request,
+                                          @NonNull final WebSocketHandler webSocketHandler,
+                                          @NonNull final Map<String, Object> attributes) {
             return new StompPrincipal(UUID.randomUUID().toString());
         }
     }
