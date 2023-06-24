@@ -131,7 +131,7 @@ class GameControllerTest {
             @NonNull
             @Override
             public Type getPayloadType(@NonNull final StompHeaders headers) {
-                return Object.class;
+                return byte[].class;
             }
             @Override
             public void handleFrame(@NonNull final StompHeaders headers, @Nullable final Object payload) {

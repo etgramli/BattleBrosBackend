@@ -66,71 +66,76 @@ public class GameController {
 
     @MessageMapping("/hostgame")
     @SendToUser
-    public int hostGame(@NonNull final SimpMessageHeaderAccessor sha, final String playerName) {
-        if (sha.getUser() == null) {
+    public int hostGame(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final String playerName) {
+        final Principal callingPlayer = sha.getUser();
+        if (callingPlayer == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        openGames.add(new GameInstance(playerName, sha.getUser()));
+        openGames.add(new GameInstance(playerName, callingPlayer));
         logger.info("Player with name \"%s\" and UUID \"%s\" hosts a new game. Got index: 1"
-                .formatted(playerName, sha.getUser().getName()));
+                .formatted(playerName, callingPlayer.getName()));
         template.convertAndSend(URL_SHOW_GAMES_LIST, showOpenGames());
         return 0;
     }
 
     @MessageMapping("/joingame")
     public int joinGame(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final JoinGameMessage message) {
-        if (sha.getUser() == null) {
+        final Principal callingPlayer = sha.getUser();
+        if (callingPlayer == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        openGames.get(message.getGameIndex()).addPlayer(message.getPlayerName(), sha.getUser());
+        openGames.get(message.getGameIndex()).addPlayer(message.getPlayerName(), callingPlayer);
         return 1;
     }
 
     @MessageMapping("/placecard")
     public void placeCard(@NonNull final SimpMessageHeaderAccessor sha, @NonNull final PlaceCardMessage message) {
-        if (sha.getUser() == null) {    // User must have Principal with UUID
+        final Principal callingPlayer = sha.getUser();
+        if (callingPlayer == null) {    // User must have Principal with UUID
             logger.error("No username provided!");
             return;
         }
         if (!message.isValid()) {
             logger.error("Received indices were not valid: " + message);
         }
-        final Principal callingPlayer = sha.getUser();
         final String userUuid = callingPlayer.getName();
         playerUuidToGame.get(userUuid).placeCard(callingPlayer, message.getHandIndex(), message.getBoardIndex());
     }
 
     @MessageMapping("/pass")
     public void pass(@NonNull final SimpMessageHeaderAccessor sha) {
-        if (sha.getUser() == null) {    // User must have Principal with UUID
+        final Principal callingUser = sha.getUser();
+        if (callingUser == null) {    // User must have Principal with UUID
             logger.error("No username provided!");
             return;
         }
-        final Principal callingUser = sha.getUser();
-        final String userUuid = callingUser.getName();
-        playerUuidToGame.get(userUuid).pass(callingUser);
+        playerUuidToGame.get(callingUser.getName()).pass(callingUser);
     }
 
     @MessageMapping("/selectcard")
     public void selectCard(@NonNull final SimpMessageHeaderAccessor sha,
                            @NonNull final UserSelectedCardMessage message) {
-        if (sha.getUser() == null) {
+        final Principal callingPlayer = sha.getUser();
+        if (callingPlayer == null) {
             logger.error("No username provided!");
             return;
         }
-        final boolean success = playerUuidToGame.get(sha.getUser().getName()).selectCard(message);
-        logger.info("User %s selected card: %s (success: %b)".formatted(sha.getUser().getName(), message, success));
+        final String uuid = callingPlayer.getName();
+        final boolean success = playerUuidToGame.get(uuid).selectCard(message);
+        logger.info("User %s selected card: %s (success: %b)".formatted(uuid, message, success));
     }
 
     @MessageMapping("/chooseCancel")
     @SendToUser
     public boolean chooseCancel(@NonNull final SimpMessageHeaderAccessor sha) {
-        if (sha.getUser() == null) {
+        final Principal callingPlayer = sha.getUser();
+        if (callingPlayer == null) {
             logger.error("No username provided!");
             return false;
         }
-        final boolean success = playerUuidToGame.get(sha.getUser().getName()).chooseCancel(sha.getUser());
-        logger.info("User %s canceled action: (success: %b)".formatted(sha.getUser().getName(), success));
+        final String uuid = callingPlayer.getName();
+        final boolean success = playerUuidToGame.get(uuid).chooseCancel(callingPlayer);
+        logger.info("User %s canceled action: (success: %b)".formatted(uuid, success));
         return success;
     }
 
