@@ -6,12 +6,13 @@ import de.etgramli.battlebros.model.Game;
 import de.etgramli.battlebros.model.GameInterface;
 import de.etgramli.battlebros.model.Player;
 import de.etgramli.battlebros.util.IObserver;
-import de.etgramli.battlebros.view.messages.JoinGameMessage;
-import de.etgramli.battlebros.view.messages.select.MessageWithId;
-import de.etgramli.battlebros.view.messages.PlaceCardMessage;
-import de.etgramli.battlebros.view.messages.select.SelectCardMessage;
-import de.etgramli.battlebros.view.messages.select.SelectCardType;
-import de.etgramli.battlebros.view.messages.select.UserSelectedCardMessage;
+import de.etgramli.battlebros.view.dto.BoardDTO;
+import de.etgramli.battlebros.view.message.JoinGameMessage;
+import de.etgramli.battlebros.view.message.select.MessageWithId;
+import de.etgramli.battlebros.view.message.PlaceCardMessage;
+import de.etgramli.battlebros.view.message.select.SelectCardMessage;
+import de.etgramli.battlebros.view.message.select.SelectCardType;
+import de.etgramli.battlebros.view.message.select.UserSelectedCardMessage;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +26,16 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static de.etgramli.battlebros.view.messages.select.SelectCardType.*;
+import static de.etgramli.battlebros.view.message.select.SelectCardType.*;
 
 
 @Controller

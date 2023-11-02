@@ -1,4 +1,4 @@
-package de.etgramli.battlebros.view.messages.select;
+package de.etgramli.battlebros.view.message.select;
 
 public enum SelectCardType {
     SELECT_MY_HAND_CARD,

@@ -1,4 +1,4 @@
-package de.etgramli.battlebros.view;
+package de.etgramli.battlebros.view.dto;
 
 import de.etgramli.battlebros.model.Card;
 import org.springframework.lang.NonNull;

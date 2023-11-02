@@ -1,4 +1,4 @@
-package de.etgramli.battlebros.view.messages.select;
+package de.etgramli.battlebros.view.message.select;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

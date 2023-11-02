@@ -1,4 +1,4 @@
-package de.etgramli.battlebros.view.messages;
+package de.etgramli.battlebros.view.message;
 
 public class PlaceCardMessage {
     private int handIndex;
