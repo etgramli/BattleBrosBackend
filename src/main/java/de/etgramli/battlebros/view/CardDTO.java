@@ -6,7 +6,8 @@ import org.springframework.lang.NonNull;
 /**
  * Contains data to be transferred to the client.
  * Info important to the client:
- * - Id: to determine the card image
+ * @param id: Determines the card image
+ * @param isFaceUp: True if the card should be showed face-up
  */
 public record CardDTO(int id, boolean isFaceUp) {
 

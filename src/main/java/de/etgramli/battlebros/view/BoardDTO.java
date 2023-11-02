@@ -13,16 +13,24 @@ import java.util.stream.Collectors;
 
 import static de.etgramli.battlebros.util.CollectionUtil.listFromMap;
 
+/**
+ * DTO to transfer the board state to the UI.
+ * @param board Expects a List (of size 2) of Lists of Map.Entries with a CardDTO and its position on the player's board
+ *              row.
+ */
 public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
 
+    /**
+     * Helper to construct a BoardDTO from a game instance.
+     * @param game A non-null game instance.
+     * @return An instance of BoardDTO.
+     */
     @NonNull
-    private static SortedMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards,
-                                                            @NonNull final Collection<Integer> faceDownPositions) {
-        return playedCards.entrySet().stream().collect(Collectors.toMap(
-                Map.Entry::getKey,
-                e -> CardDTO.from(e.getValue(), !faceDownPositions.contains(e.getKey())),
-                (a, b) -> b,
-                TreeMap::new));
+    public static BoardDTO from(@NonNull final GameInterface game) {
+        return from(game.getCardsInPlay(0),
+                game.getCardsInPlay(1),
+                game.getPositionsOfFaceDownCards(0),
+                game.getPositionsOfFaceDownCards(1));
     }
 
     @NonNull
@@ -41,10 +49,12 @@ public record BoardDTO(List<List<Map.Entry<Integer, CardDTO>>> board) {
     }
 
     @NonNull
-    public static BoardDTO from(@NonNull final GameInterface game) {
-        return from(game.getCardsInPlay(0),
-                    game.getCardsInPlay(1),
-                    game.getPositionsOfFaceDownCards(0),
-                    game.getPositionsOfFaceDownCards(1));
+    private static SortedMap<Integer, CardDTO> toCardDtoMap(@NonNull final Map<Integer, Card> playedCards,
+                                                            @NonNull final Collection<Integer> faceDownPositions) {
+        return playedCards.entrySet().stream().collect(Collectors.toMap(
+                Map.Entry::getKey,
+                e -> CardDTO.from(e.getValue(), !faceDownPositions.contains(e.getKey())),
+                (a, b) -> b,
+                TreeMap::new));
     }
 }
