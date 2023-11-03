@@ -199,33 +199,31 @@ public class GameController {
             }
         }
 
-        private void updateHands() {
+        @Override
+        public void update() {
+            final BoardDTO boardDto = BoardDTO.from(game);
+            final List<Integer> strengths = List.of(game.getTotalValue(0), game.getTotalValue(1));
+            final int currentPlayerIndex = game.getTurnPlayerIndex();
+            final List<Boolean> hasPassed = game.hasPassed();
+            final List<Integer> numLifeCardsPerPlayer = List.of(game.getAmountOfLifeCards(0), game.getAmountOfLifeCards(1));
+
             for (int i = 0; i < playerPrincipals.length; i++) {
                 final String uuid = playerPrincipals[i].getName();
+
                 final List<Integer> hand = game.getCardsInHand(i).stream().map(Card::getId).toList();
-                template.convertAndSendToUser(uuid, URL_PLAYER_HANDS, hand);
-            }
-        }
+                template.convertAndSendToUser(uuid, URL_PLAYER_HANDS, hand);                // Update hand
 
-        private void updateBoards() {
-            final BoardDTO boardDto = BoardDTO.from(game);
-            for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_GAME_BOARD, boardDto);
-            }
-        }
+                template.convertAndSendToUser(uuid, URL_GAME_BOARD, boardDto);              // Update board
 
-        private void updateStrength() {
-            final List<Integer> strengths = List.of(game.getTotalValue(0), game.getTotalValue(1));
-            for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_PLAYER_STRENGTH, strengths);
-            }
-        }
+                template.convertAndSendToUser(uuid, URL_PLAYER_STRENGTH, strengths);        // Update strength
 
-        private void updateLifeCards() {
-            final List<Integer> numLifeCardsPerPlayer = List.of(game.getAmountOfLifeCards(0), game.getAmountOfLifeCards(1));
-            for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_LIFE_CARDS, numLifeCardsPerPlayer);
+                template.convertAndSendToUser(uuid, URL_ACTIVE_PLAYER, currentPlayerIndex); // Update current player
+
+                template.convertAndSendToUser(uuid, URL_LIFE_CARDS, numLifeCardsPerPlayer); // Update life
+
+                template.convertAndSendToUser(uuid, URL_PLAYERS_PASSED, hasPassed);         // Update passed information
             }
+
             // If a player won: remove game and detach observer to garbage-collect
             if (numLifeCardsPerPlayer.get(0) == 0 || numLifeCardsPerPlayer.get(1) == 0) {
                 for (Principal principal : playerPrincipals) {
@@ -233,28 +231,6 @@ public class GameController {
                 }
                 game.removeObservers();
             }
-        }
-
-        private void updateActivePlayer() {
-            for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_ACTIVE_PLAYER, game.getTurnPlayerIndex());
-            }
-        }
-
-        private void updatePlayersPassed() {
-            for (Principal principal : playerPrincipals) {
-                template.convertAndSendToUser(principal.getName(), URL_PLAYERS_PASSED, game.hasPassed());
-            }
-        }
-
-        @Override
-        public void update() {
-            updateHands();
-            updateBoards();
-            updateStrength();
-            updateLifeCards();
-            updateActivePlayer();
-            updatePlayersPassed();
         }
 
         private void sendCardSelectMessage(final int playerIndex, @NonNull final SelectCardType type) {
