@@ -17,7 +17,7 @@ public record CardDTO(int id, boolean isFaceUp) {
     }
 
     @NonNull
-    static CardDTO from(@NonNull final Card card, final boolean isFaceUp) {
+    public static CardDTO from(@NonNull final Card card, final boolean isFaceUp) {
         return new CardDTO(card.getId(), isFaceUp);
     }
 }

@@ -73,7 +73,9 @@ public class GameController {
         if (callingPlayer == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        openGames.add(new GameInstance(playerName, callingPlayer));
+        final GameInstance newGame = new GameInstance(playerName, callingPlayer);
+        openGames.add(newGame);
+        playerUuidToGame.put(callingPlayer.getName(), newGame);
         logger.info("Player with name \"%s\" and UUID \"%s\" hosts a new game. Got index: 1"
                 .formatted(playerName, callingPlayer.getName()));
         template.convertAndSend(URL_SHOW_GAMES_LIST, showOpenGames());
@@ -86,7 +88,9 @@ public class GameController {
         if (callingPlayer == null) {
             throw new IllegalArgumentException("SimpleMessageHeaderAccessor must provide a User member!");
         }
-        openGames.get(message.getGameIndex()).addPlayer(message.getPlayerName(), callingPlayer);
+        final GameInstance joinedGame = openGames.remove(message.getGameIndex());
+        joinedGame.addPlayer(message.getPlayerName(), callingPlayer);
+        playerUuidToGame.put(callingPlayer.getName(), joinedGame);
         return 1;
     }
 
@@ -141,11 +145,15 @@ public class GameController {
         return success;
     }
 
-    class GameInstance implements IObserver {   // ToDo: Refactor to package-private class
+    /**
+     * Wraps a single game for communication through STOMP.
+     */
+    class GameInstance implements IObserver {
         private GameInterface game;
         private final Principal[] playerPrincipals = new Principal[2];
         private final String playerOneName;
 
+        // ToDo: Replace with Deque (/stack)
         private final Queue<MessageWithId> messagesToBeSent = new ConcurrentLinkedQueue<>();
 
         public GameInstance(@NonNull final String playerName, @NonNull final Principal principal) {
@@ -165,10 +173,6 @@ public class GameController {
                 throw new RuntimeException("Second player expected to be null!");
             }
             playerPrincipals[1] = principal;
-
-            openGames.remove(this);
-            playerUuidToGame.put(playerPrincipals[0].getName(), this);
-            playerUuidToGame.put(playerPrincipals[1].getName(), this);
 
             game = new Game(new Player(playerOneName, Deck.DECKS.get("Feurio!")),
                     new Player(playerName, Deck.DECKS.get("The River is flowing")));
