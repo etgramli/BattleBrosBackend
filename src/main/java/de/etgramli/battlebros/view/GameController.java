@@ -8,8 +8,8 @@ import de.etgramli.battlebros.model.Player;
 import de.etgramli.battlebros.util.IObserver;
 import de.etgramli.battlebros.view.dto.BoardDTO;
 import de.etgramli.battlebros.view.message.JoinGameMessage;
-import de.etgramli.battlebros.view.message.select.MessageWithId;
 import de.etgramli.battlebros.view.message.PlaceCardMessage;
+import de.etgramli.battlebros.view.message.select.MessageWithId;
 import de.etgramli.battlebros.view.message.select.SelectCardMessage;
 import de.etgramli.battlebros.view.message.select.SelectCardType;
 import de.etgramli.battlebros.view.message.select.UserSelectedCardMessage;
@@ -26,13 +26,12 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import static de.etgramli.battlebros.view.message.select.SelectCardType.*;
@@ -147,7 +146,7 @@ public class GameController {
         private final Principal[] playerPrincipals = new Principal[2];
         private final String playerOneName;
 
-        private final List<MessageWithId> messagesToBeSent = new LinkedList<>();
+        private final Queue<MessageWithId> messagesToBeSent = new ConcurrentLinkedQueue<>();
 
         public GameInstance(@NonNull final String playerName, @NonNull final Principal principal) {
             if (StringUtils.isAnyBlank(playerName, principal.getName())) {

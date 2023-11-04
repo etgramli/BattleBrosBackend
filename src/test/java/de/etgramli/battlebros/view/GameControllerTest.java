@@ -31,8 +31,10 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -74,7 +76,8 @@ class GameControllerTest {
 
     private static StompSession connect(@NonNull final String url)
             throws ExecutionException, InterruptedException, TimeoutException {
-        return stompClient.connectAsync(url, new StompSessionHandlerAdapter() {}).get(1, TimeUnit.SECONDS);
+        return stompClient.connectAsync(url, new StompSessionHandlerAdapter() {
+        }).get(1, TimeUnit.SECONDS);
     }
 
     private static void send(@NonNull final StompSession session,
@@ -103,10 +106,16 @@ class GameControllerTest {
             public Type getPayloadType(@NonNull final StompHeaders headers) {
                 return clazz;
             }
+
             @Override
             public void handleFrame(@NonNull final StompHeaders headers, @Nullable final Object payload) {
-                queue.add((T) payload);
-                logger.info("Added payload \"%s\" to queue (new size: %d)".formatted(payload, queue.size()));
+                if (payload == null) {
+                    logger.error("Payload to queue \"%s\" is null!".formatted(topicUrl));
+                } else {
+                    @SuppressWarnings("unchecked") final T payloadWithType = (T) payload;
+                    queue.add(payloadWithType);
+                    logger.info("Added payload \"%s\" to queue (new size: %d)".formatted(payload, queue.size()));
+                }
             }
         });
         assertNotNull(subscription.getSubscriptionId());
@@ -133,6 +142,7 @@ class GameControllerTest {
             public Type getPayloadType(@NonNull final StompHeaders headers) {
                 return byte[].class;
             }
+
             @Override
             public void handleFrame(@NonNull final StompHeaders headers, @Nullable final Object payload) {
                 if (payload == null) {
@@ -218,25 +228,93 @@ class GameControllerTest {
         await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(hasNoMessagesToBeSent(gameInstance)));
     }
 
-    @Disabled
     @Test
-    public void test_twoSelectCardMessages_successfulResponses() {
-        // ToDo
+    public void test_twoSelectCardMessages_successfulResponses() throws ExecutionException, InterruptedException, TimeoutException {
+        final String stompUrl = STOMP_URL.formatted(port);
+
+        // Connect player 1
+        final StompSession sessionOne = connect(stompUrl);
+        final BlockingQueue<Integer> joinGameQueue = subscribeToUserTopic(sessionOne, URL_JOIN_GAME, 1, Integer.class);
+
+        // Connect player 2
+        final StompSession sessionTwo = connect(stompUrl);
+        final BlockingQueue<Integer> joinGameQueueTwo = subscribeToUserTopic(sessionTwo, URL_JOIN_GAME, 1, Integer.class);
+
+        // Logic
+        // login
+        send(sessionOne, "/hostgame", "SHCT-P1");
+        await().atMost(1, TimeUnit.SECONDS).until(() -> !gameController.showOpenGames().isEmpty());
+        final int gameIndex = gameController.showOpenGames().size() - 1;
+        final GameController.GameInstance gameInstance = getOpenGameInstance(gameController, gameIndex);
+        assertNotNull(gameInstance);
+        send(sessionTwo, "/joingame", new JoinGameMessage("SHCT-P2", String.valueOf(gameIndex)));
+
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(0, joinGameQueue.poll()));
+        await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(1, joinGameQueueTwo.poll()));
+        // logged in
+
+        final BlockingQueue<SelectCardMessage> selectCardQueue =
+                subscribeToUserTopicJsonResult(sessionOne, GameController.URL_SELECT_CARD, 2, SelectCardMessage.class);
+        // Set up game behaviour
+        await().atMost(1, TimeUnit.SECONDS).until(() -> isGameStarted(gameInstance));
+        final GameInterface gameSpy = replaceGameInterfaceWithSpy(gameInstance);
+        when(gameSpy.chooseCardInHand(eq(0), anyInt())).thenReturn(true);
+        when(gameSpy.chooseCardInHand(not(eq(0)), anyInt())).thenReturn(false);
+
+
+        // Test: message responses received in reverse order due to stack /recursive manner
+        // Game makes controller send message
+        gameInstance.selectMyHandCard(0);
+        await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(selectCardQueue.isEmpty()));
+
+        final SelectCardMessage firstMessage = selectCardQueue.poll();
+        assertNotNull(firstMessage);
+        assertEquals(SelectCardType.SELECT_MY_HAND_CARD, firstMessage.getSelectCardType());
+
+
+        gameInstance.selectMyHandCard(0);
+        await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertFalse(selectCardQueue.isEmpty()));
+
+        final SelectCardMessage secondMessage = selectCardQueue.poll();
+        assertNotNull(secondMessage);
+        assertEquals(SelectCardType.SELECT_MY_HAND_CARD, secondMessage.getSelectCardType());
+
+
+        final UserSelectedCardMessage firstReturnMessage = new UserSelectedCardMessage(
+                secondMessage, 0, SelectCardType.SELECT_MY_HAND_CARD, CollectionUtil.listFromMap(Map.of(0, 0)));
+        sessionOne.send(APPLICATION_PREFIX + "/selectcard", firstReturnMessage);
+        await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(1, getNumMessagesToBeSent(gameInstance)));
+        assertTrue(getIDsFromMessagesToBeSent(gameInstance).contains(UUID.fromString(firstMessage.getId())));
+
+        final UserSelectedCardMessage secondReturnMessage = new UserSelectedCardMessage(
+                firstMessage, 0, SelectCardType.SELECT_MY_HAND_CARD, CollectionUtil.listFromMap(Map.of(0, 0)));
+        sessionOne.send(APPLICATION_PREFIX + "/selectcard", secondReturnMessage);
+        await().atMost(1, TimeUnit.SECONDS).untilAsserted(() -> assertTrue(hasNoMessagesToBeSent(gameInstance)));
     }
 
     @Disabled
     @Test
-    public void test_twoSelectCardMessages_oneWithMultipleTries() {
+    public void test_twoSelectCardMessages_oneWithMultipleTries() throws ExecutionException, InterruptedException, TimeoutException {
+        final String stompUrl = STOMP_URL.formatted(port);
+
+        // Connect player 1
+        final StompSession sessionOne = connect(stompUrl);
+        final BlockingQueue<Integer> joinGameQueue = subscribeToUserTopic(sessionOne, URL_JOIN_GAME, 1, Integer.class);
+
+        // Connect player 2
+        final StompSession sessionTwo = connect(stompUrl);
+        final BlockingQueue<Integer> joinGameQueueTwo = subscribeToUserTopic(sessionTwo, URL_JOIN_GAME, 1, Integer.class);
+
+        // Logic
         // ToDo
     }
 
     private static GameController.GameInstance getOpenGameInstance(@NonNull final GameController gameController,
-                                                                    final int index) {
+                                                                   final int index) {
         try {
             final Field openGames = GameController.class.getDeclaredField("openGames");
             openGames.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            final var openGamesList = (List<GameController.GameInstance>) openGames.get(gameController);
+            @SuppressWarnings("unchecked") final var openGamesList = (List<GameController.GameInstance>) openGames.get(gameController);
             return openGamesList.get(index);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -268,12 +346,19 @@ class GameControllerTest {
     }
 
     private static boolean hasNoMessagesToBeSent(@NonNull final GameController.GameInstance gameInstance) {
+        return getNumMessagesToBeSent(gameInstance) == 0;
+    }
+
+    private static int getNumMessagesToBeSent(@NonNull final GameController.GameInstance gameInstance) {
+        return getIDsFromMessagesToBeSent(gameInstance).size();
+    }
+
+    private static List<UUID> getIDsFromMessagesToBeSent(@NonNull final GameController.GameInstance gameInstance) {
         try {
             final Field messagesToBeSent = GameController.GameInstance.class.getDeclaredField("messagesToBeSent");
             messagesToBeSent.setAccessible(true);
-            @SuppressWarnings("unchecked")
-            final List<MessageWithId> unsentMessages = (List<MessageWithId>) messagesToBeSent.get(gameInstance);
-            return unsentMessages.isEmpty();
+            @SuppressWarnings("unchecked") final Collection<MessageWithId> unsentMessages = (Collection<MessageWithId>) messagesToBeSent.get(gameInstance);
+            return unsentMessages.stream().map(MessageWithId::getId).map(UUID::fromString).toList();
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
