@@ -149,6 +149,8 @@ public class GameController {
      * Wraps a single game for communication through STOMP.
      */
     class GameInstance implements IObserver {
+        private static final Logger logger = LoggerFactory.getLogger(GameInstance.class);
+
         private GameInterface game;
         private final Principal[] playerPrincipals = new Principal[2];
         private final String playerOneName;
